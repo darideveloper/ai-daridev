@@ -16,10 +16,10 @@ flowchart TB
         OTH["Gemini / Continue / Windsurf"]
     end
     subgraph SKILLS["Skills — one clone, symlinked"]
-        BL["backlog"]
-        ST["story"]
-        PR["pair"]
-        AR["archive"]
+        BL["ai-daridev-backlog"]
+        ST["ai-daridev-story"]
+        PR["ai-daridev-pair"]
+        AR["ai-daridev-archive"]
     end
     subgraph MCP["MCP servers (per agent)"]
         EM["engram"]
@@ -70,12 +70,12 @@ sync: Odoo is authoritative for **state**, Engram for **knowledge**.
 
 ```mermaid
 flowchart TD
-    IDEA([Idea]) --> BL["/backlog"]
+    IDEA([Idea]) --> BL["/ai-daridev-backlog"]
     BL --> BLW["Writes: N cards in the first stage<br/>one tag, sequence, optional deadline<br/>memory backlog/project"]
     BLW --> OK["Backlog approved"]
-    OK --> ST["/story"]
+    OK --> ST["/ai-daridev-story"]
     ST --> STW["Writes: card description as HTML<br/>memory story/slug<br/>no stage move"]
-    STW --> PAIR["/pair — slug or pasted card"]
+    STW --> PAIR["/ai-daridev-pair — slug or pasted card"]
     PAIR --> MODE{"Repo has code<br/>and a test runner?"}
     MODE -->|Yes| CODE["TDD: red → green → stop"]
     MODE -->|No| NOCODE["Plan → approve once<br/>→ execute step by step"]
@@ -88,7 +88,7 @@ flowchart TD
     MEM --> CLOSE
     EPH --> CLOSE
     CLOSE["Close: state=Approved + date_end<br/>ADR if shared contract<br/>summary + engram sync"]
-    CLOSE --> ARCH["/archive — slug or bare"]
+    CLOSE --> ARCH["/ai-daridev-archive — slug or bare"]
     ARCH --> OUT["Retro printed, memory retro/slug<br/>ADR only if it qualified"]
 ```
 

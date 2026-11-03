@@ -15,16 +15,16 @@ Odoo. **Engram is required** — the skills refuse to run without it. **Odoo is 
 ## The flow
 
 ```
-/backlog  →  /story  →  /pair  →  /archive
+/ai-daridev-backlog  →  /ai-daridev-story  →  /ai-daridev-pair  →  /ai-daridev-archive
   what       what exactly   how        what happened
 ```
 
 | Skill | What it does | What it never does |
 |---|---|---|
-| [`/backlog`](skills/backlog/SKILL.md) | Turns an idea into a short backlog of vertical, one-line user stories. | Invent requirements, technical stories, estimates. |
-| [`/story`](skills/story/SKILL.md) | Takes **one** story, adds 2–3 Given/When/Then acceptance criteria and a mini plan (≤5 bullets) for your approval. | Write code. If it needs more than 3 criteria, it proposes splitting the story. |
-| [`/pair`](skills/pair/SKILL.md) | Pair programming: the AI drives, you navigate. One test → red → minimum code → green, then it stops and waits. For non-code work it investigates, proposes a numbered plan, and executes it one step at a time. | Commit, edit tests to make them pass, add things you didn't ask for, move tracker columns. |
-| [`/archive`](skills/archive/SKILL.md) | Closes a story or a sprint: reconciles the tracker card with the recorded decisions and prints the retro. | Move cards, mark work done, invent a retro with no records. |
+| [`/ai-daridev-backlog`](skills/ai-daridev-backlog/SKILL.md) | Turns an idea into a short backlog of vertical, one-line user stories. | Invent requirements, technical stories, estimates. |
+| [`/ai-daridev-story`](skills/ai-daridev-story/SKILL.md) | Takes **one** story, adds 2–3 Given/When/Then acceptance criteria and a mini plan (≤5 bullets) for your approval. | Write code. If it needs more than 3 criteria, it proposes splitting the story. |
+| [`/ai-daridev-pair`](skills/ai-daridev-pair/SKILL.md) | Pair programming: the AI drives, you navigate. One test → red → minimum code → green, then it stops and waits. For non-code work it investigates, proposes a numbered plan, and executes it one step at a time. | Commit, edit tests to make them pass, add things you didn't ask for, move tracker columns. |
+| [`/ai-daridev-archive`](skills/ai-daridev-archive/SKILL.md) | Closes a story or a sprint: reconciles the tracker card with the recorded decisions and prints the retro. | Move cards, mark work done, invent a retro with no records. |
 
 Each skill's output is the next one's input, as blocks ready to paste into your tracker.
 

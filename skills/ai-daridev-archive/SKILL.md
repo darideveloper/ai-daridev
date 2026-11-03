@@ -1,5 +1,5 @@
 ---
-name: archive
+name: ai-daridev-archive
 description: Closes a finished story or sprint. Reconciles the Odoo card with the decisions and work already recorded in memory and produces the retro. Reads and summarises; never moves cards, never marks work done.
 disable-model-invocation: true
 ---
@@ -16,8 +16,8 @@ install Engram and restart the agent. Do not continue without memory.
 
 ## Inputs
 
-- `/archive <slug>` → one story.
-- `/archive` → every card in the project's "Sprint Complete" stage that has no `retro/<slug>`
+- `/ai-daridev-archive <slug>` → one story.
+- `/ai-daridev-archive` → every card in the project's "Sprint Complete" stage that has no `retro/<slug>`
   memory yet. No time window: the absence of a retro is the filter.
 
 ## Steps

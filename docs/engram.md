@@ -7,11 +7,11 @@ database. The skills use it to remember **why**, not **what**: decisions, specs,
 
 | Key | Type | Written by | Content |
 |---|---|---|---|
-| `backlog/<project>` | `architecture` | `/backlog` | the approved backlog + card ids |
-| `story/<slug>` | `architecture` | `/story`, `/pair` | criteria, plan, test list, card id |
-| *(no key)* | `decision` | `/pair` | one durable decision, append-only |
-| `retro/<slug>` | `learning` | `/archive` | the story retro |
-| `retro/sprint-<date>` | `learning` | `/archive` | the sprint retro |
+| `backlog/<project>` | `architecture` | `/ai-daridev-backlog` | the approved backlog + card ids |
+| `story/<slug>` | `architecture` | `/ai-daridev-story`, `/ai-daridev-pair` | criteria, plan, test list, card id |
+| *(no key)* | `decision` | `/ai-daridev-pair` | one durable decision, append-only |
+| `retro/<slug>` | `learning` | `/ai-daridev-archive` | the story retro |
+| `retro/sprint-<date>` | `learning` | `/ai-daridev-archive` | the sprint retro |
 
 `topic_key` supports at most **two levels** — that is why the project is part of the key and not
 another slash.
@@ -45,7 +45,7 @@ Rules that follow from this:
 
 ## Sessions
 
-`/pair` opens a session (`mem_session_start`) and closes it at the end (`mem_session_summary`,
+`/ai-daridev-pair` opens a session (`mem_session_start`) and closes it at the end (`mem_session_summary`,
 `mem_session_end`). Without a session, saves land in a single growing "manual save" session, which
 makes `mem_timeline` useless for retros.
 
@@ -89,5 +89,5 @@ entries.
 |---|---|---|
 | `unknown_project` | project has no memories yet, or wrong cwd | open the agent in the repo that has `.engram/config.json` |
 | memory not found after a pull | chunks are present but not imported | `engram sync --import` |
-| retro has no timeline | saves went to the manual session | keep `/pair`'s session start/end |
+| retro has no timeline | saves went to the manual session | keep `/ai-daridev-pair`'s session start/end |
 | two projects in the list for one repo | repo cloned before `engram init`, or a renamed remote | `engram projects list`, then `engram projects merge --from <a> --to <b> --apply` |

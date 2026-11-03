@@ -48,7 +48,7 @@ stateDiagram-v2
     state "1_canceled" as Canceled
 
     [*] --> InProgress: card created (Odoo default)
-    InProgress --> Approved: /pair close, work verified
+    InProgress --> Approved: /ai-daridev-pair close, work verified
     Approved --> Done: human only
     Approved --> Canceled: human only
 ```

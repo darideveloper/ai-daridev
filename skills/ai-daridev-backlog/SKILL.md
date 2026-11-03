@@ -1,6 +1,6 @@
 ---
-name: backlog
-description: Turns a software idea or a discussed feature into a backlog of short, vertical user stories. No acceptance criteria or implementation; that's /story's job.
+name: ai-daridev-backlog
+description: Turns a software idea or a discussed feature into a backlog of short, vertical user stories. No acceptance criteria or implementation; that's /ai-daridev-story's job.
 disable-model-invocation: true
 ---
 
@@ -74,7 +74,7 @@ Memory resolves its project from the working directory. If it resolves anything 
 5. Report a table: id · name · stage · tag. If I deny an approval mid-batch, stop and list what
    already exists so a re-run resumes without duplicates.
 
-Card body at creation (`<h1>` + the story line + the key; `/story` later adds criteria and tests):
+Card body at creation (`<h1>` + the story line + the key; `/ai-daridev-story` later adds criteria and tests):
 
 ```html
 <h1>{story title}</h1>

@@ -8,7 +8,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$ids = @("backlog", "story", "pair", "archive")
+$ids = @("ai-daridev-backlog", "ai-daridev-story", "ai-daridev-pair", "ai-daridev-archive")
+$legacy = @("backlog", "story", "pair", "archive")
 $home_ = $env:USERPROFILE
 $engramDir = Join-Path $env:LOCALAPPDATA "engram"
 $engramExe = Join-Path $engramDir "engram.exe"
@@ -47,7 +48,7 @@ if ($userPath -notlike "*$engramDir*") {
 
 # --- 2. Remove shadowing copies --------------------------------------------
 # OpenCode gives ~/.config/opencode/skills precedence over ~/.agents/skills.
-foreach ($id in $ids) {
+foreach ($id in ($ids + $legacy)) {
     $shadow = Join-Path $home_ ".config\opencode\skills\$id"
     if (Test-Path $shadow) {
         Remove-Item $shadow -Recurse -Force
@@ -67,6 +68,15 @@ $agentDirs = @(
     (Join-Path $home_ ".kiro\skills"),
     (Join-Path $home_ ".config\devin\skills")
 )
+
+# remove links and commands from the pre-prefix era
+foreach ($id in $legacy) {
+    $old = Join-Path $agentsRoot $id
+    if (Test-Path $old) { Remove-Item $old -Recurse -Force }
+    foreach ($dir in $agentDirs) { $l = Join-Path $dir $id; if (Test-Path $l) { Remove-Item $l -Recurse -Force } }
+    $oldCmd = Join-Path $home_ ".config\opencode\commands\$id.md"
+    if (Test-Path $oldCmd) { Remove-Item $oldCmd -Force }
+}
 
 foreach ($id in $ids) {
     $src = Join-Path $Fork "skills\$id"

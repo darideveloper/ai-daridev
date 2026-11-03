@@ -7,7 +7,8 @@ set -eu
 
 FORK="${AI_DARIDEV_FORK:-${HOLA_AI_FORK:-$(cd "$(dirname "$0")/.." && pwd)}}"
 VER="${ENGRAM_VERSION:-3.6.0}"
-IDS="backlog story pair archive"
+IDS="ai-daridev-backlog ai-daridev-story ai-daridev-pair ai-daridev-archive"
+LEGACY="backlog story pair archive"
 AGENT_DIRS="$HOME/.claude $HOME/.gemini $HOME/.continue $HOME/.codeium/windsurf $HOME/.kiro $HOME/.config/devin"
 
 say() { printf '%s\n' "$*"; }
@@ -66,7 +67,7 @@ say "engram: verified ($("$engram_bin" version 2>/dev/null))"
 # --- 2. Remove shadowing copies --------------------------------------------
 # OpenCode gives ~/.config/opencode/skills precedence over ~/.agents/skills, so an
 # older copy silently wins over the linked skill.
-for id in $IDS; do
+for id in $IDS $LEGACY; do
   shadow="$HOME/.config/opencode/skills/$id"
   if [ -e "$shadow" ] || [ -L "$shadow" ]; then
     rm -rf "$shadow"
@@ -76,6 +77,15 @@ done
 
 # --- 3. Skills: clone -> ~/.agents/skills -> each agent ---------------------
 mkdir -p "$HOME/.agents/skills"
+# remove links from the pre-prefix era so only the new names remain
+for id in $LEGACY; do
+  rm -rf "$HOME/.agents/skills/$id"
+  for a in $AGENT_DIRS; do
+    [ -e "$a/skills/$id" ] && rm -rf "$a/skills/$id"
+  done
+  rm -f "$HOME/.config/opencode/commands/$id.md"
+done
+
 for id in $IDS; do
   [ -d "$FORK/skills/$id" ] || die "skill '$id' missing in $FORK"
   ln -sfn "$FORK/skills/$id" "$HOME/.agents/skills/$id"

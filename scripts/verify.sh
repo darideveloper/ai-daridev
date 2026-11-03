@@ -4,7 +4,7 @@
 set -u
 
 FORK="$(cd "$(dirname "$0")/.." && pwd)"
-IDS="backlog story pair archive"
+IDS="ai-daridev-backlog ai-daridev-story ai-daridev-pair ai-daridev-archive"
 fails=0
 warn=0
 

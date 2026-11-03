@@ -1,6 +1,6 @@
 # Workflow
 
-Two paths, same entry point. `/pair` picks one from the repository, not from the story text.
+Two paths, same entry point. `/ai-daridev-pair` picks one from the repository, not from the story text.
 
 ## Choosing the path
 
@@ -8,7 +8,7 @@ Two paths, same entry point. `/pair` picks one from the repository, not from the
 |---|---|
 | application code + a test runner | test-driven (§1) |
 | only JSON / YAML / config, no test runner | non-code (§2) |
-| both or neither | `/pair` asks once |
+| both or neither | `/ai-daridev-pair` asks once |
 
 ## 1. Code project
 
@@ -22,7 +22,7 @@ sequenceDiagram
     participant O as Odoo
     participant G as Git
 
-    You->>A: /pair <slug>
+    You->>A: /ai-daridev-pair <slug>
     A->>S: load skill
     S->>E: session_start + story/<slug>
     E-->>S: spec + past decisions
@@ -48,13 +48,13 @@ sequenceDiagram
     S->>You: commit .engram + ADR
 ```
 
-1. `/backlog` — stories in the first stage, one tag each, order preserved.
-2. `/story` — criteria + tests into the card, spec into memory.
-3. `/pair <slug>` — test list approved, then one red/green step at a time. It stops after every step.
+1. `/ai-daridev-backlog` — stories in the first stage, one tag each, order preserved.
+2. `/ai-daridev-story` — criteria + tests into the card, spec into memory.
+3. `/ai-daridev-pair <slug>` — test list approved, then one red/green step at a time. It stops after every step.
 4. Durable decisions are saved silently; small ones stay in the conversation.
 5. Close — green dot + end date, ADR only when it affects other people.
 6. `engram sync`, then **you** commit.
-7. `/archive <slug>` when done; `/archive` alone for the sprint.
+7. `/ai-daridev-archive <slug>` when done; `/ai-daridev-archive` alone for the sprint.
 
 ## 2. Non-code project
 
@@ -70,7 +70,7 @@ sequenceDiagram
     participant E as Engram
     participant O as Odoo
 
-    You->>A: /pair <slug>
+    You->>A: /ai-daridev-pair <slug>
     A->>S: load skill, detect mode
     S->>H: read-only investigation
     H-->>S: current state

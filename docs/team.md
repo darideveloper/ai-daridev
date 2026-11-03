@@ -6,7 +6,7 @@ One person owns the board and the memory; everybody can work on the cards.
 
 | Role | Needs | Does |
 |---|---|---|
-| Owner | Engram, skills, Odoo | `/backlog`, `/story`, `/pair`, `/archive`, moves columns, validates work |
+| Owner | Engram, skills, Odoo | `/ai-daridev-backlog`, `/ai-daridev-story`, `/ai-daridev-pair`, `/ai-daridev-archive`, moves columns, validates work |
 | Teammate | Engram, skills (Odoo optional) | picks a card, pastes it into their agent, submits the change |
 
 The owner is the only one who moves cards and the only one who marks work done. That is what keeps
@@ -23,13 +23,13 @@ sequenceDiagram
     actor T as Teammate
     participant TE as Teammate Engram
 
-    Owner->>O: /backlog creates cards
+    Owner->>O: /ai-daridev-backlog creates cards
     T->>O: reads the card, copies it
     T->>T: works with their own agent
     T->>R: commit / pull request
     Owner->>R: reviews the change in detail
     Owner->>O: validates, moves the column
-    Owner->>Owner: /pair close if it was a tracked story
+    Owner->>Owner: /ai-daridev-pair close if it was a tracked story
     Note over Owner,O: state=Approved + date_end, never a column move
     Owner->>R: engram sync + commit chunks
     T->>R: git pull
@@ -46,7 +46,7 @@ cd ai-daridev
 # .\scripts\install.ps1     # Windows
 ```
 
-That is enough for `/backlog`, `/story`, `/pair`, `/archive` to run: the installer brings Engram
+That is enough for `/ai-daridev-backlog`, `/ai-daridev-story`, `/ai-daridev-pair`, `/ai-daridev-archive` to run: the installer brings Engram
 with it. Odoo is optional, so a teammate without it still remembers decisions and just creates no
 cards.
 

@@ -20,10 +20,13 @@ Skills and commands are separate namespaces. The command body loads the skill ex
 
 ```md
 ---
-description: Run the hola-ai pair skill
+description: Pair on a story: TDD for code, plan-and-execute for non-code
 ---
-Load the skill `pair` with the skill tool and follow it exactly. My input: $ARGUMENTS
+Load the skill `ai-daridev-pair` with the skill tool and follow it exactly. My input: $ARGUMENTS
 ```
+
+Every skill and command is namespaced `ai-daridev-*`, so `/ai-daridev-review-task` never collides
+with OpenCode's built-in `/review`.
 
 MCP goes under `mcp.servers`:
 
@@ -66,7 +69,7 @@ command = "<odoo-wrapper-path>"
 Codex expands **no** environment variables in config. Pass literal `env = { K = "V" }`, or inherit
 with `env_vars = ["K"]`, or — preferred — point at a wrapper script that reads a 600 file.
 
-Skills are invoked as `$backlog`, not `/backlog`. Auto-invocation is controlled per skill:
+Skills are invoked as `$backlog`, not `/ai-daridev-backlog`. Auto-invocation is controlled per skill:
 
 ```yaml
 # skills/<id>/agents/openai.yaml
@@ -101,6 +104,6 @@ exist.
 1. `engram doctor`
 2. new session → the memory tool responds
 3. new session → the tracker tool responds (only if you use Odoo)
-4. a skill loads (`skill` tool, or `/story` as a command)
-5. remove the Engram MCP entry, restart, run `/pair` → it must **stop** and ask you to install Engram
-6. remove the Odoo MCP entry, restart, run `/pair` → it must run normally and say that no card was created
+4. a skill loads (`skill` tool, or `/ai-daridev-story` as a command)
+5. remove the Engram MCP entry, restart, run `/ai-daridev-pair` → it must **stop** and ask you to install Engram
+6. remove the Odoo MCP entry, restart, run `/ai-daridev-pair` → it must run normally and say that no card was created

@@ -1,6 +1,6 @@
 ---
-name: story
-description: Takes ONE user story from the backlog, adds 2-3 acceptance criteria and proposes a mini implementation plan for approval. Writes no code; implementation is /pair's job.
+name: ai-daridev-story
+description: Takes ONE user story from the backlog, adds 2-3 acceptance criteria and proposes a mini implementation plan for approval. Writes no code; implementation is /ai-daridev-pair's job.
 disable-model-invocation: true
 ---
 
@@ -30,7 +30,7 @@ install Engram and restart the agent. Do not continue without memory.
 
 ## Output format
 
-A block ready to paste into the issue. `/pair` uses it as input.
+A block ready to paste into the issue. `/ai-daridev-pair` uses it as input.
 
 ```markdown
 ## Story
@@ -65,7 +65,7 @@ Memory resolves its project from the working directory. If it resolves anything 
 - Find the card by `description ilike "engram: story/<slug>"`.
 - Found → update `description` only. Never touch `stage_id`, `state`, `sequence` or tags.
 - Not found → ask me "create it in Backlog?" before writing anything. If I say yes, create it in
-  the project's first stage (same rules as `/backlog`).
+  the project's first stage (same rules as `/ai-daridev-backlog`).
 - Missing tools → if Odoo is unavailable, continue and say in one line what was skipped. Engram is
   required: if the memory tools are missing, stop before doing anything.
 
