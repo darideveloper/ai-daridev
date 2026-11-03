@@ -1,26 +1,41 @@
 # ai-daridev installer (Windows, PowerShell 5+).
 # Engram is REQUIRED: the installer aborts if it cannot install or verify it.
+# Skills and OpenCode commands are JUNCTIONS/SYMLINKS when possible, copies otherwise.
 # Usage: powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 param(
     [string]$Fork = (Split-Path -Parent (Split-Path -Parent $PSCommandPath)),
-    [string]$EngramVersion = "3.6.0",
+    [string]$EngramVersion = "3.6.1",
     [switch]$CopySkills
 )
 
 $ErrorActionPreference = "Stop"
-$ids = @("ai-daridev-backlog", "ai-daridev-story", "ai-daridev-pair", "ai-daridev-archive", "ai-daridev-review")
-$legacy = @("backlog", "story", "pair", "archive")
+$legacy = @("backlog", "story", "pair", "archive", "review")
 $home_ = $env:USERPROFILE
 $engramDir = Join-Path $env:LOCALAPPDATA "engram"
 $engramExe = Join-Path $engramDir "engram.exe"
 
 function Say($m) { Write-Host $m }
 
+# Skills come from the clone, never from a hardcoded list that can drift.
+$skillsRoot = Join-Path $Fork "skills"
+$ids = @(Get-ChildItem -Path $skillsRoot -Directory | Where-Object { Test-Path (Join-Path $_.FullName "SKILL.md") } | Select-Object -ExpandProperty Name)
+if ($ids.Count -eq 0) { throw "no skills found in $skillsRoot" }
+
 # --- 1. Engram (required) ---------------------------------------------------
+$installed = ""
 if (Test-Path $engramExe) {
-    Say "engram: already installed"
+    try { $installed = ((& $engramExe version) -split "\s+")[1] } catch { $installed = "" }
+}
+
+if ($installed -eq $EngramVersion) {
+    Say "engram: already installed ($installed)"
+} elseif ($installed) {
+    Say "engram: $installed found, installing $EngramVersion"
 } else {
     Say "engram: installing $EngramVersion"
+}
+
+if ($installed -ne $EngramVersion) {
     New-Item -ItemType Directory -Force -Path $engramDir | Out-Null
     $asset = "engram_${EngramVersion}_windows_amd64.zip"
     $base = "https://github.com/Gentleman-Programming/engram/releases/download/v$EngramVersion"
@@ -66,7 +81,8 @@ $agentDirs = @(
     (Join-Path $home_ ".continue\skills"),
     (Join-Path $home_ ".codeium\windsurf\skills"),
     (Join-Path $home_ ".kiro\skills"),
-    (Join-Path $home_ ".config\devin\skills")
+    (Join-Path $home_ ".config\devin\skills"),
+    (Join-Path $home_ ".codex\skills")
 )
 
 # remove links and commands from the pre-prefix era
@@ -78,8 +94,6 @@ foreach ($id in $legacy) {
         $item = Get-Item -LiteralPath $l -Force -ErrorAction SilentlyContinue
         if ($null -ne $item) { Remove-Item -LiteralPath $l -Recurse -Force }
     }
-    $oldCmd = Join-Path $home_ ".config\opencode\commands\$id.md"
-    if (Test-Path $oldCmd) { Remove-Item $oldCmd -Force }
 }
 
 foreach ($id in $ids) {
@@ -107,11 +121,20 @@ foreach ($id in $ids) {
 }
 Say "skills: linked $($ids -join ', ')"
 
-# --- 4. OpenCode commands ---------------------------------------------------
+# --- 4. OpenCode commands (symlinked, copied if symlinks are denied) --------
 $cmdDir = Join-Path $home_ ".config\opencode\commands"
 New-Item -ItemType Directory -Force -Path $cmdDir | Out-Null
-Copy-Item (Join-Path $Fork "commands\*.md") $cmdDir -Force
-Say "commands: copied to $cmdDir"
+foreach ($src in (Get-ChildItem -Path (Join-Path $Fork "commands") -Filter *.md)) {
+    $dst = Join-Path $cmdDir $src.Name
+    if (Test-Path $dst) { Remove-Item $dst -Force }
+    try {
+        New-Item -ItemType SymbolicLink -Path $dst -Target $src.FullName | Out-Null
+    } catch {
+        Copy-Item $src.FullName $dst
+        Say "commands: symlink denied for $($src.Name), copied instead"
+    }
+}
+Say "commands: linked to $cmdDir"
 
 # --- 5. MCP: print, never rewrite someone's config --------------------------
 $engram = Join-Path $engramDir "engram.exe"
@@ -121,7 +144,9 @@ Say "  OpenCode -> ~/.config/opencode/opencode.json, under mcp.servers:"
 Say "    `"engram`": { `"type`": `"local`", `"command`": [`"$($engram -replace '\\','/')`", `"mcp`", `"--tools=agent`"], `"disabled`": false }"
 Say "  Claude Code -> claude mcp add --scope user engram -- `"$engram`" mcp --tools=agent"
 Say "  Codex -> %USERPROFILE%\.codex\config.toml: [mcp_servers.engram] command = `"$($engram -replace '\\','/')`""
+Say "  Gemini CLI -> %USERPROFILE%\.gemini\settings.json, under mcpServers:"
+Say "    `"engram`": { `"command`": `"$($engram -replace '\\','/')`", `"args`": [`"mcp`", `"--tools=agent`"] }"
 Say ""
 Say "Odoo is optional. Without it the skills still remember decisions, they just create no cards."
 Say "Restart the agent afterwards, then verify by using a memory tool in a NEW session."
-Say "After 'git pull', re-run this script so the copied commands stay in sync."
+Say "Run scripts/verify.sh (Git Bash / WSL) in a project to check the wiring; a pull needs no re-run."

@@ -17,9 +17,17 @@ install Engram and restart the agent. Do not continue without memory.
 
 - `/ai-daridev-pair <slug>`: load `story/<slug>` from memory.
 - `/ai-daridev-pair` with a pasted card or story block: derive the slug from its title (kebab-case, ≤40 chars) and upsert `story/<slug>` with what I pasted.
-- `/ai-daridev-pair` with nothing: if Odoo is available, list the project's `Sprint Backlog` cards and ask which one; otherwise list `story/*` memories. If neither exists, treat it as a new story and say so.
-- Open a session (`mem_session_start`) at the start and close it in §8. Memory is required; there
-  is no sessionless mode.
+- `/ai-daridev-pair` with nothing: if Odoo is available, list the project's `Sprint Backlog` cards
+  (`project_id` + `stage_id`, `limit 20`, never unbounded) and ask which one; mark the ones assigned
+  to `odoo_uid` as yours. Otherwise list `story/*` memories. If neither exists, treat it as a new
+  story and say so.
+- Open a session first: `mem_session_start` with
+  `id = "ai-daridev-<slug>-<YYYYMMDD-HHmmss>"` and `directory = <cwd>`. Engram does not generate
+  the id: invent it once and reuse it for every memory in this run, including the summary in §8.
+  Memory is required; there is no sessionless mode.
+- Tool names: OpenCode `engram_mem_save` / `odoo_odoo_search_read`, inside Code Mode (`execute`)
+  `tools.engram.mem_save` / `tools.odoo.odoo_search_read`. Claude Code `mcp__engram__*`,
+  `mcp__odoo__*`.
 - Refresh memory first: run `engram sync --import` in the directory holding `.engram/config.json`.
   If it fails, warn once and continue.
 - Load the **markers** from the card's children, or from its `Markers:` line if the card was
@@ -81,6 +89,10 @@ In a batch of N, show the tests first and then the code: the tests are what I mo
 
 Save a memory for a `Decided:` line only when it is **project-wide or hard to reverse** (schema, auth model, wire format, dependency choice, external contract). Type `decision`, title ≤10 words, content What/Why/Where. Per-step choices stay ephemeral.
 
+`mem_save` needs `title` and `content` in `**What** / **Why** / **Where** / **Learned**` form; a
+`topic_key` upserts instead of piling up records. If the answer carries `judgment_required`, ask me
+once about the conflict and resolve it with `mem_judge_many` (`candidates[].judgment_id`).
+
 ### Stop immediately (even mid-batch) if:
 
 - You need to make a design decision that isn't in the plan.
@@ -117,13 +129,16 @@ Skip the red/green cycle and run this instead:
 ## 8. Close (only when the work is done and I say yes)
 
 1. **ADR** — write `docs/decisions/<slug>.md` if the story produced a decision that is project-wide, hard to reverse, **or affects a shared/ops contract** (env var, deploy step, credential, shared workflow). Dated, one section.
-2. **Odoo** (if available) — on the **card**: `state = 03_approved` and
-   `date_end = <UTC now, YYYY-MM-DD HH:MM:SS>`. Flip the markers I answered `yes` to in the cycle
-   to `1_done` (one update with all ids). Never touch `stage_id`, never mark the card done or
-   cancelled, never move a column.
+2. **Odoo** (if available) — preflight first: resolve `project.project` by exact name (`limit 2`,
+   stop on 0 or >1) and check that every name in `odoo_stages` still exists. Then, on the **card**:
+   `state = 03_approved` and `date_end = <UTC now, YYYY-MM-DD HH:MM:SS>`. Flip the markers I
+   answered `yes` to in the cycle to `1_done` (one update with all ids). Never touch `stage_id`,
+   `user_ids`, never mark the card done or cancelled, never move a column.
 3. **Markers still open** — before closing, list every marker that is not `1_done` and ask: flip it,
    leave the card open, or skip. Never close over a silent gap.
-4. **Memory** — `mem_session_summary` (Goal / Discoveries / Accomplished / Next steps / Files), then:
+4. **Memory** — `mem_session_summary` with `content` in exactly this shape
+   (`Goal / Instructions / Discoveries / Accomplished / Next Steps / Relevant Files`), passing the
+   session `id` from §1. Then `mem_session_end { id }`. After those:
    - run `engram sync` in the directory holding `.engram/config.json`;
    - commit only if that directory (or its git root) contains `.engram/config.json`, and only if the
      branch is not detached;

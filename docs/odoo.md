@@ -40,6 +40,36 @@ flowchart LR
     HOURS --> CARD
 ```
 
+## Identity
+
+The MCP authenticates with its own credentials, which are often a service account — not you. The
+skills never assume those are the same thing:
+
+- `odoo_uid` in `AGENTS.md` is **you**: a number, read from the file, never looked up in
+  `res.users` (the agent must not read that model).
+- It marks which cards are yours in bare listings, and assigns work only when you explicitly ask
+  for an assignee in the same run.
+- New cards are created **unassigned**: `user_ids` is not written by default.
+- If `odoo_uid` is missing the skill asks once and continues without it. Nothing is guessed.
+
+## Preflight
+
+Read-only, before any write. Any failure stops the skill instead of writing into the wrong place.
+
+| Check | Query | On failure |
+|---|---|---|
+| project | `project.project` where `name = odoo_project`, limit 2 | 0 → ask; 2+ → stop and list them |
+| stages | `project.task.type` where `project_ids` contains that id, ordered by `sequence` | a name from `odoo_stages` is missing → stop and print the real stages |
+| tags | `project.tags` where `name in (frontend, backend, script, workflow)` | name the missing tag and stop |
+| owner | `odoo_uid` in `AGENTS.md` | ask once, continue without it |
+| memory | the Engram project resolved from the working directory | it differs from `engram_project` → stop |
+
+It prints one line as proof, then continues:
+
+```
+project ourlivesapp dashboard (138) · first stage Backlog (526) · uid 2 · tags ok
+```
+
 ## State machine
 
 ```mermaid
@@ -68,7 +98,7 @@ human decision. Subtasks are the exception — markers use `1_done` (see below).
 | `stage_id` | the project's **first** stage by `sequence` | new work always starts at the beginning |
 | `sequence` | `max(sequence in project) + 10` | keeps the backlog order inside the column |
 | `description` | HTML body (below) | readable in Odoo, greppable by the key |
-| `tag_ids` | exactly one of `frontend` / `backend` / `script` / `workflow` | one axis, no taxonomy drift |
+| `tag_ids` | one of `frontend` / `backend` / `script` / `workflow`, default `card_tag` | one axis, no taxonomy drift |
 | `date_deadline` | only if the user gave one, UTC `YYYY-MM-DD 00:00:00` | a fake deadline is worse than none |
 | markers (subtasks) | created after the card: `name`, `parent_id`, `project_id`, `state=01_in_progress` | tracking only — no description, no column, no dates |
 
@@ -146,7 +176,8 @@ visible and reversible by you.
 ## Setup checklist
 
 - [ ] the project exists and has the stages you use (they are per project in Odoo)
+- [ ] `odoo_stages` lists those stages exactly (the preflight validates them every run)
 - [ ] the tags the workflow needs exist (global: `frontend`, `backend`, `script`, `workflow`)
-- [ ] `AGENTS.md` declares `odoo_project` and `odoo_stages`
+- [ ] `AGENTS.md` declares `odoo_project`, `odoo_stages`, `odoo_uid` and `card_tag`
 - [ ] the MCP server runs through a wrapper that reads credentials from a 600 file
 - [ ] write tools are set to `ask` in the agent permissions

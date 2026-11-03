@@ -1,25 +1,46 @@
 #!/usr/bin/env bash
 # ai-daridev installer (Linux / macOS).
 # Engram is REQUIRED: the installer aborts if it cannot install or verify it.
+# Skills and OpenCode commands are SYMLINKED, so a git pull updates them with no re-run.
 # Usage: ./scripts/install.sh
 #        AI_DARIDEV_FORK=/path/to/clone ./scripts/install.sh
 set -eu
 
 FORK="${AI_DARIDEV_FORK:-${HOLA_AI_FORK:-$(cd "$(dirname "$0")/.." && pwd)}}"
-VER="${ENGRAM_VERSION:-3.6.0}"
-IDS="ai-daridev-backlog ai-daridev-story ai-daridev-pair ai-daridev-archive ai-daridev-review"
-LEGACY="backlog story pair archive"
-AGENT_DIRS="$HOME/.claude $HOME/.gemini $HOME/.continue $HOME/.codeium/windsurf $HOME/.kiro $HOME/.config/devin"
+VER="${ENGRAM_VERSION:-3.6.1}"
+LEGACY="backlog story pair archive review"
+AGENT_DIRS="$HOME/.claude $HOME/.gemini $HOME/.continue $HOME/.codeium/windsurf $HOME/.kiro $HOME/.config/devin $HOME/.codex"
+CMD_DIR="$HOME/.config/opencode/commands"
 
 say() { printf '%s\n' "$*"; }
 die() { printf '\nerror: %s\n' "$*" >&2; exit 1; }
 
-# --- 1. Engram (required) ---------------------------------------------------
-if command -v engram >/dev/null 2>&1; then
-  say "engram: already installed ($(engram version 2>/dev/null || echo unknown))"
-else
-  say "engram: installing $VER"
+# Skills come from the clone, never from a hardcoded list that can drift.
+IDS=""
+for dir in "$FORK"/skills/*/; do
+  [ -d "$dir" ] || continue
+  id="$(basename "$dir")"
+  [ -f "$dir/SKILL.md" ] || die "skill '$id' has no SKILL.md in $FORK"
+  IDS="${IDS:+$IDS }$id"
+done
+[ -n "$IDS" ] || die "no skills found in $FORK/skills"
 
+# --- 1. Engram (required) ---------------------------------------------------
+engram_bin="$(command -v engram || true)"
+[ -n "$engram_bin" ] || engram_bin="$HOME/.local/bin/engram"
+
+installed=""
+if [ -x "$engram_bin" ]; then
+  installed="$("$engram_bin" version 2>/dev/null | awk '{print $2}')"
+fi
+
+if [ "$installed" = "$VER" ]; then
+  say "engram: already installed ($installed)"
+elif [ -n "$installed" ]; then
+  say "engram: $installed found, installing $VER into $HOME/.local/bin"
+fi
+
+if [ "$installed" != "$VER" ]; then
   case "$(uname -s)" in
     Linux)  OS=linux ;;
     Darwin) OS=darwin ;;
@@ -50,12 +71,13 @@ else
   tar -xzf "$tmp/$asset" -C "$tmp" || die "could not extract $asset"
   [ -f "$tmp/engram" ] || die "engram binary not found inside $asset"
   mkdir -p "$HOME/.local/bin"
-  install -m755 "$tmp/engram" "$HOME/.local/bin/engram" || die "could not install engram to ~/.local/bin"
-  say "engram: installed at $HOME/.local/bin/engram"
+  # Write then rename: the old binary may still be executing as an MCP server.
+  install -m755 "$tmp/engram" "$HOME/.local/bin/.engram.new" || die "could not stage engram in ~/.local/bin"
+  mv -f "$HOME/.local/bin/.engram.new" "$HOME/.local/bin/engram" || die "could not install engram to ~/.local/bin"
+  say "engram: installed $VER at $HOME/.local/bin/engram"
 fi
 
 # Engram is required: prove it works before touching anything else.
-engram_bin="$(command -v engram || true)"
 [ -n "$engram_bin" ] || engram_bin="$HOME/.local/bin/engram"
 [ -x "$engram_bin" ] || die "engram not found on PATH and not at ~/.local/bin/engram"
 "$engram_bin" version >/dev/null 2>&1 || die "engram is installed but not runnable ($engram_bin)"
@@ -84,11 +106,10 @@ for id in $LEGACY; do
     link="$a/skills/$id"
     if [ -L "$link" ] || [ -e "$link" ]; then rm -rf "$link"; fi
   done
-  rm -f "$HOME/.config/opencode/commands/$id.md"
+  rm -f "$CMD_DIR/$id.md"
 done
 
 for id in $IDS; do
-  [ -d "$FORK/skills/$id" ] || die "skill '$id' missing in $FORK"
   ln -sfn "$FORK/skills/$id" "$HOME/.agents/skills/$id"
   for a in $AGENT_DIRS; do
     [ -d "$a/skills" ] && ln -sfn "$HOME/.agents/skills/$id" "$a/skills/$id"
@@ -96,10 +117,20 @@ for id in $IDS; do
 done
 say "skills: linked $IDS into ~/.agents/skills and existing agent dirs"
 
-# --- 4. OpenCode commands ---------------------------------------------------
-mkdir -p "$HOME/.config/opencode/commands"
-cp "$FORK/commands/"*.md "$HOME/.config/opencode/commands/"
-say "commands: copied to ~/.config/opencode/commands"
+# --- 4. OpenCode commands (symlinked) --------------------------------------
+mkdir -p "$CMD_DIR"
+for src in "$FORK"/commands/*.md; do
+  [ -f "$src" ] || die "no commands found in $FORK/commands"
+  name="$(basename "$src")"
+  rm -f "$CMD_DIR/$name"
+  ln -sfn "$src" "$CMD_DIR/$name"
+done
+# drop links whose source left the repo
+for link in "$CMD_DIR"/*.md; do
+  [ -L "$link" ] || continue
+  [ -e "$link" ] || { rm -f "$link"; say "removed stale command link: $(basename "$link")"; }
+done
+say "commands: linked to $CMD_DIR"
 
 # --- 5. MCP: print, never rewrite someone's config --------------------------
 say ""
@@ -108,7 +139,9 @@ say "  OpenCode -> ~/.config/opencode/opencode.json, under mcp.servers:"
 say '    "engram": { "type": "local", "command": ["'"$HOME"'/.local/bin/engram", "mcp", "--tools=agent"], "disabled": false }'
 say "  Claude Code -> claude mcp add --scope user engram -- $HOME/.local/bin/engram mcp --tools=agent"
 say "  Codex -> ~/.codex/config.toml: [mcp_servers.engram] command = \"$HOME/.local/bin/engram\" / args = [\"mcp\", \"--tools=agent\"]"
+say "  Gemini CLI -> ~/.gemini/settings.json, under mcpServers:"
+say '    "engram": { "command": "'"$HOME"'/.local/bin/engram", "args": ["mcp", "--tools=agent"] }'
 say ""
 say "Odoo is optional. Without it the skills still remember decisions, they just create no cards."
 say "Restart the agent afterwards, then verify by using a memory tool in a NEW session."
-say "After 'git pull', re-run this script so the copied commands stay in sync."
+say "Run scripts/verify.sh in a project to check the wiring; skills and commands need no re-run after a pull."

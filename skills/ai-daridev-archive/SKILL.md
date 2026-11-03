@@ -19,14 +19,19 @@ install Engram and restart the agent. Do not continue without memory.
 - `/ai-daridev-archive <slug>` → that story.
 - `/ai-daridev-archive` → list the candidates and **ask**: one of them, all, or cancel. Never
   assume "all".
-  - With Odoo: cards in "Sprint Complete" that have no `retro/<slug>` memory.
+  - With Odoo: cards in "Sprint Complete" of the configured project (`project_id` + `stage_id`,
+    `limit 20`, paginate with `offset`) that have no `retro/<slug>` memory. Mark the ones assigned
+    to `odoo_uid` as yours.
   - Without Odoo: `story/*` memories that have no `retro/*` memory.
 
 ## Steps
 
 1. Read the workflow config from `AGENTS.md` (`odoo_project`, `odoo_stages`, `engram_project`,
-   `decisions_dir`). If it is missing, ask me once. If memory resolves a project other than
-   `engram_project`, stop and tell me to reopen the agent where `.engram/config.json` lives.
+   `decisions_dir`, `odoo_uid`). If it is missing, ask me once. If memory resolves a project other
+   than `engram_project`, stop and tell me to reopen the agent where `.engram/config.json` lives.
+   Preflight, read-only: resolve `project.project` by exact name (`limit 2`, stop on 0 or more than
+   one) and check that every name in `odoo_stages` exists. A missing stage stops the run and prints
+   the real list.
 2. Refresh memory: `engram sync --import` in the directory holding `.engram/config.json`. Warn and
    continue if it fails.
 3. Story mode: load `story/<slug>`, its `decision` memories, any `review/<slug>` record, and the
@@ -39,10 +44,15 @@ install Engram and restart the agent. Do not continue without memory.
    - memory says shipped, card is not in Sprint Complete → "card not moved"
    - approved means any of: `state = 03_approved`, stage is "Sprint Complete", or a `review/*`
      record — only when none of them applies is it "not approved"
+   - a marker is still not `1_done` while the card sits in "Sprint Complete" → "marker still open:
+     <name>"; list them, never flip them here
    - a decision contradicts the description → quote both
 5. Output the retro (format below). Offer follow-ups as a list; don't create cards.
-6. Save one memory `retro/<slug>` (type `learning`) with the retro body. Sprint mode saves
-   `retro/sprint-<YYYY-MM-DD>` and adds totals, cross-story decisions and all follow-ups.
+6. Save one memory `retro/<slug>` (type `learning`) with the retro body: `title` = `retro <slug>`,
+   `content` in `**What** / **Why** / **Where** / **Learned**`. Sprint mode saves
+   `retro/sprint-<YYYY-MM-DD>` and adds totals, cross-story decisions and all follow-ups. If the
+   answer carries `judgment_required`, ask me once and resolve it with `mem_judge_many`
+   (`candidates[].judgment_id`).
 7. Write `docs/decisions/<slug>.md` **only if** the story produced a decision that is
    project-wide, hard to reverse, or affects a shared/ops contract. Otherwise create no file.
 8. **Export and commit the memory** (this skill may commit — the only one that may):

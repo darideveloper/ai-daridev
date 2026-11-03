@@ -171,5 +171,6 @@ owner") and writes nothing.
 - [ ] durable decisions saved
 - [ ] ADR written if the decision is project-wide, hard to reverse, or affects a shared contract
 - [ ] card: `state=03_approved`, `date_end` set, **stage untouched**
+- [ ] `user_ids` untouched: cards stay unassigned unless you asked for an assignee
 - [ ] session summary saved, `engram sync` run
 - [ ] `.engram/` and `docs/decisions/` committed by a human

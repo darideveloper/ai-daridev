@@ -65,25 +65,43 @@ When done, offer to save the context and stack in `AGENTS.md`. The stories go to
 
 ## Projection (only if the tools are available)
 
-Read the workflow config from `AGENTS.md` (`odoo_project`, `engram_project`, `card_tag`). If the
-section is missing, ask me once for the Odoo project name and offer to add the section.
+Read the workflow config from `AGENTS.md` (`odoo_project`, `odoo_stages`, `odoo_uid`,
+`engram_project`, `card_tag`). If the section is missing, ask me once for the Odoo project name and
+offer to add the section.
 
 Memory resolves its project from the working directory. If it resolves anything other than
 `engram_project`, stop and tell me to reopen the agent in the directory that holds
 `.engram/config.json`. Never write memory into the wrong project, and never guess.
 
-**Odoo** — the project-management MCP tools (`odoo_search_read`, `odoo_create`; they appear as
-`odoo_odoo_*` in OpenCode and `mcp__odoo__*` in Claude Code):
+**Tool names.** OpenCode: `odoo_odoo_search_read`, `engram_mem_save` — inside Code Mode
+(`execute`) as `tools.odoo.odoo_search_read`, `tools.engram.mem_save`. Claude Code:
+`mcp__odoo__*`, `mcp__engram__*`.
 
-1. Resolve the project by `odoo_project`, then its first stage (`project.task.type` where
-   `project_ids` contains the project, ordered by `sequence`, limit 1).
+**Preflight — read-only, before any write. Stop instead of guessing:**
+
+1. `project.project` where `name = odoo_project`, `limit 2`. No match → ask me. Two or more → stop
+   and list them; never fuzzy-match.
+2. `project.task.type` where `project_ids` contains that id, ordered by `sequence`. The first is the
+   first stage. If any name in `odoo_stages` is missing, stop and print the project's real stages.
+3. `project.tags` where `name in (frontend, backend, script, workflow)`. A missing tag stops the run
+   and names the missing tag.
+4. Print one line, then continue: `project <name> (<id>) · first stage <name> (<id>) · uid <n>`.
+
+**Tags** are one of `frontend` / `backend` / `script` / `workflow`. `card_tag` in `AGENTS.md` is the
+**default** for this repo; pick another per story only when the work clearly belongs to it, and say
+which one you picked.
+
+**Odoo** — the project-management MCP tools (`odoo_search_read`, `odoo_create`):
+
+1. Use the project id, first stage and tags resolved in the preflight — do not resolve them twice.
 2. Read the current `max(sequence)` among that project's tasks.
 3. For each story: slug = kebab-case of the title, ≤40 chars, unique within the project. Skip it
    if a card's description already contains `engram: story/<slug>`.
 4. Create the cards in one contiguous batch: `sequence` = max + 10, +20, +30…, `stage_id` = the
    first stage, `description` per the card body below, exactly one tag of
-   frontend / backend / script / workflow (default backend), and `date_deadline` only if I gave
-   one (UTC, `YYYY-MM-DD 00:00:00`). Do not write `state`.
+   frontend / backend / script / workflow (default `card_tag`), and `date_deadline` only if I gave
+   one (UTC, `YYYY-MM-DD 00:00:00`). Do not write `state`. Do not write `user_ids`: cards are
+   created unassigned unless I ask for an assignee in this same run.
 5. For each card, create its markers as subtasks: `name` (normalized for comparison),
    `parent_id`, `project_id`, `state=01_in_progress`. No `description`, no `stage_id`, no dates.
    Skip a marker whose normalized name already exists among the card's children.
@@ -104,8 +122,15 @@ When a marker is added or removed later, the `Markers:` line is rewritten to mat
 way someone without Odoo access knows the list.
 
 **Engram** — the memory MCP (`mem_save`; `engram_mem_save` in OpenCode, `mcp__engram__mem_save`
-in Claude Code): one memory, `topic_key backlog/<engram_project>`, type `architecture`, content =
-the approved block + the task ids.
+in Claude Code). One memory:
+
+- `title`: `backlog <engram_project>` (short, searchable).
+- `topic_key`: `backlog/<engram_project>` — it upserts, so a re-run updates the same record.
+- `type`: `architecture`.
+- `content`: the approved block + the task ids, in `**What** / **Why** / **Where** / **Learned**`.
+
+If the answer carries `judgment_required`, ask me once about the conflict and resolve it with
+`mem_judge_many` (`candidates[].judgment_id`). Never drop the memory silently.
 
 **Without Odoo** — print the full checklist and stop: each card's title, the HTML description to
 paste, the markers to create (names), their state (`01_in_progress`), and a reminder that the

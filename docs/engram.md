@@ -43,14 +43,50 @@ Rules that follow from this:
   They never write into the wrong project.
 - An explicit `project:` argument only works **after** the project has at least one memory —
   before that the store answers `unknown_project`. The first write must come from the right cwd.
+- When the agent cannot choose its working directory, pin the project at registration instead:
+  `engram mcp --tools=agent --project <name>` (or `ENGRAM_PROJECT=<name>`). It overrides cwd
+  detection for that whole process, so it is one server registration per project, not a global one.
 
 ## Sessions
 
-`/ai-daridev-pair` opens a session (`mem_session_start`) and closes it at the end (`mem_session_summary`,
-`mem_session_end`). Without a session, saves land in a single growing "manual save" session, which
-makes `mem_timeline` useless for retros.
+`/ai-daridev-pair` opens a session and closes it at the end. Engram does **not** generate the
+session id: the skill invents one (`ai-daridev-<slug>-<YYYYMMDD-HHmmss>`) and passes it to every
+memory of that run.
+
+```jsonc
+mem_session_start   { "id": "ai-daridev-retry-upload-20261103-101500", "directory": "<cwd>" }
+mem_session_summary { "session_id": "<id>", "content": "Goal: …\nInstructions: …\nDiscoveries: …\nAccomplished: …\nNext Steps: …\nRelevant Files: …" }
+mem_session_end     { "id": "<id>" }
+```
+
+`mem_session_summary` only recognises those six headings. Without a session, saves land in a single
+growing "manual save" session, which makes `mem_timeline` useless for retros.
+
+Backlog, story, review and archive write single records (`mem_save`) and do not open sessions.
 
 If the memory tools are missing, the skills stop: memory is required, not best-effort.
+
+## Writing a memory
+
+```jsonc
+mem_save {
+  "title": "retry-safe upload",              // required, short and searchable
+  "content": "**What** …\n**Why** …\n**Where** …\n**Learned** …",   // required
+  "topic_key": "story/retry-safe-upload",    // upserts the latest record in project + scope
+  "type": "architecture"                     // decision | architecture | bugfix | pattern | config | discovery | learning
+}
+```
+
+A `mem_save` without `title` and `content` fails validation, so the skills always send both. Because
+`topic_key` upserts, refining a story or re-running a backlog updates one record instead of piling
+up duplicates.
+
+## Conflicts
+
+When a save contradicts what is already stored, Engram answers `judgment_required` with
+`candidates[].judgment_id`. The skill asks you once, then resolves with `mem_judge_many`
+(`relation: related | compatible | scoped | not_conflict | supersedes | conflicts_with`). A memory
+is never dropped silently.
 
 ## Freshness
 

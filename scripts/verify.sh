@@ -4,13 +4,21 @@
 set -u
 
 FORK="$(cd "$(dirname "$0")/.." && pwd)"
-IDS="ai-daridev-backlog ai-daridev-story ai-daridev-pair ai-daridev-archive ai-daridev-review"
+AGENT_DIRS="$HOME/.claude $HOME/.gemini $HOME/.continue $HOME/.codeium/windsurf $HOME/.kiro $HOME/.config/devin $HOME/.codex"
+CMD_DIR="$HOME/.config/opencode/commands"
 fails=0
 warn=0
 
 ok()   { printf '  ok    %s\n' "$*"; }
 bad()  { printf '  FAIL  %s\n' "$*"; fails=$((fails+1)); }
 note() { printf '  warn  %s\n' "$*"; warn=$((warn+1)); }
+
+IDS=""
+for dir in "$FORK"/skills/*/; do
+  [ -d "$dir" ] || continue
+  IDS="${IDS:+$IDS }$(basename "$dir")"
+done
+[ -n "$IDS" ] || bad "no skills found in $FORK/skills"
 
 echo "engram"
 if command -v engram >/dev/null 2>&1; then
@@ -28,10 +36,24 @@ for id in $IDS; do
   else bad "$id missing (run: $FORK/scripts/install.sh)"; fi
 done
 
+echo "agents"
+for a in $AGENT_DIRS; do
+  [ -d "$a/skills" ] || continue
+  name="${a#$HOME/}"
+  missing=""
+  for id in $IDS; do
+    [ -e "$a/skills/$id/SKILL.md" ] || missing="$missing $id"
+  done
+  if [ -n "$missing" ]; then note "$name is missing:$missing (re-run the installer)"; else ok "$name"; fi
+done
+
 echo "commands (OpenCode)"
-for id in $IDS; do
-  f="$HOME/.config/opencode/commands/$id.md"
-  [ -f "$f" ] && ok "$id.md" || bad "$id.md missing"
+for f in "$FORK"/commands/*.md; do
+  name="$(basename "$f")"
+  dst="$CMD_DIR/$name"
+  if [ -L "$dst" ] && [ -e "$dst" ]; then ok "$name (symlink)"
+  elif [ -f "$dst" ]; then note "$name is a copy, not a symlink (re-run the installer)"
+  else bad "$name missing (run: $FORK/scripts/install.sh)"; fi
 done
 
 echo "this repository"
@@ -48,9 +70,36 @@ else
   note "AGENTS.md without a Workflow config section (see AGENTS.template.md)"
 fi
 
-PROJECT=$(grep -m1 'engram_project:' AGENTS.md 2>/dev/null | sed 's/.*engram_project:[[:space:]]*//')
-if [ -n "${PROJECT:-}" ] && [ -f .engram/config.json ] && [ "$PROJECT" != "$(sed -n 's/.*"project_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' .engram/config.json)" ]; then
-  bad "AGENTS.md says engram_project=$PROJECT but .engram/config.json disagrees"
+cfg() { grep -m1 "^[[:space:]]*[-*][[:space:]]*$1:" AGENTS.md 2>/dev/null | sed "s/.*$1:[[:space:]]*//"; }
+
+ENGRAM_PROJECT="$(cfg engram_project)"
+if [ -n "${ENGRAM_PROJECT:-}" ] && [ -f .engram/config.json ] && [ "$ENGRAM_PROJECT" != "$(sed -n 's/.*"project_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' .engram/config.json)" ]; then
+  bad "AGENTS.md says engram_project=$ENGRAM_PROJECT but .engram/config.json disagrees"
+fi
+
+TAG="$(cfg card_tag)"
+case "$TAG" in
+  frontend|backend|script|workflow) ok "card_tag: $TAG" ;;
+  "") note "AGENTS.md has no card_tag (defaults to backend)" ;;
+  *) bad "card_tag '$TAG' is not one of frontend|backend|script|workflow" ;;
+esac
+
+UID_VALUE="$(cfg odoo_uid)"
+if [ -z "${UID_VALUE:-}" ]; then
+  note "AGENTS.md has no odoo_uid — the agent asks once and continues without it"
+elif printf '%s' "$UID_VALUE" | grep -qE '^[0-9]+$'; then
+  ok "odoo_uid: $UID_VALUE"
+else
+  bad "odoo_uid '$UID_VALUE' is not a number"
+fi
+
+GITIGNORE=".gitignore"
+GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -n "${GIT_ROOT:-}" ] && [ "$GIT_ROOT" != "$(pwd)" ]; then GITIGNORE="$GIT_ROOT/.gitignore"; fi
+if [ -f "$GITIGNORE" ] && grep -qE '^\.engram/(engram\.db|tmp)|\*\*/\.engram/(engram\.db|tmp)' "$GITIGNORE" 2>/dev/null; then
+  ok ".gitignore covers .engram/engram.db* and .engram/tmp/ ($GITIGNORE)"
+else
+  note "add '.engram/engram.db*' and '.engram/tmp/' to $GITIGNORE"
 fi
 
 echo

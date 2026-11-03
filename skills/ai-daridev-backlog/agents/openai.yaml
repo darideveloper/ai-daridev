@@ -1,6 +1,6 @@
 interface:
   display_name: "Backlog"
   short_description: "Split an idea into vertical user stories"
-  default_prompt: "Use $backlog to split this idea into user stories."
+  default_prompt: "Use $ai-daridev-backlog to split this idea into user stories."
 policy:
   allow_implicit_invocation: false

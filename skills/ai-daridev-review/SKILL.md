@@ -17,15 +17,22 @@ install Engram and restart the agent. Do not continue without memory.
 ## Inputs
 
 - `/ai-daridev-review <card id or name>` → one card.
-- `/ai-daridev-review` → list the project's "Sprint in Progress" cards and ask which one.
+- `/ai-daridev-review` → list the project's "Sprint in Progress" cards (`project_id` + `stage_id`,
+  `limit 20`, never unbounded) and ask which one. Mark the ones assigned to `odoo_uid` as yours.
 
 ## Steps
 
-1. Read the workflow config from `AGENTS.md` (`odoo_project`, `engram_project`, `decisions_dir`).
+1. Read the workflow config from `AGENTS.md` (`odoo_project`, `odoo_stages`, `odoo_uid`,
+   `engram_project`, `decisions_dir`).
    Memory resolves its project from the working directory: if it resolves anything other than
    `engram_project`, stop and ask me to reopen the agent where `.engram/config.json` lives.
+   Preflight, read-only: resolve `project.project` by exact name (`limit 2`, stop on 0 or more than
+   one) and check that every name in `odoo_stages` exists; a missing stage stops the run and prints
+   the real list.
 2. Refresh memory: `engram sync --import` in the directory holding `.engram/config.json`. If it
    fails, warn once and continue.
+   Tool names: OpenCode `odoo_odoo_update` / `engram_mem_save`, inside Code Mode (`execute`)
+   `tools.odoo.odoo_update` / `tools.engram.mem_save`. Claude Code `mcp__odoo__*`, `mcp__engram__*`.
 3. Read the card: name, description (criteria + tests + the `Markers:` line), `state`, `stage_id`,
    assignees, children (`name`, `state`), `write_date`, `date_last_stage_update`.
 4. **No acceptance criteria in the description** → say so and ask me what "correct" means. Mark
@@ -46,8 +53,10 @@ install Engram and restart the agent. Do not continue without memory.
    - Gate B — a separate confirmation for the column move. Never bundled.
 9. **Apply in this order**: markers → states (one `odoo_update` with all ids) → description.
    On a failure, stop and report exactly what was applied.
-10. **Memory** — one record `review/<slug>` (fallback `review/task-<id>`), type `decision`:
-    verdict, what failed, the date, the card id.
+10. **Memory** — one `mem_save`: `topic_key review/<slug>` (fallback `review/task-<id>`), type
+    `decision`, `title` = `review <slug>`, `content` = verdict, what failed, the date, the card id,
+    in `**What** / **Why** / **Where** / **Learned**`. If it answers `judgment_required`, ask me
+    once and resolve it with `mem_judge_many` (`candidates[].judgment_id`).
 11. **Re-review** — if the card is already `02_changes_requested`, re-check only the yellow
     markers. Proposing to flip fixed ones to `1_done` belongs to Gate A.
 

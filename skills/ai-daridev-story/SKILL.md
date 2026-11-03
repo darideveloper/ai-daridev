@@ -52,17 +52,26 @@ As a <actor>, I want <action>, so that <benefit>.
 
 ## Projection (only if the tools are available)
 
-Read the workflow config from `AGENTS.md` (`odoo_project`, `engram_project`, `decisions_dir`).
-Slug = kebab-case of the story title, ≤40 chars. If a card already carries
-`engram: story/<slug>`, reuse that slug.
+Read the workflow config from `AGENTS.md` (`odoo_project`, `odoo_stages`, `odoo_uid`,
+`engram_project`, `decisions_dir`). Slug = kebab-case of the story title, ≤40 chars. If a card
+already carries `engram: story/<slug>`, reuse that slug.
 
 Memory resolves its project from the working directory. If it resolves anything other than
 `engram_project`, stop and tell me to reopen the agent in the directory that holds
 `.engram/config.json`. Never write memory into the wrong project, and never guess.
 
+**Tool names.** OpenCode: `odoo_odoo_search_read`, `engram_mem_save` — inside Code Mode
+(`execute`) as `tools.odoo.odoo_search_read`, `tools.engram.mem_save`. Claude Code:
+`mcp__odoo__*`, `mcp__engram__*`.
+
+**Preflight — read-only, before any write.** Resolve `project.project` where
+`name = odoo_project` (limit 2; no match → ask, more than one → stop and list). Check that every
+name in `odoo_stages` exists among its stages. Missing project or stage: stop and say which one.
+Missing `odoo_uid`: ask once and continue without it.
+
 **Odoo** — the project-management MCP tools (`odoo_search_read`, `odoo_update`, `odoo_create`):
 
-- Find the card by `description ilike "engram: story/<slug>"`.
+- Find the card by `project_id = <resolved id>` and `description ilike "engram: story/<slug>"`.
 - Found → update `description` only. Never touch `stage_id`, `state`, `sequence` or tags.
 - Not found → ask me "create it in Backlog?" before writing anything. If I say yes, create it in
   the project's first stage (same rules as `/ai-daridev-backlog`).
@@ -73,8 +82,16 @@ Memory resolves its project from the working directory. If it resolves anything 
 - Missing tools → if Odoo is unavailable, continue and print the handout below. Engram is
   required: if the memory tools are missing, stop before doing anything.
 
-**Engram** — the memory MCP (`mem_save`): upsert `topic_key story/<slug>`, type `architecture`,
-content = acceptance criteria + plan + out of scope + markers + `odoo_task_id`.
+**Engram** — the memory MCP (`mem_save`). Upsert:
+
+- `title`: the story title (≤10 words).
+- `topic_key`: `story/<slug>` — it upserts, so refining again updates the same record.
+- `type`: `architecture`.
+- `content`: acceptance criteria + plan + out of scope + markers + `odoo_task_id`, in
+  `**What** / **Why** / **Where** / **Learned**`.
+
+If the answer carries `judgment_required`, ask me once and resolve it with `mem_judge_many`
+(`candidates[].judgment_id`). Never drop the memory silently.
 
 ## Card body (HTML)
 

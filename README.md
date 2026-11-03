@@ -50,14 +50,15 @@ cd ai-daridev
 # .\scripts\install.ps1       # Windows (junctions, falls back to copies)
 ```
 
-The script installs **Engram** into `~/.local/bin` (and aborts if it cannot), removes any old
-copied skills that would shadow the new ones, links the five skills into `~/.agents/skills` and every
-agent directory that exists, and copies the OpenCode commands. It never edits your agent configs —
-it prints the MCP snippets instead.
+The script installs or upgrades **Engram** into `~/.local/bin` (and aborts if it cannot), removes
+any old copies that would shadow the new skills, symlinks the five skills into `~/.agents/skills`
+and into every agent directory that exists, and symlinks the OpenCode commands. It never edits your
+agent configs — it prints the MCP snippets instead.
 
-Supported agents: OpenCode, Claude Code, Codex, Gemini CLI, Continue, Windsurf.
+Supported agents: OpenCode, Claude Code, Codex, Gemini CLI, Continue, Windsurf, Kiro, Devin.
 
-> After `git pull`, re-run the installer so the copied commands stay in sync.
+> After `git pull` there is nothing to re-run for the skills or the commands: they are links to this
+> clone. Re-run the installer only to pick up a new Engram pin or a newly installed agent.
 
 ## Engram is required
 
@@ -86,9 +87,10 @@ Each repository declares where things go in its `AGENTS.md`:
 ## Workflow config
 - odoo_project: acme-app
 - odoo_stages: Backlog, Sprint Backlog, Sprint in Progress, Sprint Complete, Old Completed Sprint, Cancelled
+- odoo_uid: 2
 - engram_project: acme-app
 - decisions_dir: docs/decisions
-- card_tag: one of frontend | backend | script | workflow
+- card_tag: backend
 ```
 
 Open the agent **in the directory that holds `.engram/config.json`** — Engram resolves the project

@@ -12,6 +12,10 @@ One person owns the board and the memory; everybody can work on the cards.
 The owner is the only one who moves cards and the only one who marks work done. That is what keeps
 the board honest.
 
+Each repo declares **who "me" is** with `odoo_uid` in its `AGENTS.md`: a number, never a
+`res.users` lookup. New cards are created unassigned unless the owner asks for an assignee, so the
+board never claims someone owns work they did not accept.
+
 ## How the team builds
 
 **Everyone builds with the agent.** It is what makes the card, the markers and the memory agree

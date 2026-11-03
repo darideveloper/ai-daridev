@@ -7,10 +7,12 @@ its MCP is missing. **Odoo is optional** — without it they remember decisions 
 |---|---|---|---|
 | OpenCode | `~/.agents/skills` (and `~/.config/opencode/skills`) | `~/.config/opencode/commands/*.md` | skills are **not** commands, the pointer files are |
 | Claude Code | `~/.claude/skills` | skills already appear as `/skill-name` | `AGENTS.md` needs Claude Code ≥ 2.1.277 |
-| Codex | `~/.agents/skills` | none (prompts deprecated); invoke `$skill` | `agents/openai.yaml` controls auto-invocation |
+| Codex | `~/.agents/skills` (the installer also links `~/.codex/skills` when it exists) | none (prompts deprecated); invoke `$ai-daridev-*` | `agents/openai.yaml` controls auto-invocation |
 | Gemini CLI | `~/.gemini/skills` | — | register the Engram MCP for memory |
 | Continue | `~/.continue/skills` | — | register the Engram MCP for memory |
 | Windsurf | `~/.codeium/windsurf/skills` | — | register the Engram MCP for memory |
+| Kiro | `~/.kiro/skills` | — | register the Engram MCP for memory |
+| Devin | `~/.config/devin/skills` | — | register the Engram MCP for memory |
 
 `scripts/install.sh` links into `~/.agents/skills` and into every agent directory that exists.
 
@@ -41,6 +43,13 @@ MCP goes under `mcp.servers`:
 Note: `opencode mcp list` may report no servers even when the tools work. Verify by calling a tool
 in a **new session**, not by listing.
 
+MCP tools default to **Code Mode**: they are not exposed as individual tools but through the
+`execute` tool, as `tools.odoo.odoo_search_read` / `tools.engram.mem_save`. Permissions still match
+the normalized `<server>_<tool>` name (`odoo_odoo_create`), so the `ask` rules keep working. Set
+`"codemode": false` on a server only if you want plain tool names in the model's tool list.
+
+Commands are symlinked, not copied, so a `git pull` updates them with the skills.
+
 ## Claude Code
 
 - Upgrade to ≥ 2.1.277 for native `AGENTS.md` support (`claude update`).
@@ -69,7 +78,7 @@ command = "<odoo-wrapper-path>"
 Codex expands **no** environment variables in config. Pass literal `env = { K = "V" }`, or inherit
 with `env_vars = ["K"]`, or — preferred — point at a wrapper script that reads a 600 file.
 
-Skills are invoked as `$backlog`, not `/ai-daridev-backlog`. Auto-invocation is controlled per skill:
+Skills are invoked as `$ai-daridev-backlog`, not `/ai-daridev-backlog`. Auto-invocation is controlled per skill:
 
 ```yaml
 # skills/<id>/agents/openai.yaml
@@ -107,3 +116,5 @@ exist.
 4. a skill loads (`skill` tool, or `/ai-daridev-story` as a command)
 5. remove the Engram MCP entry, restart, run `/ai-daridev-pair` → it must **stop** and ask you to install Engram
 6. remove the Odoo MCP entry, restart, run `/ai-daridev-pair` → it must run normally and say that no card was created
+7. in a repo with a `Workflow config`, run `/ai-daridev-story` → the preflight must print the
+   project, first stage, `odoo_uid` and `tags ok` before writing anything
