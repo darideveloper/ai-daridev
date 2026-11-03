@@ -15,8 +15,8 @@ Odoo. **Engram is required** — the skills refuse to run without it. **Odoo is 
 ## The flow
 
 ```
-/ai-daridev-backlog  →  /ai-daridev-story  →  /ai-daridev-pair  →  /ai-daridev-archive
-  what       what exactly   how        what happened
+/ai-daridev-backlog  →  /ai-daridev-story  →  /ai-daridev-pair  →  /ai-daridev-review  →  /ai-daridev-archive
+  what       what exactly   how        is it right?        what happened
 ```
 
 | Skill | What it does | What it never does |
@@ -24,9 +24,14 @@ Odoo. **Engram is required** — the skills refuse to run without it. **Odoo is 
 | [`/ai-daridev-backlog`](skills/ai-daridev-backlog/SKILL.md) | Turns an idea into a short backlog of vertical, one-line user stories. | Invent requirements, technical stories, estimates. |
 | [`/ai-daridev-story`](skills/ai-daridev-story/SKILL.md) | Takes **one** story, adds 2–3 Given/When/Then acceptance criteria and a mini plan (≤5 bullets) for your approval. | Write code. If it needs more than 3 criteria, it proposes splitting the story. |
 | [`/ai-daridev-pair`](skills/ai-daridev-pair/SKILL.md) | Pair programming: the AI drives, you navigate. One test → red → minimum code → green, then it stops and waits. For non-code work it investigates, proposes a numbered plan, and executes it one step at a time. | Commit, edit tests to make them pass, add things you didn't ask for, move tracker columns. |
-| [`/ai-daridev-archive`](skills/ai-daridev-archive/SKILL.md) | Closes a story or a sprint: reconciles the tracker card with the recorded decisions and prints the retro. | Move cards, mark work done, invent a retro with no records. |
+| [`/ai-daridev-review`](skills/ai-daridev-review/SKILL.md) | Reviews someone else's card against its criteria and markers, proposes the writes, and applies them after approval. | Move a card without a separate confirmation, invent a verdict, mark work done. |
+| [`/ai-daridev-archive`](skills/ai-daridev-archive/SKILL.md) | Closes a story or a sprint: asks which card(s), reconciles the tracker with memory, prints the retro, and exports the memory chunk. | Move cards, mark work done, invent a retro with no records. |
 
 Each skill's output is the next one's input, as blocks ready to paste into your tracker.
+
+Cards carry two extra things: a `Markers:` line (2–4 component-sized tracking items, mirrored as
+hidden subtasks) and a `Review (ai-daridev)` section once someone has reviewed the work. Subtasks
+are status markers only — never put detail in them.
 
 ## Principles
 
@@ -46,7 +51,7 @@ cd ai-daridev
 ```
 
 The script installs **Engram** into `~/.local/bin` (and aborts if it cannot), removes any old
-copied skills that would shadow the new ones, links the four skills into `~/.agents/skills` and every
+copied skills that would shadow the new ones, links the five skills into `~/.agents/skills` and every
 agent directory that exists, and copies the OpenCode commands. It never edits your agent configs —
 it prints the MCP snippets instead.
 
@@ -107,6 +112,10 @@ engram sync && git add .engram/ && git commit -m "chore: memory — <story>"
 
 `.engram/engram.db*` is gitignored. `scope: personal` is a search filter, **not** a privacy
 boundary — everything in an enrolled project is exported, so never store secrets in Engram.
+
+`/ai-daridev-pair` and `/ai-daridev-review` import memory at the start. `/ai-daridev-archive` is the
+**only skill that commits**: it stages `.engram/` only, refuses if anything else is staged, and
+never pushes.
 
 ## Install without the script
 

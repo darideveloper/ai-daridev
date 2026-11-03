@@ -23,11 +23,19 @@ The skills read it on every run; without it they ask once and offer to add it.
 - The agent must be opened in the directory that holds `.engram/config.json`.
 - `decisions_dir` is where ADRs go, and only for decisions that are project-wide, hard to reverse,
   or affect a shared/ops contract.
+- **Markers** are component-sized tracking items: Odoo subtasks with a name and a state only, and a
+  matching `Markers:` line in the card description. `/ai-daridev-backlog` creates them;
+  `/ai-daridev-pair` flips them when validated; `/ai-daridev-review` adjusts them.
+- The `<h2>Review (ai-daridev)</h2>` block in a card belongs to `/ai-daridev-review`. Other skills
+  preserve it verbatim and re-insert it between the tests and the `Markers:` line.
 
 ## Rules worth repeating in the repo
 
 ```md
-- Never move cards between columns; that is the owner's job.
+- Never move cards between columns; that is the owner's job. The only exception is an explicit
+  "move it" confirmation, one card at a time.
 - Never mark work done or cancelled; `state=Approved` + `date_end` is the agent's only claim.
-- `engram sync` runs where `.engram/config.json` lives.
+- Markers carry no detail: name + state only. Detail goes in the card's Review block.
+- `engram sync` runs where `.engram/config.json` lives. `/ai-daridev-archive` is the only skill that
+  commits, and only `.engram/`.
 ```

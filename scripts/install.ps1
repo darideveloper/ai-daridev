@@ -8,7 +8,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$ids = @("ai-daridev-backlog", "ai-daridev-story", "ai-daridev-pair", "ai-daridev-archive")
+$ids = @("ai-daridev-backlog", "ai-daridev-story", "ai-daridev-pair", "ai-daridev-archive", "ai-daridev-review")
 $legacy = @("backlog", "story", "pair", "archive")
 $home_ = $env:USERPROFILE
 $engramDir = Join-Path $env:LOCALAPPDATA "engram"
@@ -73,7 +73,11 @@ $agentDirs = @(
 foreach ($id in $legacy) {
     $old = Join-Path $agentsRoot $id
     if (Test-Path $old) { Remove-Item $old -Recurse -Force }
-    foreach ($dir in $agentDirs) { $l = Join-Path $dir $id; if (Test-Path $l) { Remove-Item $l -Recurse -Force } }
+    foreach ($dir in $agentDirs) {
+        $l = Join-Path $dir $id
+        $item = Get-Item -LiteralPath $l -Force -ErrorAction SilentlyContinue
+        if ($null -ne $item) { Remove-Item -LiteralPath $l -Recurse -Force }
+    }
     $oldCmd = Join-Path $home_ ".config\opencode\commands\$id.md"
     if (Test-Path $oldCmd) { Remove-Item $oldCmd -Force }
 }

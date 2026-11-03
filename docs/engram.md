@@ -10,6 +10,7 @@ database. The skills use it to remember **why**, not **what**: decisions, specs,
 | `backlog/<project>` | `architecture` | `/ai-daridev-backlog` | the approved backlog + card ids |
 | `story/<slug>` | `architecture` | `/ai-daridev-story`, `/ai-daridev-pair` | criteria, plan, test list, card id |
 | *(no key)* | `decision` | `/ai-daridev-pair` | one durable decision, append-only |
+| `review/<slug>` or `review/task-<id>` | `decision` | `/ai-daridev-review` | verdict, what failed, date |
 | `retro/<slug>` | `learning` | `/ai-daridev-archive` | the story retro |
 | `retro/sprint-<date>` | `learning` | `/ai-daridev-archive` | the sprint retro |
 
@@ -51,6 +52,12 @@ makes `mem_timeline` useless for retros.
 
 If the memory tools are missing, the skills stop: memory is required, not best-effort.
 
+## Freshness
+
+`/ai-daridev-pair`, `/ai-daridev-review` and `/ai-daridev-archive` run `engram sync --import` in the
+directory holding `.engram/config.json` before using memory. A failure warns and continues — an
+import problem must never block the work.
+
 ## Sharing through git
 
 The database never leaves the machine. Decisions travel as append-only, content-hashed chunks.
@@ -70,6 +77,9 @@ engram sync --import
 ├── manifest.json    # index of chunks (committed, append-only)
 └── chunks/*.jsonl.gz  # ~2 KB per sync (committed)
 ```
+
+`/ai-daridev-archive` is the only skill that commits: after exporting, it stages `.engram/` only,
+refuses if anything else is staged, commits `chore: memory — <slug>`, and never pushes.
 
 `engram.db*` and `tmp/` are gitignored. Every sync writes a **new** chunk, so two people never edit
 the same file; the manifest is the only thing that can conflict and it merges by keeping both

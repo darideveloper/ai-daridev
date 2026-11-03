@@ -1,6 +1,6 @@
 # Agents
 
-The same four skills, one clone, symlinked everywhere. **Engram is required** — the skills stop if
+The same five skills, one clone, symlinked everywhere. **Engram is required** — the skills stop if
 its MCP is missing. **Odoo is optional** — without it they remember decisions but create no cards.
 
 | Agent | Skills read from | Slash commands | Notes |
@@ -25,7 +25,7 @@ description: Pair on a story: TDD for code, plan-and-execute for non-code
 Load the skill `ai-daridev-pair` with the skill tool and follow it exactly. My input: $ARGUMENTS
 ```
 
-Every skill and command is namespaced `ai-daridev-*`, so `/ai-daridev-review-task` never collides
+Every skill and command is namespaced `ai-daridev-*`, so `/ai-daridev-review` never collides
 with OpenCode's built-in `/review`.
 
 MCP goes under `mcp.servers`:

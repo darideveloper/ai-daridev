@@ -6,11 +6,30 @@ One person owns the board and the memory; everybody can work on the cards.
 
 | Role | Needs | Does |
 |---|---|---|
-| Owner | Engram, skills, Odoo | `/ai-daridev-backlog`, `/ai-daridev-story`, `/ai-daridev-pair`, `/ai-daridev-archive`, moves columns, validates work |
-| Teammate | Engram, skills (Odoo optional) | picks a card, pastes it into their agent, submits the change |
+| Owner | Engram, skills, Odoo | `/ai-daridev-backlog`, `/ai-daridev-story`, `/ai-daridev-pair`, `/ai-daridev-review`, `/ai-daridev-archive`; moves columns, validates work |
+| Teammate | Engram, skills (Odoo optional) | picks a card, pastes it into their agent, builds, flips markers, submits the change |
 
 The owner is the only one who moves cards and the only one who marks work done. That is what keeps
 the board honest.
+
+## How the team builds
+
+**Everyone builds with the agent.** It is what makes the card, the markers and the memory agree
+with the code. Manual work is not forbidden, but then the person who did it updates the card and
+the markers by hand — the board may not silently disagree with reality.
+
+If the agent has no Odoo connection, it prints the checklist instead of writing: card state,
+markers and states, the text to paste, and "the column is the owner's". Nothing is left implicit.
+
+## Markers
+
+Teammates create the markers they need (name only, no description) and flip them:
+
+- gray while working (`01_in_progress`),
+- green when they consider it validated (`03_approved`),
+- yellow only when a review asks for changes (`02_changes_requested`).
+
+Markers are hidden inside the card, so they never clutter a column.
 
 ## The loop
 
@@ -28,9 +47,16 @@ sequenceDiagram
     T->>T: works with their own agent
     T->>R: commit / pull request
     Owner->>R: reviews the change in detail
-    Owner->>O: validates, moves the column
-    Owner->>Owner: /ai-daridev-pair close if it was a tracked story
-    Note over Owner,O: state=Approved + date_end, never a column move
+    Owner->>Owner: /ai-daridev-review
+    alt correct
+        Owner->>O: move to Sprint Complete (separate confirmation)
+    else changes requested
+        Owner->>O: markers + parent yellow, Review block written
+        T->>O: fixes, flips the yellow markers
+        Owner->>Owner: /ai-daridev-review (re-review)
+    end
+    Owner->>Owner: /ai-daridev-archive if it was a tracked story
+    Note over Owner,O: state + markers, never a silent column move
     Owner->>R: engram sync + commit chunks
     T->>R: git pull
     T->>TE: engram sync --import

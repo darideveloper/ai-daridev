@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review"
+  short_description: "Review a teammate's card and propose the tracker writes"
+  default_prompt: "Use $ai-daridev-review to review this card."
+policy:
+  allow_implicit_invocation: false

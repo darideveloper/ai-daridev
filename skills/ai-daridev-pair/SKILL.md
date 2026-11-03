@@ -20,6 +20,11 @@ install Engram and restart the agent. Do not continue without memory.
 - `/ai-daridev-pair` with nothing: if Odoo is available, list the project's `Sprint Backlog` cards and ask which one; otherwise list `story/*` memories. If neither exists, treat it as a new story and say so.
 - Open a session (`mem_session_start`) at the start and close it in §8. Memory is required; there
   is no sessionless mode.
+- Refresh memory first: run `engram sync --import` in the directory holding `.engram/config.json`.
+  If it fails, warn once and continue.
+- Load the **markers** from the card's children, or from its `Markers:` line if the card was
+  pasted. Markers are tracking only: a name and a state, never a description. Create a new one only
+  when I ask, and rewrite the `Markers:` line when you do.
 - Memory resolves its project from the working directory. If it resolves anything other than the
   `engram_project` in `AGENTS.md`, stop and tell me to reopen the agent in the directory that
   holds `.engram/config.json`. Never write memory into the wrong project.
@@ -59,9 +64,14 @@ When you stop, send a micro message:
 
 ```
 ✅ Passes "<test name>". <what I did in one line> (<file:line>)
+Marker: "<marker name>" → approved? (yes / other marker / skip)
 Decided: <judgment call, if any>
 Change anything or continue with "<next test>"?
 ```
+
+Propose a marker only when the step actually validates it, and never guess the mapping: if it is
+unclear which marker a step completes, ask. Flip a marker to `03_approved` only on my answer, and
+update the `Markers:` line only if the marker was newly created.
 
 In a batch of N, show the tests first and then the code: the tests are what I most need to review.
 
@@ -105,9 +115,23 @@ Skip the red/green cycle and run this instead:
 ## 8. Close (only when the work is done and I say yes)
 
 1. **ADR** — write `docs/decisions/<slug>.md` if the story produced a decision that is project-wide, hard to reverse, **or affects a shared/ops contract** (env var, deploy step, credential, shared workflow). Dated, one section.
-2. **Odoo** (if available) — one write: `state = 03_approved` and `date_end = <UTC now, YYYY-MM-DD HH:MM:SS>`. Never touch `stage_id`, never mark done/cancelled, never move a column.
-3. **Memory** — `mem_session_summary` (Goal / Discoveries / Accomplished / Next steps / Files), then run `engram sync` in the directory that holds `.engram/config.json`, and tell me to commit `.engram/`.
+2. **Odoo** (if available) — one write: `state = 03_approved` and
+   `date_end = <UTC now, YYYY-MM-DD HH:MM:SS>`. Flip the markers I confirmed in the cycle to
+   `03_approved` (one update with all ids). Never touch `stage_id`, never mark done/cancelled,
+   never move a column.
+3. **Memory** — `mem_session_summary` (Goal / Discoveries / Accomplished / Next steps / Files),
+   then run `engram sync` in the directory that holds `.engram/config.json`, and tell me to commit
+   `.engram/`.
 4. Print a close block: what shipped, decisions saved, ADR written or skipped, card id and state.
+
+### Without Odoo
+
+Print a copy-paste close checklist instead of writing:
+
+- the card name, and that it should be set to **Approved** with today as the end date,
+- the markers to flip to green (names),
+- the reminder that the column move is the owner's,
+- the `engram sync` + commit line for `.engram/`.
 
 ## 9. Commit
 

@@ -66,15 +66,19 @@ Memory resolves its project from the working directory. If it resolves anything 
 - Found → update `description` only. Never touch `stage_id`, `state`, `sequence` or tags.
 - Not found → ask me "create it in Backlog?" before writing anything. If I say yes, create it in
   the project's first stage (same rules as `/ai-daridev-backlog`).
-- Missing tools → if Odoo is unavailable, continue and say in one line what was skipped. Engram is
+- **Markers** — read them from the card's children, or from the `Markers:` line in its
+  description. Never invent a different set. If the card has none and Odoo is available, propose
+  2–4 for my approval before creating them (name only, `state=01_in_progress`).
+- Missing tools → if Odoo is unavailable, continue and print the handout below. Engram is
   required: if the memory tools are missing, stop before doing anything.
 
 **Engram** — the memory MCP (`mem_save`): upsert `topic_key story/<slug>`, type `architecture`,
-content = acceptance criteria + plan + out of scope + `odoo_task_id`.
+content = acceptance criteria + plan + out of scope + markers + `odoo_task_id`.
 
 ## Card body (HTML)
 
-Regenerate the whole `description` — never append. Escape `<`, `>`, `&`.
+Regenerate the whole `description` — never append. Escape `<`, `>`, `&`. Keep this order, and keep
+the `Markers:` line and the `engram:` key:
 
 ```html
 <h1>{the card's CURRENT name, read it first}</h1>
@@ -83,8 +87,24 @@ Regenerate the whole `description` — never append. Escape `<`, `>`, `&`.
 <ul><li>Given …, when …, then …</li></ul>
 <h2>Tests</h2>
 <ol><li>{test name} — {where it runs}</li></ol>
+<p>Markers: {marker 1} · {marker 2}</p>
 <p><em>engram: story/{slug}</em></p>
 ```
+
+**Preserve the review block.** If the description already has a `<h2>Review (ai-daridev)</h2>`
+section, copy it verbatim and re-insert it between the tests and the `Markers:` line. It runs from
+that heading to the `engram:` line (exclusive) and belongs to `/ai-daridev-review`.
+
+When a marker is added or removed, rewrite the `Markers:` line so it matches the subtasks.
+
+## Without Odoo
+
+Print a copy-paste handout and write nothing:
+
+- the card title and the state to set,
+- the full HTML description above (with the `Markers:` line and the key),
+- the markers to create manually (names only) and their state (`01_in_progress`),
+- where to paste it and the reminder that the column belongs to the owner.
 
 The H1 uses the live task name, so renaming the card in Odoo is not reverted on the next update.
 No `<pre>` for prose; monospace only for code.

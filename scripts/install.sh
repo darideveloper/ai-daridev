@@ -7,7 +7,7 @@ set -eu
 
 FORK="${AI_DARIDEV_FORK:-${HOLA_AI_FORK:-$(cd "$(dirname "$0")/.." && pwd)}}"
 VER="${ENGRAM_VERSION:-3.6.0}"
-IDS="ai-daridev-backlog ai-daridev-story ai-daridev-pair ai-daridev-archive"
+IDS="ai-daridev-backlog ai-daridev-story ai-daridev-pair ai-daridev-archive ai-daridev-review"
 LEGACY="backlog story pair archive"
 AGENT_DIRS="$HOME/.claude $HOME/.gemini $HOME/.continue $HOME/.codeium/windsurf $HOME/.kiro $HOME/.config/devin"
 
@@ -81,7 +81,8 @@ mkdir -p "$HOME/.agents/skills"
 for id in $LEGACY; do
   rm -rf "$HOME/.agents/skills/$id"
   for a in $AGENT_DIRS; do
-    [ -e "$a/skills/$id" ] && rm -rf "$a/skills/$id"
+    link="$a/skills/$id"
+    if [ -L "$link" ] || [ -e "$link" ]; then rm -rf "$link"; fi
   done
   rm -f "$HOME/.config/opencode/commands/$id.md"
 done

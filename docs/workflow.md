@@ -2,6 +2,28 @@
 
 Two paths, same entry point. `/ai-daridev-pair` picks one from the repository, not from the story text.
 
+## Roles
+
+| Role | Does | Does not |
+|---|---|---|
+| **Owner** | `/ai-daridev-backlog`, `/ai-daridev-story`, reviews, moves columns, marks work done | build every card alone |
+| **Team member** | builds (with the agent), creates/flips markers, hands the change back | move columns, mark cards done, create cards |
+
+The column is the owner's acceptance signal. That is the one rule nothing bypasses.
+
+## Markers
+
+Every card may carry 2–4 **tracking markers**: component-sized names, mirrored as hidden Odoo
+subtasks and echoed on the card's `Markers:` line.
+
+- Name + state only. Never a description, a column, dates or a key.
+- States: `01_in_progress` working · `03_approved` green · `02_changes_requested` yellow.
+- `1_done` / `1_canceled` are human-only.
+- Created by `/ai-daridev-backlog`, flipped by `/ai-daridev-pair`, adjusted by
+  `/ai-daridev-review`.
+- Because they are hidden inside the card, a teammate who copies the card text recreates them from
+  the `Markers:` line. That line is rewritten whenever a marker is added or removed.
+
 ## Choosing the path
 
 | Signal in the repo | Path |
@@ -98,9 +120,51 @@ sequenceDiagram
 5. Destructive steps ask again on their own — being in the plan is not permission.
 6. It hands you the steps only you can do, then closes the story like any other.
 
+## 3. Reviewing someone else's work
+
+`/ai-daridev-review <card>` (or bare: list "Sprint in Progress" and ask). It reads the card, asks
+for evidence only when the card does not settle it, prints a verdict table, and proposes writes.
+
+**Case i — correct**
+
+```
+Verdict: all criteria pass
+Proposed: stage Sprint in Progress → Sprint Complete
+```
+
+One write, after a separate confirmation. States and markers are left alone.
+
+**Case ii — wrong, no markers yet**
+
+```
+Proposed:
+  create markers: "fix: header nav links", "fix: mobile spacing"
+  parent + new markers → 02_changes_requested
+  Review (ai-daridev) block with the detail
+  no column move
+```
+
+**Case iii — partially wrong**
+
+```
+Verdict per marker: form organism pass · input field fail · button component fail
+Proposed:
+  parent → 02_changes_requested
+  only the two failing markers → 02_changes_requested
+  Review block listing only the failures
+  no column move
+```
+
+Re-review only touches the yellow markers. Nothing green is re-litigated.
+
+Without Odoo it prints the checklist (states, markers, Review block, "move it in Odoo or ask the
+owner") and writes nothing.
+
 ## Closing checklist
 
 - [ ] acceptance criteria verified, manual ones included
+- [ ] markers reflect reality (green only where validated)
+- [ ] review block written when the work was reviewed by someone else
 - [ ] durable decisions saved
 - [ ] ADR written if the decision is project-wide, hard to reverse, or affects a shared contract
 - [ ] card: `state=03_approved`, `date_end` set, **stage untouched**

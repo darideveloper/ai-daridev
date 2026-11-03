@@ -19,6 +19,7 @@ flowchart TB
         BL["ai-daridev-backlog"]
         ST["ai-daridev-story"]
         PR["ai-daridev-pair"]
+        RV["ai-daridev-review"]
         AR["ai-daridev-archive"]
     end
     subgraph MCP["MCP servers (per agent)"]
@@ -48,7 +49,7 @@ flowchart TB
     classDef store fill:#D3D3D3,stroke:#333,color:black
     class OWNER,TEAM human
     class OC,CC,CX,OTH agent
-    class BL,ST,PR,AR skill
+    class BL,ST,PR,RV,AR skill
     class EM,OM mcp
     class DB,CH,OD store
 ```
@@ -72,7 +73,7 @@ sync: Odoo is authoritative for **state**, Engram for **knowledge**.
 flowchart TD
     IDEA([Idea]) --> BL["/ai-daridev-backlog"]
     BL --> BLW["Writes: N cards in the first stage<br/>one tag, sequence, optional deadline<br/>memory backlog/project"]
-    BLW --> OK["Backlog approved"]
+    BLW --> OK["Backlog approved<br/>cards + markers"]
     OK --> ST["/ai-daridev-story"]
     ST --> STW["Writes: card description as HTML<br/>memory story/slug<br/>no stage move"]
     STW --> PAIR["/ai-daridev-pair — slug or pasted card"]
@@ -87,9 +88,16 @@ flowchart TD
     DEC -->|No| EPH["stays in chat"]
     MEM --> CLOSE
     EPH --> CLOSE
-    CLOSE["Close: state=Approved + date_end<br/>ADR if shared contract<br/>summary + engram sync"]
+    CLOSE["Close: state=Approved + date_end<br/>markers confirmed<br/>ADR if shared contract<br/>summary + engram sync"]
     CLOSE --> ARCH["/ai-daridev-archive — slug or bare"]
     ARCH --> OUT["Retro printed, memory retro/slug<br/>ADR only if it qualified"]
+
+    TEAM([Card built by someone else]) --> RV["/ai-daridev-review"]
+    RV --> VERD{"Verdict"}
+    VERD -->|correct| MOVE["Propose: move to Sprint Complete<br/>(separate confirmation)"]
+    VERD -->|wrong| CHG["Markers + parent yellow<br/>Review block in the card"]
+    CHG --> RV
+    MOVE --> ARCH
 ```
 
 ## What gets remembered

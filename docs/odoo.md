@@ -67,6 +67,7 @@ stateDiagram-v2
 | `description` | HTML body (below) | readable in Odoo, greppable by the key |
 | `tag_ids` | exactly one of `frontend` / `backend` / `script` / `workflow` | one axis, no taxonomy drift |
 | `date_deadline` | only if the user gave one, UTC `YYYY-MM-DD 00:00:00` | a fake deadline is worse than none |
+| markers (subtasks) | created after the card: `name`, `parent_id`, `project_id`, `state=01_in_progress` | tracking only — no description, no column, no dates |
 
 Never set: `state` (defaults), `allocated_hours`, `priority`, `user_ids`, `partner_id`.
 
@@ -81,12 +82,48 @@ Regenerate the whole `description` on every update — never append. Escape `<`,
 <ul><li>Given …, when …, then …</li></ul>
 <h2>Tests</h2>
 <ol><li>{test name} — {where it runs}</li></ol>
+<h2>Review (ai-daridev)</h2>
+<p><b>{date}</b> — changes requested</p>
+<ul><li><b>{marker}</b>: {what is wrong}</li></ul>
+<p>Markers: {marker 1} · {marker 2}</p>
 <p><em>engram: story/{slug}</em></p>
 ```
 
 - `<h1>` is read from the live task name first, so renaming a card is not reverted on the next update.
 - No `<pre>` for prose; monospace only for code.
-- The `engram:` line is the idempotency key.
+- The `Markers:` line mirrors the subtasks, so a teammate without Odoo can recreate them. It is
+  rewritten whenever a marker is added or removed.
+- The `Review (ai-daridev)` block belongs to `/ai-daridev-review`. It runs from its heading to the
+  `engram:` line; other skills preserve it verbatim and re-insert it in the same place.
+- The `engram:` line is the idempotency key and stays last.
+
+## Markers (subtasks)
+
+```mermaid
+flowchart LR
+    A["backlog<br/>creates them"] --> B["working<br/>01_in_progress"]
+    B --> C["validated<br/>03_approved"]
+    B --> D["review rejects<br/>02_changes_requested"]
+    D --> C
+    C -->|review confirms| E["stays green"]
+    style A fill:#90EE90,stroke:#333,color:darkgreen
+    style C fill:#90EE90,stroke:#333,color:darkgreen
+    style D fill:#FFE4B5,stroke:#333,color:#000
+```
+
+- Hidden inside the parent card, so their column is cosmetic: never write `stage_id`.
+- No description, no dates, no key. Detail belongs in the card's Review block.
+- `1_done` and `1_canceled` are human-only. `closed_subtask_count` counts only those, so a card full
+  of green markers still shows `0/N` in Odoo's badge — expected, not a bug.
+
+## Without Odoo
+
+Every skill that would write prints a copy-paste checklist instead:
+
+- the card name and the state to set,
+- the markers to create or flip, and to which state,
+- the description or Review block to paste,
+- the column move as a manual action: "in Odoo, or ask the owner".
 
 ## Idempotency
 
