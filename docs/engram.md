@@ -78,8 +78,8 @@ engram sync --import
 └── chunks/*.jsonl.gz  # ~2 KB per sync (committed)
 ```
 
-`/ai-daridev-archive` is the only skill that commits: after exporting, it stages `.engram/` only,
-refuses if anything else is staged, commits `chore: memory — <slug>`, and never pushes.
+`/ai-daridev-pair` and `/ai-daridev-archive` both commit: after exporting, they stage `.engram/`
+only, refuse if anything else is staged, commit `chore: memory — <slug>`, and never push.
 
 `engram.db*` and `tmp/` are gitignored. Every sync writes a **new** chunk, so two people never edit
 the same file; the manifest is the only thing that can conflict and it merges by keeping both

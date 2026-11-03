@@ -6,10 +6,12 @@ Two paths, same entry point. `/ai-daridev-pair` picks one from the repository, n
 
 | Role | Does | Does not |
 |---|---|---|
-| **Owner** | `/ai-daridev-backlog`, `/ai-daridev-story`, reviews, moves columns, marks work done | build every card alone |
+| **Owner** | `/ai-daridev-backlog`, `/ai-daridev-story`, `/ai-daridev-pair` for own work, `/ai-daridev-review` for someone else's card, moves columns | build every card alone |
 | **Team member** | builds (with the agent), creates/flips markers, hands the change back | move columns, mark cards done, create cards |
 
 The column is the owner's acceptance signal. That is the one rule nothing bypasses.
+`/ai-daridev-pair` already closes your own work; `/ai-daridev-review` is for a card someone else
+built — running it on your own pair output is optional and redundant.
 
 ## Markers
 
@@ -17,8 +19,9 @@ Every card may carry 2–4 **tracking markers**: component-sized names, mirrored
 subtasks and echoed on the card's `Markers:` line.
 
 - Name + state only. Never a description, a column, dates or a key.
-- States: `01_in_progress` working · `03_approved` green · `02_changes_requested` yellow.
-- `1_done` / `1_canceled` are human-only.
+- States: `01_in_progress` working · `1_done` validated · `02_changes_requested` rejected.
+- Markers use `1_done`; the **card** never does (it would vanish from the kanban). `1_canceled` is
+  human-only on both.
 - Created by `/ai-daridev-backlog`, flipped by `/ai-daridev-pair`, adjusted by
   `/ai-daridev-review`.
 - Because they are hidden inside the card, a teammate who copies the card text recreates them from

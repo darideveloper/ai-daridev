@@ -35,8 +35,9 @@ install Engram and restart the agent. Do not continue without memory.
 6. **Verdict table**: every criterion (pass / fail / manual) and every marker (pass / fail), one
    line of evidence each.
 7. **Propose the writes.** Never execute yet:
-   - **approved** → `stage: <current> → Sprint Complete`. Only from an active stage ("Sprint
-     Backlog", "Sprint in Progress"); from "Backlog", warn and ask first.
+   - **approved** → list any marker that is not `1_done` and ask before proposing the move, then
+     `stage: <current> → Sprint Complete`. Only from an active stage ("Sprint Backlog", "Sprint in
+     Progress"); from "Backlog", warn and ask first.
    - **changes requested** → `create marker: <name>` for missing work,
      `state → 02_changes_requested` on the parent and on the failing markers only, and a new
      `Review (ai-daridev)` block.
@@ -48,7 +49,7 @@ install Engram and restart the agent. Do not continue without memory.
 10. **Memory** — one record `review/<slug>` (fallback `review/task-<id>`), type `decision`:
     verdict, what failed, the date, the card id.
 11. **Re-review** — if the card is already `02_changes_requested`, re-check only the yellow
-    markers. Proposing to flip fixed ones to `03_approved` belongs to Gate A.
+    markers. Proposing to flip fixed ones to `1_done` belongs to Gate A.
 
 ## Review block
 
@@ -69,7 +70,8 @@ If the card has no `Markers:` line, add one listing the markers you created.
 
 - Never move a card on the "changes requested" path.
 - The move is its own question, on its own turn, one card at a time.
-- Never write `1_done` or `1_canceled`.
+- Markers are the only things that use `1_done`. The card is never set to Done or Canceled; approval
+  is a column move, nothing else.
 
 ## Without Odoo
 

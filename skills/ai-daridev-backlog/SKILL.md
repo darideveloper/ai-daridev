@@ -58,8 +58,8 @@ They are how the implementer follows progress inside the card.
 - Names only, chosen with me during the approval pass (I can edit your proposal).
 - They become Odoo subtasks, hidden inside the card, and are echoed in the card description on a
   `Markers:` line so someone without Odoo access can recreate them.
-- States: `01_in_progress` (working), `03_approved` (green), `02_changes_requested` (yellow).
-  Never `1_done` or `1_canceled`.
+- States: `01_in_progress` working · `1_done` validated · `02_changes_requested` rejected.
+  Never `03_approved` on a marker: the card closes at `03_approved`, the markers use `1_done`.
 
 When done, offer to save the context and stack in `AGENTS.md`. The stories go to my tracker; don't save them to files unless I ask.
 

@@ -26,10 +26,11 @@ markers and states, the text to paste, and "the column is the owner's". Nothing 
 Teammates create the markers they need (name only, no description) and flip them:
 
 - gray while working (`01_in_progress`),
-- green when they consider it validated (`03_approved`),
+- done when they consider it validated (`1_done`) — this is what moves the card's `2/3` badge,
 - yellow only when a review asks for changes (`02_changes_requested`).
 
-Markers are hidden inside the card, so they never clutter a column.
+Markers are hidden inside the card, so they never clutter a column. The card itself never uses Done
+or Canceled — it would disappear from the default kanban.
 
 ## The loop
 

@@ -113,9 +113,9 @@ engram sync && git add .engram/ && git commit -m "chore: memory — <story>"
 `.engram/engram.db*` is gitignored. `scope: personal` is a search filter, **not** a privacy
 boundary — everything in an enrolled project is exported, so never store secrets in Engram.
 
-`/ai-daridev-pair` and `/ai-daridev-review` import memory at the start. `/ai-daridev-archive` is the
-**only skill that commits**: it stages `.engram/` only, refuses if anything else is staged, and
-never pushes.
+`/ai-daridev-pair`, `/ai-daridev-review` and `/ai-daridev-archive` import memory at the start.
+`/ai-daridev-pair` and `/ai-daridev-archive` commit it: they stage `.engram/` only, refuse if
+anything else is staged, and never push.
 
 ## Install without the script
 

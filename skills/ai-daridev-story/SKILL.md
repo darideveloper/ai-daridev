@@ -68,7 +68,8 @@ Memory resolves its project from the working directory. If it resolves anything 
   the project's first stage (same rules as `/ai-daridev-backlog`).
 - **Markers** — read them from the card's children, or from the `Markers:` line in its
   description. Never invent a different set. If the card has none and Odoo is available, propose
-  2–4 for my approval before creating them (name only, `state=01_in_progress`).
+  2–4 for my approval before creating them (name only, `state=01_in_progress`; they are validated
+  to `1_done` later by `/ai-daridev-pair` or `/ai-daridev-review`).
 - Missing tools → if Odoo is unavailable, continue and print the handout below. Engram is
   required: if the memory tools are missing, stop before doing anything.
 

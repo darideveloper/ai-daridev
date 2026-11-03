@@ -64,14 +64,16 @@ When you stop, send a micro message:
 
 ```
 ✅ Passes "<test name>". <what I did in one line> (<file:line>)
-Marker: "<marker name>" → approved? (yes / other marker / skip)
+Marker: "<marker name>" → done? (yes / other marker / skip)
 Decided: <judgment call, if any>
 Change anything or continue with "<next test>"?
 ```
 
 Propose a marker only when the step actually validates it, and never guess the mapping: if it is
-unclear which marker a step completes, ask. Flip a marker to `03_approved` only on my answer, and
-update the `Markers:` line only if the marker was newly created.
+unclear which marker a step completes, ask. Flip a marker to `1_done` only on my answer, and update
+the `Markers:` line only if the marker was newly created.
+
+Markers are the only things that use `1_done`. The card is never set to Done or Canceled.
 
 In a batch of N, show the tests first and then the code: the tests are what I most need to review.
 
@@ -115,24 +117,34 @@ Skip the red/green cycle and run this instead:
 ## 8. Close (only when the work is done and I say yes)
 
 1. **ADR** — write `docs/decisions/<slug>.md` if the story produced a decision that is project-wide, hard to reverse, **or affects a shared/ops contract** (env var, deploy step, credential, shared workflow). Dated, one section.
-2. **Odoo** (if available) — one write: `state = 03_approved` and
-   `date_end = <UTC now, YYYY-MM-DD HH:MM:SS>`. Flip the markers I confirmed in the cycle to
-   `03_approved` (one update with all ids). Never touch `stage_id`, never mark done/cancelled,
-   never move a column.
-3. **Memory** — `mem_session_summary` (Goal / Discoveries / Accomplished / Next steps / Files),
-   then run `engram sync` in the directory that holds `.engram/config.json`, and tell me to commit
-   `.engram/`.
-4. Print a close block: what shipped, decisions saved, ADR written or skipped, card id and state.
+2. **Odoo** (if available) — on the **card**: `state = 03_approved` and
+   `date_end = <UTC now, YYYY-MM-DD HH:MM:SS>`. Flip the markers I answered `yes` to in the cycle
+   to `1_done` (one update with all ids). Never touch `stage_id`, never mark the card done or
+   cancelled, never move a column.
+3. **Markers still open** — before closing, list every marker that is not `1_done` and ask: flip it,
+   leave the card open, or skip. Never close over a silent gap.
+4. **Memory** — `mem_session_summary` (Goal / Discoveries / Accomplished / Next steps / Files), then:
+   - run `engram sync` in the directory holding `.engram/config.json`;
+   - commit only if that directory (or its git root) contains `.engram/config.json`, and only if the
+     branch is not detached;
+   - stage only `.engram/`; if `git diff --cached --name-only` shows anything outside it, do not
+     commit — list the files and stop;
+   - message `chore: memory — <slug>`, print the branch and the commit hash, never push;
+   - nothing to export → say so and continue.
+5. Print a close block: what shipped, decisions saved, ADR written or skipped, card id and state,
+   markers flipped, memory commit.
 
 ### Without Odoo
 
 Print a copy-paste close checklist instead of writing:
 
 - the card name, and that it should be set to **Approved** with today as the end date,
-- the markers to flip to green (names),
+- the markers to flip to **Done** (names),
 - the reminder that the column move is the owner's,
-- the `engram sync` + commit line for `.engram/`.
+- the `engram sync` + commit line for `.engram/` (you run it, since the skill cannot write).
 
 ## 9. Commit
 
-**Never commit.** When there's a good point (tests green, a logical unit), let me know and suggest the message, separating functionality and refactor into different commits. I make the commit.
+**Never commit code.** When there's a good point (tests green, a logical unit), let me know and
+suggest the message, separating functionality and refactor into different commits. I make the code
+commit. The only commit this skill makes is the `.engram/` memory commit in §8.

@@ -11,14 +11,15 @@ flowchart LR
         N["name — at create"]
         D["description — HTML, whole rewrite"]
         STG["stage_id — first stage, create only"]
-        SIG["state=03_approved + date_end — at close"]
+        SIG["card: state=03_approved + date_end — at close"]
+        MK["markers: 01_in_progress / 1_done / 02_changes_requested"]
         SEQ["sequence — max+10"]
         TAG["one tag: frontend, backend, script, workflow"]
         DDL["date_deadline — if given"]
     end
     subgraph HUMAN["Written only by a human"]
         MOVE["any column move"]
-        DONE["state = Done / Canceled"]
+        DONE["card: state = Done / Canceled"]
         ASSIGN["assignees"]
         PRIO["priority"]
         HOURS["allocated_hours"]
@@ -28,6 +29,7 @@ flowchart LR
     D --> CARD
     STG --> CARD
     SIG --> CARD
+    MK --> CARD
     SEQ --> CARD
     TAG --> CARD
     DDL --> CARD
@@ -53,8 +55,9 @@ stateDiagram-v2
     Approved --> Canceled: human only
 ```
 
-`Done` and `Canceled` are never written by a skill, even when the work is finished. "Finished" is
-`Approved`; shipping is a human decision.
+On a **card**, `Done` and `Canceled` are never written by a skill, even when the work is finished:
+the card would disappear from the default kanban. "Finished" for a card is `Approved`; shipping is a
+human decision. Subtasks are the exception — markers use `1_done` (see below).
 
 ## Fields written at creation
 
@@ -102,10 +105,9 @@ Regenerate the whole `description` on every update — never append. Escape `<`,
 ```mermaid
 flowchart LR
     A["backlog<br/>creates them"] --> B["working<br/>01_in_progress"]
-    B --> C["validated<br/>03_approved"]
+    B --> C["validated<br/>1_done"]
     B --> D["review rejects<br/>02_changes_requested"]
     D --> C
-    C -->|review confirms| E["stays green"]
     style A fill:#90EE90,stroke:#333,color:darkgreen
     style C fill:#90EE90,stroke:#333,color:darkgreen
     style D fill:#FFE4B5,stroke:#333,color:#000
@@ -113,8 +115,10 @@ flowchart LR
 
 - Hidden inside the parent card, so their column is cosmetic: never write `stage_id`.
 - No description, no dates, no key. Detail belongs in the card's Review block.
-- `1_done` and `1_canceled` are human-only. `closed_subtask_count` counts only those, so a card full
-  of green markers still shows `0/N` in Odoo's badge — expected, not a bug.
+- **Markers are the only things that use `1_done`.** The card never uses Done/Canceled: it would
+  disappear from the default kanban. The card closes at `03_approved`.
+- Because `closed_subtask_count` counts Done + Canceled, a card with two validated markers shows
+  `2/3` — that is exactly why markers use `1_done` and not `03_approved`.
 
 ## Without Odoo
 

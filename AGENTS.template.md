@@ -34,8 +34,9 @@ The skills read it on every run; without it they ask once and offer to add it.
 ```md
 - Never move cards between columns; that is the owner's job. The only exception is an explicit
   "move it" confirmation, one card at a time.
-- Never mark work done or cancelled; `state=Approved` + `date_end` is the agent's only claim.
+- Never mark a **card** done or cancelled; `state=Approved` + `date_end` is the agent's only claim
+  on it. Markers are the exception: they are validated with `1_done`.
 - Markers carry no detail: name + state only. Detail goes in the card's Review block.
-- `engram sync` runs where `.engram/config.json` lives. `/ai-daridev-archive` is the only skill that
-  commits, and only `.engram/`.
+- `engram sync` runs where `.engram/config.json` lives. `/ai-daridev-pair` and `/ai-daridev-archive`
+  commit, and only `.engram/`.
 ```
