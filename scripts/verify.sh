@@ -59,4 +59,5 @@ if [ "$fails" -gt 0 ]; then
   exit 1
 fi
 echo "no failures, $warn warning(s)."
-echo "Next: open the agent in this directory, then use a tool in a NEW session to confirm the MCPs."
+echo "Engram is required: if the MCP is missing, the skills stop. Odoo is optional."
+echo "Next: open the agent in this directory, then use a memory tool in a NEW session to confirm the MCP."

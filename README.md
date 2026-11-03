@@ -4,9 +4,9 @@ Agent skills for building software with AI **without letting go of the wheel**. 
 
 The AI splits, proposes and writes code in small steps. You decide.
 
-This is a fork of [hola-ai](https://github.com/nschurmann/hola-ai) that adds an **optional memory +
-tracker layer**: decisions go to [Engram](https://github.com/Gentleman-Programming/engram), work
-items go to Odoo, and every skill still works when neither is installed.
+This is a fork of [hola-ai](https://github.com/nschurmann/hola-ai) that adds a **memory + tracker
+layer**: decisions go to [Engram](https://github.com/Gentleman-Programming/engram), work items go to
+Odoo. **Engram is required** — the skills refuse to run without it. **Odoo is optional.**
 
 - [Architecture](docs/architecture.md) · [Workflow](docs/workflow.md) · [Odoo contract](docs/odoo.md)
 - [Engram memory](docs/engram.md) · [Agents](docs/agents.md) · [Team](docs/team.md)
@@ -45,31 +45,43 @@ cd ai-daridev
 # .\scripts\install.ps1       # Windows (junctions, falls back to copies)
 ```
 
-The script installs Engram into `~/.local/bin`, links the four skills into `~/.agents/skills` and
-every agent directory that exists, and copies the OpenCode commands. It never edits your agent
-configs — it prints the MCP snippets instead.
+The script installs **Engram** into `~/.local/bin` (and aborts if it cannot), removes any old
+copied skills that would shadow the new ones, links the four skills into `~/.agents/skills` and every
+agent directory that exists, and copies the OpenCode commands. It never edits your agent configs —
+it prints the MCP snippets instead.
 
 Supported agents: OpenCode, Claude Code, Codex, Gemini CLI, Continue, Windsurf.
 
-## Optional: memory and tracker
+> After `git pull`, re-run the installer so the copied commands stay in sync.
 
-Both integrations are **optional and fail open**. Without them the skills behave exactly like
-upstream.
+## Engram is required
 
-- **Engram** (`engram mcp --tools=agent`) keeps decisions across sessions, per project.
-- **Odoo** (any MCP server for `project.task`) keeps the work items. The skills only ever:
-  - create a card in the **first stage**,
-  - update its `description`,
-  - set `state=03_approved` + `date_end` when a story closes.
-  They never move a card between columns and never mark it done or cancelled.
+Every skill reads and writes memory: the spec for a story, the decisions taken, the retro. Without
+the memory MCP the skills stop and ask you to install it, instead of running half-blind.
 
-Each repository that uses them declares where things go in its `AGENTS.md`:
+```jsonc
+// register once per agent, e.g. OpenCode
+"engram": { "type": "local", "command": ["<home>/.local/bin/engram", "mcp", "--tools=agent"], "disabled": false }
+```
+
+## Odoo is optional
+
+Without Odoo the skills still remember everything; they just create no cards. With Odoo (any MCP
+server for `project.task`) they also:
+
+- create a card in the **first stage**,
+- update its `description`,
+- set `state=03_approved` + `date_end` when a story closes.
+
+They never move a card between columns and never mark it done or cancelled.
+
+Each repository declares where things go in its `AGENTS.md`:
 
 ```md
 ## Workflow config
-- odoo_project: ourlivesapp dashboard
+- odoo_project: acme-app
 - odoo_stages: Backlog, Sprint Backlog, Sprint in Progress, Sprint Complete, Old Completed Sprint, Cancelled
-- engram_project: ourlivesapp
+- engram_project: acme-app
 - decisions_dir: docs/decisions
 - card_tag: one of frontend | backend | script | workflow
 ```

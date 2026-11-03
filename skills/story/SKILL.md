@@ -8,6 +8,11 @@ disable-model-invocation: true
 
 We refine a single story, right before building it. You propose and I decide.
 
+## Requirement
+
+This workflow needs **Engram**, the memory MCP. If its tools are not available, stop and tell me to
+install Engram and restart the agent. Do not continue without memory.
+
 ## Steps
 
 1. **Read the story** I give you (pasted text, GitHub issue, Jira ticket, etc.) and review the current code and `AGENTS.md` to understand the context.
@@ -61,7 +66,8 @@ Memory resolves its project from the working directory. If it resolves anything 
 - Found → update `description` only. Never touch `stage_id`, `state`, `sequence` or tags.
 - Not found → ask me "create it in Backlog?" before writing anything. If I say yes, create it in
   the project's first stage (same rules as `/backlog`).
-- Missing tools → continue, and say in one line what was skipped.
+- Missing tools → if Odoo is unavailable, continue and say in one line what was skipped. Engram is
+  required: if the memory tools are missing, stop before doing anything.
 
 **Engram** — the memory MCP (`mem_save`): upsert `topic_key story/<slug>`, type `architecture`,
 content = acceptance criteria + plan + out of scope + `odoo_task_id`.

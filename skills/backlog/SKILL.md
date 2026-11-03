@@ -8,6 +8,11 @@ disable-model-invocation: true
 
 Your job is to help me split what I tell you into user stories. I bring the requirements; you order and slice them.
 
+## Requirement
+
+This workflow needs **Engram**, the memory MCP. If its tools are not available, stop and tell me to
+install Engram and restart the agent. Do not continue without memory.
+
 ## Conversation
 
 1. Listen to the idea or feature. If something is unclear, ask. One question at a time, with your suggested answer.
@@ -81,5 +86,5 @@ Card body at creation (`<h1>` + the story line + the key; `/story` later adds cr
 in Claude Code): one memory, `topic_key backlog/<engram_project>`, type `architecture`, content =
 the approved block + the task ids.
 
-Missing tools: print the block, say in one line what was skipped, and stop. Never block the
-backlog on a failed tool call.
+Missing tools: if Odoo is unavailable, print the block, say in one line that no cards were created,
+and stop. Engram is required — if the memory tools are missing, stop before doing anything.

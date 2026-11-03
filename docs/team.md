@@ -6,8 +6,8 @@ One person owns the board and the memory; everybody can work on the cards.
 
 | Role | Needs | Does |
 |---|---|---|
-| Owner | both MCPs, Engram, skills | `/backlog`, `/story`, `/pair`, `/archive`, moves columns, validates work |
-| Teammate | skills (optional: own Engram) | picks a card, pastes it into their agent, submits the change |
+| Owner | Engram, skills, Odoo | `/backlog`, `/story`, `/pair`, `/archive`, moves columns, validates work |
+| Teammate | Engram, skills (Odoo optional) | picks a card, pastes it into their agent, submits the change |
 
 The owner is the only one who moves cards and the only one who marks work done. That is what keeps
 the board honest.
@@ -46,8 +46,9 @@ cd ai-daridev
 # .\scripts\install.ps1     # Windows
 ```
 
-That is enough for `/backlog`, `/story`, `/pair`, `/archive` to run fail-open: no tracker, no
-memory, no credentials. If they also run Engram, they get the shared decisions after an import.
+That is enough for `/backlog`, `/story`, `/pair`, `/archive` to run: the installer brings Engram
+with it. Odoo is optional, so a teammate without it still remembers decisions and just creates no
+cards.
 
 ## Card hand-off
 

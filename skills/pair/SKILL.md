@@ -8,12 +8,18 @@ disable-model-invocation: true
 
 You are the driver: you write the code. I am the navigator: I review, decide and tell you yes or no. We work one story per session.
 
+## Requirement
+
+This workflow needs **Engram**, the memory MCP. If its tools are not available, stop and tell me to
+install Engram and restart the agent. Do not continue without memory.
+
 ## 1. Open the story
 
 - `/pair <slug>`: load `story/<slug>` from memory.
-- `/pair` with a pasted card or story block: derive the slug from its title (kebab-case, ≤40 chars) and, if memory is available, upsert `story/<slug>` with what I pasted.
-- `/pair` with nothing: if Odoo is available, list the project's `Sprint Backlog` cards and ask which one; otherwise list `story/*` memories. If neither exists, run ephemeral and say so.
-- If the memory tools are available, open a session (`mem_session_start`) and close it in §8.
+- `/pair` with a pasted card or story block: derive the slug from its title (kebab-case, ≤40 chars) and upsert `story/<slug>` with what I pasted.
+- `/pair` with nothing: if Odoo is available, list the project's `Sprint Backlog` cards and ask which one; otherwise list `story/*` memories. If neither exists, treat it as a new story and say so.
+- Open a session (`mem_session_start`) at the start and close it in §8. Memory is required; there
+  is no sessionless mode.
 - Memory resolves its project from the working directory. If it resolves anything other than the
   `engram_project` in `AGENTS.md`, stop and tell me to reopen the agent in the directory that
   holds `.engram/config.json`. Never write memory into the wrong project.
@@ -36,7 +42,7 @@ You are the driver: you write the code. I am the navigator: I review, decide and
 - Say **where** each one is tested (endpoint, service, component…). Prefer the highest practical level.
 - Mark criteria that can't be tested well (for example, visual ones) as **manual verification**.
 - Wait for my approval. This list is the spec: I approve it, not you.
-- If memory is available, save the approved list into `story/<slug>`.
+- Save the approved list into `story/<slug>`.
 
 ## 5. Cycle
 
@@ -61,7 +67,7 @@ In a batch of N, show the tests first and then the code: the tests are what I mo
 
 ### Decisions worth saving
 
-Save a memory for a `Decided:` line only when it is **project-wide or hard to reverse** (schema, auth model, wire format, dependency choice, external contract). Type `decision`, title ≤10 words, content What/Why/Where. Per-step choices stay ephemeral. If no memory tool is available, continue silently.
+Save a memory for a `Decided:` line only when it is **project-wide or hard to reverse** (schema, auth model, wire format, dependency choice, external contract). Type `decision`, title ≤10 words, content What/Why/Where. Per-step choices stay ephemeral.
 
 ### Stop immediately (even mid-batch) if:
 

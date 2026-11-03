@@ -9,6 +9,11 @@ disable-model-invocation: true
 You are closing work that is already finished. You do not decide what shipped: the card and the
 memories do. Never invent a retro for a story with no record; report the gap instead.
 
+## Requirement
+
+This workflow needs **Engram**, the memory MCP. If its tools are not available, stop and tell me to
+install Engram and restart the agent. Do not continue without memory.
+
 ## Inputs
 
 - `/archive <slug>` → one story.
@@ -55,5 +60,5 @@ follow-up list, and all drift.
 - Never move a card, never write `stage_id`, never set `state` to done or canceled.
 - If I ask to move or close a card, do it as a separate explicit request, one card at a time.
 - No file writes outside `docs/decisions/`. No commits.
-- Missing tools: say in one line what was skipped, and still produce the retro from whatever is
-  available.
+- Missing tools: Engram is required — stop if memory is unavailable. If Odoo is unavailable, say so
+  in one line and still produce the retro from memory.

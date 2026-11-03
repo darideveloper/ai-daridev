@@ -1,16 +1,16 @@
 # Agents
 
-The same four skills, one clone, symlinked everywhere. MCP servers are registered **per agent**;
-where they are missing the skills fail open.
+The same four skills, one clone, symlinked everywhere. **Engram is required** — the skills stop if
+its MCP is missing. **Odoo is optional** — without it they remember decisions but create no cards.
 
 | Agent | Skills read from | Slash commands | Notes |
 |---|---|---|---|
 | OpenCode | `~/.agents/skills` (and `~/.config/opencode/skills`) | `~/.config/opencode/commands/*.md` | skills are **not** commands, the pointer files are |
 | Claude Code | `~/.claude/skills` | skills already appear as `/skill-name` | `AGENTS.md` needs Claude Code ≥ 2.1.277 |
 | Codex | `~/.agents/skills` | none (prompts deprecated); invoke `$skill` | `agents/openai.yaml` controls auto-invocation |
-| Gemini CLI | `~/.gemini/skills` | — | skills only, no MCP required |
-| Continue | `~/.continue/skills` | — | skills only |
-| Windsurf | `~/.codeium/windsurf/skills` | — | skills only |
+| Gemini CLI | `~/.gemini/skills` | — | register the Engram MCP for memory |
+| Continue | `~/.continue/skills` | — | register the Engram MCP for memory |
+| Windsurf | `~/.codeium/windsurf/skills` | — | register the Engram MCP for memory |
 
 `scripts/install.sh` links into `~/.agents/skills` and into every agent directory that exists.
 
@@ -100,6 +100,7 @@ exist.
 
 1. `engram doctor`
 2. new session → the memory tool responds
-3. new session → the tracker tool responds
+3. new session → the tracker tool responds (only if you use Odoo)
 4. a skill loads (`skill` tool, or `/story` as a command)
-5. remove the MCP entry, restart, run `/pair` → it must still work and say what it skipped
+5. remove the Engram MCP entry, restart, run `/pair` → it must **stop** and ask you to install Engram
+6. remove the Odoo MCP entry, restart, run `/pair` → it must run normally and say that no card was created

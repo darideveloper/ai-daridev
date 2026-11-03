@@ -112,27 +112,25 @@ flowchart TD
     class EPH no
 ```
 
-## Fail-open
+## When a tool is missing
 
-Every integration is optional. A skill that cannot reach a tool says one line and continues.
+**Engram is required**: without memory the skill stops and asks you to install it. **Odoo is
+optional**: without it the skill says one line and continues without cards.
 
 ```mermaid
 flowchart TD
-    S["Skill needs to write"] --> Q1{"Odoo available?"}
-    Q1 -->|No| N1["Skip card work<br/>say one line, continue"]
-    Q1 -->|Yes| Q2{"Engram available?"}
-    Q2 -->|No| N2["Write the card<br/>skip memory silently"]
-    Q2 -->|Yes| N3["Write card + memory"]
-    N1 --> Q3{"Engram available?"}
-    Q3 -->|Yes| N4["Memory only"]
-    Q3 -->|No| N5["Ephemeral: upstream behavior"]
+    S["Skill starts"] --> M{"Engram available?"}
+    M -->|No| STOP["Stop: install Engram<br/>and restart the agent"]
+    M -->|Yes| Q1{"Odoo available?"}
+    Q1 -->|No| N1["Memory only<br/>no cards, one line"]
+    Q1 -->|Yes| N2["Memory + cards"]
 
+    classDef stop fill:#FFB6C1,stroke:#DC143C,color:black
     classDef ok fill:#90EE90,stroke:#333,color:darkgreen
     classDef warn fill:#FFE4B5,stroke:#333,color:black
-    classDef none fill:#D3D3D3,stroke:#333,color:black
-    class N3 ok
-    class N1,N2,N4 warn
-    class N5 none
+    class STOP stop
+    class N2 ok
+    class N1 warn
 ```
 
 Next: [workflow](workflow.md) · [odoo](odoo.md) · [engram](engram.md)

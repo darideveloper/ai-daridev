@@ -1,44 +1,81 @@
 #!/usr/bin/env bash
-# hola-ai + engram installer (Linux / macOS).
+# ai-daridev installer (Linux / macOS).
+# Engram is REQUIRED: the installer aborts if it cannot install or verify it.
 # Usage: ./scripts/install.sh
-#        HOLA_AI_FORK=/path/to/clone ./scripts/install.sh
+#        AI_DARIDEV_FORK=/path/to/clone ./scripts/install.sh
 set -eu
 
-FORK="${HOLA_AI_FORK:-$(cd "$(dirname "$0")/.." && pwd)}"
+FORK="${AI_DARIDEV_FORK:-${HOLA_AI_FORK:-$(cd "$(dirname "$0")/.." && pwd)}}"
 VER="${ENGRAM_VERSION:-3.6.0}"
 IDS="backlog story pair archive"
 AGENT_DIRS="$HOME/.claude $HOME/.gemini $HOME/.continue $HOME/.codeium/windsurf $HOME/.kiro $HOME/.config/devin"
 
 say() { printf '%s\n' "$*"; }
+die() { printf '\nerror: %s\n' "$*" >&2; exit 1; }
 
-# --- 1. Engram binary -------------------------------------------------------
+# --- 1. Engram (required) ---------------------------------------------------
 if command -v engram >/dev/null 2>&1; then
   say "engram: already installed ($(engram version 2>/dev/null || echo unknown))"
 else
   say "engram: installing $VER"
-  mkdir -p "$HOME/.local/bin"
-  tmp="$(mktemp -d)"
+
   case "$(uname -s)" in
-    Linux)  asset="engram_${VER}_linux_amd64.tar.gz" ;;
-    Darwin) asset="engram_${VER}_darwin_arm64.tar.gz" ;;
-    *) say "engram: unsupported platform, install manually"; asset="" ;;
+    Linux)  OS=linux ;;
+    Darwin) OS=darwin ;;
+    *) die "unsupported OS '$(uname -s)'. Install Engram manually: https://github.com/Gentleman-Programming/engram" ;;
   esac
-  if [ -n "$asset" ]; then
-    base="https://github.com/Gentleman-Programming/engram/releases/download/v$VER"
-    curl -fsSL -o "$tmp/$asset" "$base/$asset"
-    curl -fsSL -o "$tmp/checksums.txt" "$base/checksums.txt"
-    ( cd "$tmp" && grep "$asset" checksums.txt | sha256sum -c - )
-    tar -xzf "$tmp/$asset" -C "$tmp"
-    install -m755 "$tmp/engram" "$HOME/.local/bin/engram"
-    say "engram: installed at $HOME/.local/bin/engram"
+  case "$(uname -m)" in
+    x86_64|amd64)  ARCH=amd64 ;;
+    arm64|aarch64) ARCH=arm64 ;;
+    *) die "unsupported architecture '$(uname -m)'. Install Engram manually." ;;
+  esac
+
+  asset="engram_${VER}_${OS}_${ARCH}.tar.gz"
+  base="https://github.com/Gentleman-Programming/engram/releases/download/v$VER"
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' EXIT
+
+  curl -fsSL -o "$tmp/$asset" "$base/$asset"      || die "could not download $asset"
+  curl -fsSL -o "$tmp/checksums.txt" "$base/checksums.txt" || die "could not download checksums.txt"
+
+  if command -v sha256sum >/dev/null 2>&1; then
+    ( cd "$tmp" && grep "$asset" checksums.txt | sha256sum -c - ) || die "checksum failed for $asset"
+  elif command -v shasum >/dev/null 2>&1; then
+    ( cd "$tmp" && grep "$asset" checksums.txt | shasum -a 256 -c - ) || die "checksum failed for $asset"
+  else
+    say "warning: no sha256 tool found, skipping checksum verification"
   fi
-  rm -rf "$tmp"
+
+  tar -xzf "$tmp/$asset" -C "$tmp" || die "could not extract $asset"
+  [ -f "$tmp/engram" ] || die "engram binary not found inside $asset"
+  mkdir -p "$HOME/.local/bin"
+  install -m755 "$tmp/engram" "$HOME/.local/bin/engram" || die "could not install engram to ~/.local/bin"
+  say "engram: installed at $HOME/.local/bin/engram"
 fi
 
-# --- 2. Skills: clone -> ~/.agents/skills -> each agent ---------------------
+# Engram is required: prove it works before touching anything else.
+engram_bin="$(command -v engram || true)"
+[ -n "$engram_bin" ] || engram_bin="$HOME/.local/bin/engram"
+[ -x "$engram_bin" ] || die "engram not found on PATH and not at ~/.local/bin/engram"
+"$engram_bin" version >/dev/null 2>&1 || die "engram is installed but not runnable ($engram_bin)"
+"$engram_bin" doctor  >/dev/null 2>&1 || die "engram doctor reported findings; run 'engram doctor' and fix them"
+say "engram: verified ($("$engram_bin" version 2>/dev/null))"
+
+# --- 2. Remove shadowing copies --------------------------------------------
+# OpenCode gives ~/.config/opencode/skills precedence over ~/.agents/skills, so an
+# older copy silently wins over the linked skill.
+for id in $IDS; do
+  shadow="$HOME/.config/opencode/skills/$id"
+  if [ -e "$shadow" ] || [ -L "$shadow" ]; then
+    rm -rf "$shadow"
+    say "removed shadowing copy: $shadow"
+  fi
+done
+
+# --- 3. Skills: clone -> ~/.agents/skills -> each agent ---------------------
 mkdir -p "$HOME/.agents/skills"
 for id in $IDS; do
-  [ -d "$FORK/skills/$id" ] || { say "skill $id missing in $FORK"; exit 1; }
+  [ -d "$FORK/skills/$id" ] || die "skill '$id' missing in $FORK"
   ln -sfn "$FORK/skills/$id" "$HOME/.agents/skills/$id"
   for a in $AGENT_DIRS; do
     [ -d "$a/skills" ] && ln -sfn "$HOME/.agents/skills/$id" "$a/skills/$id"
@@ -46,19 +83,19 @@ for id in $IDS; do
 done
 say "skills: linked $IDS into ~/.agents/skills and existing agent dirs"
 
-# --- 3. OpenCode commands --------------------------------------------------
+# --- 4. OpenCode commands ---------------------------------------------------
 mkdir -p "$HOME/.config/opencode/commands"
 cp "$FORK/commands/"*.md "$HOME/.config/opencode/commands/"
 say "commands: copied to ~/.config/opencode/commands"
 
-# --- 4. MCP: print, never rewrite someone's config --------------------------
+# --- 5. MCP: print, never rewrite someone's config --------------------------
 say ""
-say "MCP servers (add these once per agent):"
+say "Engram is required — register it in every agent you use:"
 say "  OpenCode -> ~/.config/opencode/opencode.json, under mcp.servers:"
 say '    "engram": { "type": "local", "command": ["'"$HOME"'/.local/bin/engram", "mcp", "--tools=agent"], "disabled": false }'
-say '    "odoo":   { "type": "local", "command": ["'"$HOME"'/tools/odoo-mcp-server/mcp.sh"], "disabled": false }'
 say "  Claude Code -> claude mcp add --scope user engram -- $HOME/.local/bin/engram mcp --tools=agent"
 say "  Codex -> ~/.codex/config.toml: [mcp_servers.engram] command = \"$HOME/.local/bin/engram\" / args = [\"mcp\", \"--tools=agent\"]"
 say ""
-say "Restart the agent afterwards. Verify by using a tool in a NEW session, not by listing servers."
-say "Engram sharing: git pull -> engram sync --import ; before pushing -> engram sync"
+say "Odoo is optional. Without it the skills still remember decisions, they just create no cards."
+say "Restart the agent afterwards, then verify by using a memory tool in a NEW session."
+say "After 'git pull', re-run this script so the copied commands stay in sync."

@@ -49,7 +49,7 @@ Rules that follow from this:
 `mem_session_end`). Without a session, saves land in a single growing "manual save" session, which
 makes `mem_timeline` useless for retros.
 
-If the memory tools are missing, all of this is skipped silently.
+If the memory tools are missing, the skills stop: memory is required, not best-effort.
 
 ## Sharing through git
 
