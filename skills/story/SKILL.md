@@ -10,7 +10,7 @@ We refine a single story, right before building it. You propose and I decide.
 
 ## Steps
 
-1. **Read the story** I give you (pasted text, GitHub issue, Jira ticket, etc.) and review the current code and `CLAUDE.md` to understand the context.
+1. **Read the story** I give you (pasted text, GitHub issue, Jira ticket, etc.) and review the current code and `AGENTS.md` to understand the context.
 2. **Acceptance criteria.** Propose 2–3 in Given/When/Then format. They only describe *what* the user sees or gets, never *how* it's implemented.
 3. **If it needs more than 3 criteria, don't bloat it: propose splitting it.** Deliver the new stories in backlog format (`As a…, I want…, so that…`) for me to add to the tracker, and we continue with the first one.
 4. **Mini plan.** 5 bullets max, no code or file names. How it cuts through the layers, with the minimum that meets the criteria.
@@ -44,3 +44,41 @@ As a <actor>, I want <action>, so that <benefit>.
 ## Suggestions (your call)
 - <optional>
 ```
+
+## Projection (only if the tools are available)
+
+Read the workflow config from `AGENTS.md` (`odoo_project`, `engram_project`, `decisions_dir`).
+Slug = kebab-case of the story title, ≤40 chars. If a card already carries
+`engram: story/<slug>`, reuse that slug.
+
+Memory resolves its project from the working directory. If it resolves anything other than
+`engram_project`, stop and tell me to reopen the agent in the directory that holds
+`.engram/config.json`. Never write memory into the wrong project, and never guess.
+
+**Odoo** — the project-management MCP tools (`odoo_search_read`, `odoo_update`, `odoo_create`):
+
+- Find the card by `description ilike "engram: story/<slug>"`.
+- Found → update `description` only. Never touch `stage_id`, `state`, `sequence` or tags.
+- Not found → ask me "create it in Backlog?" before writing anything. If I say yes, create it in
+  the project's first stage (same rules as `/backlog`).
+- Missing tools → continue, and say in one line what was skipped.
+
+**Engram** — the memory MCP (`mem_save`): upsert `topic_key story/<slug>`, type `architecture`,
+content = acceptance criteria + plan + out of scope + `odoo_task_id`.
+
+## Card body (HTML)
+
+Regenerate the whole `description` — never append. Escape `<`, `>`, `&`.
+
+```html
+<h1>{the card's CURRENT name, read it first}</h1>
+<p>{one-line goal}</p>
+<h2>Acceptance criteria</h2>
+<ul><li>Given …, when …, then …</li></ul>
+<h2>Tests</h2>
+<ol><li>{test name} — {where it runs}</li></ol>
+<p><em>engram: story/{slug}</em></p>
+```
+
+The H1 uses the live task name, so renaming the card in Odoo is not reverted on the next update.
+No `<pre>` for prose; monospace only for code.

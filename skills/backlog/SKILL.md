@@ -43,4 +43,43 @@ Expensive decisions: <the ones that apply, or "none">
 
 Add `Requires: #N` only when a story makes no sense without another.
 
-When done, offer to save the context and stack in `CLAUDE.md` (or `AGENTS.md`). The stories go to my tracker; don't save them to files unless I ask.
+When done, offer to save the context and stack in `AGENTS.md`. The stories go to my tracker; don't save them to files unless I ask.
+
+## Projection (only if the tools are available)
+
+Read the workflow config from `AGENTS.md` (`odoo_project`, `engram_project`, `card_tag`). If the
+section is missing, ask me once for the Odoo project name and offer to add the section.
+
+Memory resolves its project from the working directory. If it resolves anything other than
+`engram_project`, stop and tell me to reopen the agent in the directory that holds
+`.engram/config.json`. Never write memory into the wrong project, and never guess.
+
+**Odoo** — the project-management MCP tools (`odoo_search_read`, `odoo_create`; they appear as
+`odoo_odoo_*` in OpenCode and `mcp__odoo__*` in Claude Code):
+
+1. Resolve the project by `odoo_project`, then its first stage (`project.task.type` where
+   `project_ids` contains the project, ordered by `sequence`, limit 1).
+2. Read the current `max(sequence)` among that project's tasks.
+3. For each story: slug = kebab-case of the title, ≤40 chars, unique within the project. Skip it
+   if a card's description already contains `engram: story/<slug>`.
+4. Create the cards in one contiguous batch: `sequence` = max + 10, +20, +30…, `stage_id` = the
+   first stage, `description` per the card body below, exactly one tag of
+   frontend / backend / script / workflow (default backend), and `date_deadline` only if I gave
+   one (UTC, `YYYY-MM-DD 00:00:00`). Do not write `state`.
+5. Report a table: id · name · stage · tag. If I deny an approval mid-batch, stop and list what
+   already exists so a re-run resumes without duplicates.
+
+Card body at creation (`<h1>` + the story line + the key; `/story` later adds criteria and tests):
+
+```html
+<h1>{story title}</h1>
+<p>{As a …, I want …, so that …}</p>
+<p><em>engram: story/{slug}</em></p>
+```
+
+**Engram** — the memory MCP (`mem_save`; `engram_mem_save` in OpenCode, `mcp__engram__mem_save`
+in Claude Code): one memory, `topic_key backlog/<engram_project>`, type `architecture`, content =
+the approved block + the task ids.
+
+Missing tools: print the block, say in one line what was skipped, and stop. Never block the
+backlog on a failed tool call.

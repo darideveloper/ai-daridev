@@ -1,0 +1,6 @@
+interface:
+  display_name: "Pair"
+  short_description: "Implement a story step by step"
+  default_prompt: "Use $pair to implement this story."
+policy:
+  allow_implicit_invocation: false

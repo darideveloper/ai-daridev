@@ -1,0 +1,6 @@
+interface:
+  display_name: "Story"
+  short_description: "Refine one story into criteria and a plan"
+  default_prompt: "Use $story to refine this story."
+policy:
+  allow_implicit_invocation: false
