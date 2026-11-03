@@ -46,14 +46,16 @@ are status markers only — never put detail in them.
 ```bash
 git clone git@github.com:darideveloper/ai-daridev.git
 cd ai-daridev
-./scripts/install.sh          # Linux / macOS
-# .\scripts\install.ps1       # Windows (junctions, falls back to copies)
+./scripts/setup.sh            # Linux / macOS: install + MCP + instruction block
+# .\scripts\install.ps1      # Windows: installs and links; MCP snippets printed
 ```
 
-The script installs or upgrades **Engram** into `~/.local/bin` (and aborts if it cannot), removes
-any old copies that would shadow the new skills, symlinks the five skills into `~/.agents/skills`
-and into every agent directory that exists, and symlinks the OpenCode commands. It never edits your
-agent configs — it prints the MCP snippets instead.
+`setup` installs or upgrades **Engram** (version pinned in `VERSION`, staged write, aborts if
+`engram compatibility` refuses), symlinks the five skills and the OpenCode commands, **applies** the
+MCP entries with timestamped backups (Engram always; Odoo only when a wrapper and its 600-perm env
+file exist), and writes the `<!-- ai-daridev -->` block into the four agent instruction files.
+
+`setup --dry-run` shows every write. `setup --restore` puts the latest backup back.
 
 Supported agents: OpenCode, Claude Code, Codex, Gemini CLI, Continue, Windsurf, Kiro, Devin.
 
@@ -81,20 +83,45 @@ server for `project.task`) they also:
 
 They never move a card between columns and never mark it done or cancelled.
 
-Each repository declares where things go in its `AGENTS.md`:
+Each repository declares where things go in its `AGENTS.md`, between markers. Generate it with
+`ai-daridev init` instead of writing it by hand:
 
 ```md
+<!-- ai-daridev:start -->
 ## Workflow config
+- version: 1
 - odoo_project: acme-app
-- odoo_stages: Backlog, Sprint Backlog, Sprint in Progress, Sprint Complete, Old Completed Sprint, Cancelled
-- odoo_uid: 2
+- odoo_stage_backlog: Backlog
+- odoo_stage_active: Sprint Backlog, Sprint in Progress
+- odoo_stage_done: Sprint Complete
+- odoo_stage_cancelled: Cancelled
+- odoo_assignees: false
+- card_tag: backend
+- card_tags: frontend, backend, script, workflow
 - engram_project: acme-app
 - decisions_dir: docs/decisions
-- card_tag: backend
+- markers: 2-4
+- listing_limit: 20
+<!-- ai-daridev:end -->
 ```
 
+`odoo_uid` is deliberately **not** in the block: it is personal and lives in
+`~/.config/ai-daridev/repos/<repo>.json`, set with `ai-daridev uid <n>`.
+
 Open the agent **in the directory that holds `.engram/config.json`** — Engram resolves the project
-from the working directory, and the skills stop rather than write into the wrong one.
+from the working directory, and `ai-daridev preflight` stops rather than write into the wrong one.
+
+## Preflight
+
+Every skill starts with:
+
+```bash
+ai-daridev preflight     # JSON: project, stages, tags, uid, listing, markers
+```
+
+If it exits non-zero, the skill prints its errors and stops. The contract is in
+[docs/preflight.md](docs/preflight.md); the tool call shapes are in
+[docs/engram-api.md](docs/engram-api.md).
 
 ## Sharing memory with a team
 

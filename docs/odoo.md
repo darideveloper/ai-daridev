@@ -42,33 +42,21 @@ flowchart LR
 
 ## Identity
 
-The MCP authenticates with its own credentials, which are often a service account — not you. The
-skills never assume those are the same thing:
+The MCP authenticates with its own credentials, often a service account — not you. The skills
+never assume otherwise:
 
-- `odoo_uid` in `AGENTS.md` is **you**: a number, read from the file, never looked up in
-  `res.users` (the agent must not read that model).
-- It marks which cards are yours in bare listings, and assigns work only when you explicitly ask
-  for an assignee in the same run.
-- New cards are created **unassigned**: `user_ids` is not written by default.
-- If `odoo_uid` is missing the skill asks once and continues without it. Nothing is guessed.
+- `odoo_uid` is **personal**: it lives in `~/.config/ai-daridev/repos/<repo>.json`, never in the
+  committed block. Set it with `ai-daridev uid <n>`.
+- It marks which cards are yours in listings; it never filters them out.
+- New cards are created **unassigned**. `user_ids` is written only when you explicitly ask for an
+  assignee in the same run.
+- `res.users` is never read — the uid comes from the personal file.
 
 ## Preflight
 
-Read-only, before any write. Any failure stops the skill instead of writing into the wrong place.
-
-| Check | Query | On failure |
-|---|---|---|
-| project | `project.project` where `name = odoo_project`, limit 2 | 0 → ask; 2+ → stop and list them |
-| stages | `project.task.type` where `project_ids` contains that id, ordered by `sequence` | a name from `odoo_stages` is missing → stop and print the real stages |
-| tags | `project.tags` where `name in (frontend, backend, script, workflow)` | name the missing tag and stop |
-| owner | `odoo_uid` in `AGENTS.md` | ask once, continue without it |
-| memory | the Engram project resolved from the working directory | it differs from `engram_project` → stop |
-
-It prints one line as proof, then continues:
-
-```
-project ourlivesapp dashboard (138) · first stage Backlog (526) · uid 2 · tags ok
-```
+`ai-daridev preflight` resolves the project, the stage roles and the tags, and stops on any
+inconsistency before a skill writes. The contract, the JSON and the error list live in
+[preflight.md](preflight.md).
 
 ## State machine
 
@@ -176,8 +164,8 @@ visible and reversible by you.
 ## Setup checklist
 
 - [ ] the project exists and has the stages you use (they are per project in Odoo)
-- [ ] `odoo_stages` lists those stages exactly (the preflight validates them every run)
+- [ ] the block uses stage **roles** (`odoo_stage_backlog/active/done/cancelled`) and every name exists
 - [ ] the tags the workflow needs exist (global: `frontend`, `backend`, `script`, `workflow`)
-- [ ] `AGENTS.md` declares `odoo_project`, `odoo_stages`, `odoo_uid` and `card_tag`
+- [ ] `ai-daridev init` generated the block and `ai-daridev preflight` passes
 - [ ] the MCP server runs through a wrapper that reads credentials from a 600 file
 - [ ] write tools are set to `ask` in the agent permissions

@@ -12,9 +12,10 @@ One person owns the board and the memory; everybody can work on the cards.
 The owner is the only one who moves cards and the only one who marks work done. That is what keeps
 the board honest.
 
-Each repo declares **who "me" is** with `odoo_uid` in its `AGENTS.md`: a number, never a
-`res.users` lookup. New cards are created unassigned unless the owner asks for an assignee, so the
-board never claims someone owns work they did not accept.
+Who "me" is lives in a **personal** file, never in the repo: `ai-daridev uid <n>` writes
+`~/.config/ai-daridev/repos/<repo>.json`. It marks your cards in listings; it never filters them.
+New cards are created unassigned unless the owner asks for an assignee, so the board never claims
+someone owns work they did not accept.
 
 ## How the team builds
 
@@ -73,13 +74,18 @@ sequenceDiagram
 ```bash
 git clone <this-repo>
 cd ai-daridev
-./scripts/install.sh        # Linux / macOS
+./scripts/setup.sh          # Linux / macOS
 # .\scripts\install.ps1     # Windows
+
+# in the project repo
+ai-daridev uid <your-odoo-id>   # optional: marks "mine"
+ai-daridev preflight            # must pass before using any skill
 ```
 
-That is enough for `/ai-daridev-backlog`, `/ai-daridev-story`, `/ai-daridev-pair`, `/ai-daridev-archive` to run: the installer brings Engram
-with it. Odoo is optional, so a teammate without it still remembers decisions and just creates no
-cards.
+`setup` brings Engram, links the five skills and applies the MCP entries with backups. The repo's
+`AGENTS.md` block is committed by the owner, so a teammate never runs `init` and never answers a
+question about stages or projects. Odoo is optional: without credentials, `preflight` degrades and
+the skills print the manual checklist.
 
 ## Card hand-off
 

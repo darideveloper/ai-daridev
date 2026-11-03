@@ -52,22 +52,17 @@ As a <actor>, I want <action>, so that <benefit>.
 
 ## Projection (only if the tools are available)
 
-Read the workflow config from `AGENTS.md` (`odoo_project`, `odoo_stages`, `odoo_uid`,
-`engram_project`, `decisions_dir`). Slug = kebab-case of the story title, ≤40 chars. If a card
-already carries `engram: story/<slug>`, reuse that slug.
-
-Memory resolves its project from the working directory. If it resolves anything other than
-`engram_project`, stop and tell me to reopen the agent in the directory that holds
-`.engram/config.json`. Never write memory into the wrong project, and never guess.
+Slug = kebab-case of the story title, ≤40 chars. If a card already carries
+`engram: story/<slug>`, reuse that slug.
 
 **Tool names.** OpenCode: `odoo_odoo_search_read`, `engram_mem_save` — inside Code Mode
 (`execute`) as `tools.odoo.odoo_search_read`, `tools.engram.mem_save`. Claude Code:
 `mcp__odoo__*`, `mcp__engram__*`.
 
-**Preflight — read-only, before any write.** Resolve `project.project` where
-`name = odoo_project` (limit 2; no match → ask, more than one → stop and list). Check that every
-name in `odoo_stages` exists among its stages. Missing project or stage: stop and say which one.
-Missing `odoo_uid`: ask once and continue without it.
+**Preflight.** Run `ai-daridev preflight` in the repo root and use its JSON (`project`, `stages`,
+`tags`, `uid`, `listing`, `markers`, `assignees`). If the command is missing, stop and say: run
+`./scripts/setup.sh` from the ai-daridev repo. If it exits non-zero, print its `errors` and stop —
+do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings` once, then continue.
 
 **Odoo** — the project-management MCP tools (`odoo_search_read`, `odoo_update`, `odoo_create`):
 

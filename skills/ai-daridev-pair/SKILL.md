@@ -15,11 +15,16 @@ install Engram and restart the agent. Do not continue without memory.
 
 ## 1. Open the story
 
+**Preflight.** Run `ai-daridev preflight` in the repo root and use its JSON (`project`, `stages`,
+`tags`, `uid`, `listing`, `markers`, `assignees`). If the command is missing, stop and say: run
+`./scripts/setup.sh` from the ai-daridev repo. If it exits non-zero, print its `errors` and stop —
+do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings` once, then continue.
+
 - `/ai-daridev-pair <slug>`: load `story/<slug>` from memory.
 - `/ai-daridev-pair` with a pasted card or story block: derive the slug from its title (kebab-case, ≤40 chars) and upsert `story/<slug>` with what I pasted.
-- `/ai-daridev-pair` with nothing: if Odoo is available, list the project's `Sprint Backlog` cards
-  (`project_id` + `stage_id`, `limit 20`, never unbounded) and ask which one; mark the ones assigned
-  to `odoo_uid` as yours. Otherwise list `story/*` memories. If neither exists, treat it as a new
+- `/ai-daridev-pair` with nothing: if Odoo is available, list the project's cards in the active
+  stages (`project_id` + `stage_id in stages.active`, `limit` from preflight, never unbounded) and
+  ask which one; mark the ones assigned to `uid` as yours. Otherwise list `story/*` memories. If neither exists, treat it as a new
   story and say so.
 - Open a session first: `mem_session_start` with
   `id = "ai-daridev-<slug>-<YYYYMMDD-HHmmss>"` and `directory = <cwd>`. Engram does not generate
@@ -129,8 +134,7 @@ Skip the red/green cycle and run this instead:
 ## 8. Close (only when the work is done and I say yes)
 
 1. **ADR** — write `docs/decisions/<slug>.md` if the story produced a decision that is project-wide, hard to reverse, **or affects a shared/ops contract** (env var, deploy step, credential, shared workflow). Dated, one section.
-2. **Odoo** (if available) — preflight first: resolve `project.project` by exact name (`limit 2`,
-   stop on 0 or >1) and check that every name in `odoo_stages` still exists. Then, on the **card**:
+2. **Odoo** (if available) — the preflight already resolved and validated everything. On the **card**:
    `state = 03_approved` and `date_end = <UTC now, YYYY-MM-DD HH:MM:SS>`. Flip the markers I
    answered `yes` to in the cycle to `1_done` (one update with all ids). Never touch `stage_id`,
    `user_ids`, never mark the card done or cancelled, never move a column.

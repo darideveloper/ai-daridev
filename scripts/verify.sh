@@ -84,13 +84,24 @@ case "$TAG" in
   *) bad "card_tag '$TAG' is not one of frontend|backend|script|workflow" ;;
 esac
 
-UID_VALUE="$(cfg odoo_uid)"
-if [ -z "${UID_VALUE:-}" ]; then
-  note "AGENTS.md has no odoo_uid — the agent asks once and continues without it"
-elif printf '%s' "$UID_VALUE" | grep -qE '^[0-9]+$'; then
-  ok "odoo_uid: $UID_VALUE"
+if cfg odoo_uid >/dev/null 2>&1 && [ -n "$(cfg odoo_uid)" ]; then
+  bad "odoo_uid is in AGENTS.md — it is personal; move it with 'ai-daridev uid <n>'"
 else
-  bad "odoo_uid '$UID_VALUE' is not a number"
+  ok "AGENTS.md has no odoo_uid (personal file, as designed)"
+fi
+
+REPO_SLUG="$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]/-/g')"
+PERSONAL="$HOME/.config/ai-daridev/repos/$REPO_SLUG.json"
+if [ -f "$PERSONAL" ]; then
+  ok "personal uid: $PERSONAL"
+else
+  note "no personal uid — 'mine' is not marked (ai-daridev uid <n>)"
+fi
+
+if command -v ai-daridev >/dev/null 2>&1; then
+  if ai-daridev preflight >/dev/null 2>&1; then ok "preflight: ok"; else bad "preflight failed (run: ai-daridev preflight)"; fi
+else
+  bad "ai-daridev CLI not on PATH (run: ./scripts/setup.sh)"
 fi
 
 GITIGNORE=".gitignore"

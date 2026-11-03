@@ -63,7 +63,7 @@ flowchart TB
 | Why was it built this way? | Engram decisions | searchable, per project, survives sessions |
 | What does a reviewer read? | `docs/decisions/<slug>.md` | a diff, in the PR |
 | What did the last story change? | Engram session summary | the agent's own trail |
-| Whose card is it? | `odoo_uid` in `AGENTS.md` | the MCP account is a service account, not the owner |
+| Whose card is it? | `odoo_uid` in your personal file | the MCP account is a service account, not the owner |
 
 Odoo is deliberate, visible and slow. Engram is automatic, invisible and fast. There is no two-way
 sync: Odoo is authoritative for **state**, Engram for **knowledge**.

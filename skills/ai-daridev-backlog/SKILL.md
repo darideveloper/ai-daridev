@@ -65,27 +65,14 @@ When done, offer to save the context and stack in `AGENTS.md`. The stories go to
 
 ## Projection (only if the tools are available)
 
-Read the workflow config from `AGENTS.md` (`odoo_project`, `odoo_stages`, `odoo_uid`,
-`engram_project`, `card_tag`). If the section is missing, ask me once for the Odoo project name and
-offer to add the section.
-
-Memory resolves its project from the working directory. If it resolves anything other than
-`engram_project`, stop and tell me to reopen the agent in the directory that holds
-`.engram/config.json`. Never write memory into the wrong project, and never guess.
+**Preflight.** Run `ai-daridev preflight` in the repo root and use its JSON (`project`, `stages`,
+`tags`, `uid`, `listing`, `markers`, `assignees`). If the command is missing, stop and say: run
+`./scripts/setup.sh` from the ai-daridev repo. If it exits non-zero, print its `errors` and stop —
+do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings` once, then continue.
 
 **Tool names.** OpenCode: `odoo_odoo_search_read`, `engram_mem_save` — inside Code Mode
 (`execute`) as `tools.odoo.odoo_search_read`, `tools.engram.mem_save`. Claude Code:
 `mcp__odoo__*`, `mcp__engram__*`.
-
-**Preflight — read-only, before any write. Stop instead of guessing:**
-
-1. `project.project` where `name = odoo_project`, `limit 2`. No match → ask me. Two or more → stop
-   and list them; never fuzzy-match.
-2. `project.task.type` where `project_ids` contains that id, ordered by `sequence`. The first is the
-   first stage. If any name in `odoo_stages` is missing, stop and print the project's real stages.
-3. `project.tags` where `name in (frontend, backend, script, workflow)`. A missing tag stops the run
-   and names the missing tag.
-4. Print one line, then continue: `project <name> (<id>) · first stage <name> (<id>) · uid <n>`.
 
 **Tags** are one of `frontend` / `backend` / `script` / `workflow`. `card_tag` in `AGENTS.md` is the
 **default** for this repo; pick another per story only when the work clearly belongs to it, and say

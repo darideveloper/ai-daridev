@@ -14,7 +14,9 @@ its MCP is missing. **Odoo is optional** — without it they remember decisions 
 | Kiro | `~/.kiro/skills` | — | register the Engram MCP for memory |
 | Devin | `~/.config/devin/skills` | — | register the Engram MCP for memory |
 
-`scripts/install.sh` links into `~/.agents/skills` and into every agent directory that exists.
+`scripts/setup.sh` links into `~/.agents/skills` and into every agent directory that exists, then
+applies the MCP entries and the instruction block with timestamped backups (`--dry-run` to preview,
+`--restore` to undo).
 
 ## OpenCode
 
@@ -116,5 +118,7 @@ exist.
 4. a skill loads (`skill` tool, or `/ai-daridev-story` as a command)
 5. remove the Engram MCP entry, restart, run `/ai-daridev-pair` → it must **stop** and ask you to install Engram
 6. remove the Odoo MCP entry, restart, run `/ai-daridev-pair` → it must run normally and say that no card was created
-7. in a repo with a `Workflow config`, run `/ai-daridev-story` → the preflight must print the
-   project, first stage, `odoo_uid` and `tags ok` before writing anything
+7. `ai-daridev preflight` in the repo → `ok: true`, project and stages resolved, uid present
+8. in a repo with no Odoo credentials → preflight exits 0 with a warning, and `/ai-daridev-story`
+   prints the manual checklist instead of writing
+9. rename a stage in Odoo → preflight exits 1 and names the stage

@@ -20,23 +20,22 @@ install Engram and restart the agent. Do not continue without memory.
 - `/ai-daridev-archive` → list the candidates and **ask**: one of them, all, or cancel. Never
   assume "all".
   - With Odoo: cards in "Sprint Complete" of the configured project (`project_id` + `stage_id`,
-    `limit 20`, paginate with `offset`) that have no `retro/<slug>` memory. Mark the ones assigned
-    to `odoo_uid` as yours.
+    `limit` from preflight, paginate with `offset`) that have no `retro/<slug>` memory. Mark the ones
+    assigned to `uid` as yours.
   - Without Odoo: `story/*` memories that have no `retro/*` memory.
 
 ## Steps
 
-1. Read the workflow config from `AGENTS.md` (`odoo_project`, `odoo_stages`, `engram_project`,
-   `decisions_dir`, `odoo_uid`). If it is missing, ask me once. If memory resolves a project other
-   than `engram_project`, stop and tell me to reopen the agent where `.engram/config.json` lives.
-   Preflight, read-only: resolve `project.project` by exact name (`limit 2`, stop on 0 or more than
-   one) and check that every name in `odoo_stages` exists. A missing stage stops the run and prints
-   the real list.
+1. **Preflight.** Run `ai-daridev preflight` in the repo root and use its JSON (`project`, `stages`,
+`tags`, `uid`, `listing`, `markers`, `assignees`). If the command is missing, stop and say: run
+`./scripts/setup.sh` from the ai-daridev repo. If it exits non-zero, print its `errors` and stop —
+do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings` once, then continue.
+
 2. Refresh memory: `engram sync --import` in the directory holding `.engram/config.json`. Warn and
    continue if it fails.
 3. Story mode: load `story/<slug>`, its `decision` memories, any `review/<slug>` record, and the
    Odoo card.
-   Sprint mode: read the cards in "Sprint Complete" (`name`, `description`, `state`, `date_end`,
+   Sprint mode: read the cards in the **done stage** (`stages.done`) (`name`, `description`, `state`, `date_end`,
    `date_last_stage_update`), extract `engram: story/<slug>` from each description, and skip the
    ones that already have a `retro/<slug>` memory.
 4. Reconcile and **flag** drift, without fixing it:

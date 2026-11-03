@@ -17,18 +17,17 @@ install Engram and restart the agent. Do not continue without memory.
 ## Inputs
 
 - `/ai-daridev-review <card id or name>` → one card.
-- `/ai-daridev-review` → list the project's "Sprint in Progress" cards (`project_id` + `stage_id`,
-  `limit 20`, never unbounded) and ask which one. Mark the ones assigned to `odoo_uid` as yours.
+- `/ai-daridev-review` → list the cards in the **active stages** (`project_id` + `stage_id in
+  stages.active`, `limit` from preflight, never unbounded) and ask which one. Mark the ones
+  assigned to `uid` as yours; do not filter by it.
 
 ## Steps
 
-1. Read the workflow config from `AGENTS.md` (`odoo_project`, `odoo_stages`, `odoo_uid`,
-   `engram_project`, `decisions_dir`).
-   Memory resolves its project from the working directory: if it resolves anything other than
-   `engram_project`, stop and ask me to reopen the agent where `.engram/config.json` lives.
-   Preflight, read-only: resolve `project.project` by exact name (`limit 2`, stop on 0 or more than
-   one) and check that every name in `odoo_stages` exists; a missing stage stops the run and prints
-   the real list.
+1. **Preflight.** Run `ai-daridev preflight` in the repo root and use its JSON (`project`, `stages`,
+`tags`, `uid`, `listing`, `markers`, `assignees`). If the command is missing, stop and say: run
+`./scripts/setup.sh` from the ai-daridev repo. If it exits non-zero, print its `errors` and stop —
+do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings` once, then continue.
+
 2. Refresh memory: `engram sync --import` in the directory holding `.engram/config.json`. If it
    fails, warn once and continue.
    Tool names: OpenCode `odoo_odoo_update` / `engram_mem_save`, inside Code Mode (`execute`)
@@ -43,8 +42,8 @@ install Engram and restart the agent. Do not continue without memory.
    line of evidence each.
 7. **Propose the writes.** Never execute yet:
    - **approved** → list any marker that is not `1_done` and ask before proposing the move, then
-     `stage: <current> → Sprint Complete`. Only from an active stage ("Sprint Backlog", "Sprint in
-     Progress"); from "Backlog", warn and ask first.
+     `stage: <current> → <done stage>`. Only from an active stage (`stages.active`); from the
+     backlog stage, warn and ask first.
    - **changes requested** → `create marker: <name>` for missing work,
      `state → 02_changes_requested` on the parent and on the failing markers only, and a new
      `Review (ai-daridev)` block.

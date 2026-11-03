@@ -7,7 +7,8 @@
 set -eu
 
 FORK="${AI_DARIDEV_FORK:-${HOLA_AI_FORK:-$(cd "$(dirname "$0")/.." && pwd)}}"
-VER="${ENGRAM_VERSION:-3.6.1}"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+VER="${ENGRAM_VERSION:-$(cat "$ROOT/VERSION" 2>/dev/null || echo 3.6.1)}"
 LEGACY="backlog story pair archive review"
 AGENT_DIRS="$HOME/.claude $HOME/.gemini $HOME/.continue $HOME/.codeium/windsurf $HOME/.kiro $HOME/.config/devin $HOME/.codex"
 CMD_DIR="$HOME/.config/opencode/commands"
@@ -131,6 +132,11 @@ for link in "$CMD_DIR"/*.md; do
   [ -e "$link" ] || { rm -f "$link"; say "removed stale command link: $(basename "$link")"; }
 done
 say "commands: linked to $CMD_DIR"
+
+# --- 4b. CLI ---------------------------------------------------------------
+mkdir -p "$HOME/.local/bin"
+ln -sfn "$ROOT/scripts/ai-daridev" "$HOME/.local/bin/ai-daridev"
+say "cli: linked ~/.local/bin/ai-daridev"
 
 # --- 5. MCP: print, never rewrite someone's config --------------------------
 say ""
