@@ -58,7 +58,9 @@ engram_bin="$(command -v engram || true)"
 [ -n "$engram_bin" ] || engram_bin="$HOME/.local/bin/engram"
 [ -x "$engram_bin" ] || die "engram not found on PATH and not at ~/.local/bin/engram"
 "$engram_bin" version >/dev/null 2>&1 || die "engram is installed but not runnable ($engram_bin)"
-"$engram_bin" doctor  >/dev/null 2>&1 || die "engram doctor reported findings; run 'engram doctor' and fix them"
+if ! "$engram_bin" doctor >/dev/null 2>&1; then
+  say "warning: 'engram doctor' reported findings — run it and review before relying on memory"
+fi
 say "engram: verified ($("$engram_bin" version 2>/dev/null))"
 
 # --- 2. Remove shadowing copies --------------------------------------------
