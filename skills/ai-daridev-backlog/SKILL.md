@@ -124,6 +124,14 @@ in Claude Code). One memory:
 If the answer carries `judgment_required`, ask me once about the conflict and resolve it with
 `mem_judge_many` (`candidates[].judgment_id`). Never drop the memory silently.
 
+**Export the memory.** After saving, run `engram sync` in the repo root and commit only that:
+
+- if it reports nothing new, stop here;
+- `git add .engram/`;
+- if `git diff --cached --name-only` lists anything outside `.engram/`, unstage it and stop;
+- if HEAD is detached, report and stop;
+- `git commit -m "chore: memory — backlog <engram_project>"`, and never push.
+
 **Without Odoo** — print the full checklist and stop: each card's title, the HTML description to
 paste, the markers to create (names), their state (`01_in_progress`), and a reminder that the
 first column is where a new card goes.

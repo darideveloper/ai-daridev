@@ -28,8 +28,7 @@ install Engram and restart the agent. Do not continue without memory.
 `./scripts/setup.sh` from the ai-daridev repo. If it exits non-zero, print its `errors` and stop —
 do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings` once, then continue.
 
-2. Refresh memory: `engram sync --import` in the directory holding `.engram/config.json`. If it
-   fails, warn once and continue.
+2. Memory is already imported by the preflight (step 1). Do not run `engram sync --import` again.
    Tool names: OpenCode `odoo_odoo_update` / `engram_mem_save`, inside Code Mode (`execute`)
    `tools.odoo.odoo_update` / `tools.engram.mem_save`. Claude Code `mcp__odoo__*`, `mcp__engram__*`.
 3. Read the card: name, description (criteria + tests + the `Markers:` line), `state`, `stage_id`,
@@ -58,7 +57,10 @@ do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings`
     `decision`, `title` = `review <slug>`, `content` = verdict, what failed, the date, the card id,
     in `**What** / **Why** / **Where** / **Learned**`. If it answers `judgment_required`, ask me
     once and resolve it with `mem_judge_many` (`candidates[].judgment_id`).
-11. **Re-review** — if the card is already `02_changes_requested`, re-check only the yellow
+11. **Export the memory** — run `engram sync` in the repo root and commit only that: nothing new →
+    stop; `git add .engram/`; anything outside `.engram/` staged → unstage and stop; detached HEAD →
+    stop; `git commit -m "chore: memory — review <slug>"`; never push.
+12. **Re-review** — if the card is already `02_changes_requested`, re-check only the yellow
     markers. Proposing to flip fixed ones to `1_done` belongs to Gate A.
 
 ## Review block

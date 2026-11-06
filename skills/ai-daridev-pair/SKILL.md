@@ -33,8 +33,7 @@ do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings`
 - Tool names: OpenCode `engram_mem_save` / `odoo_odoo_search_read`, inside Code Mode (`execute`)
   `tools.engram.mem_save` / `tools.odoo.odoo_search_read`. Claude Code `mcp__engram__*`,
   `mcp__odoo__*`.
-- Refresh memory first: run `engram sync --import` in the directory holding `.engram/config.json`.
-  If it fails, warn once and continue.
+- Memory is already imported by the preflight. Do not run `engram sync --import` again.
 - Load the **markers** from the card's children, or from its `Markers:` line if the card was
   pasted. Markers are tracking only: a name and a state, never a description. Create a new one only
   when I ask — as a subtask with `parent_id`, `state=01_in_progress`, `user_ids=[]`,

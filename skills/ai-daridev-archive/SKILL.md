@@ -31,8 +31,7 @@ install Engram and restart the agent. Do not continue without memory.
 `./scripts/setup.sh` from the ai-daridev repo. If it exits non-zero, print its `errors` and stop —
 do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings` once, then continue.
 
-2. Refresh memory: `engram sync --import` in the directory holding `.engram/config.json`. Warn and
-   continue if it fails.
+2. Memory is already imported by the preflight (step 1). Do not run `engram sync --import` again.
 3. Story mode: load `story/<slug>`, its `decision` memories, any `review/<slug>` record, and the
    Odoo card.
    Sprint mode: read the cards in the **done stage** (`stages.done`) (`name`, `description`, `state`, `date_end`,

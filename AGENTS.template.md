@@ -49,6 +49,14 @@ ai-daridev uid <n>
 It marks "mine" in listings. Cards are created unassigned unless you ask for an assignee in the
 same run.
 
+## Memory
+
+- The store is **global** (`~/.engram/engram.db`); the repo only carries exported chunks.
+- `ai-daridev preflight` imports pending chunks before every skill — nothing to remember after a pull.
+- Every skill that writes memory exports and commits: `engram sync` → `git add .engram/` →
+  `git commit -m "chore: memory — <kind> <id>"`. Only `.engram/`, never a push.
+- Never hand-edit a chunk. On a manifest conflict, take either side and run `engram sync --import`.
+
 ## Rules worth repeating in the repo
 
 ```md

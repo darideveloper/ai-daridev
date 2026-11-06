@@ -184,6 +184,25 @@ def main() -> int:
     except Exception as e:  # noqa: BLE001
         errors.append(f"engram is not runnable at {binary}: {e}")
 
+    # Import pending chunks (best effort) and detect a stale export.
+    if result["engram"]["version"]:
+        try:
+            subprocess.run([binary, "sync", "--import"], cwd=root, capture_output=True,
+                           text=True, timeout=20, check=False)
+        except Exception as e:  # noqa: BLE001
+            warnings.append(f"could not import memory chunks: {e}")
+        manifest = root / ".engram" / "manifest.json"
+        if not manifest.is_file():
+            try:
+                st = subprocess.run([binary, "sync", "--status"], cwd=root, capture_output=True,
+                                    text=True, timeout=20, check=False)
+                m = re.search(r"Local chunks:\s*(\d+)", st.stdout)
+                if m and int(m.group(1)) > 0:
+                    warnings.append(
+                        f"{m.group(1)} chunks recorded but .engram/ is empty — run 'engram sync'")
+            except Exception:  # noqa: BLE001
+                pass
+
     # personal uid
     personal = PERSONAL_DIR / f"{slug(root)}.json"
     if personal.is_file():

@@ -92,6 +92,14 @@ do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings`
 If the answer carries `judgment_required`, ask me once and resolve it with `mem_judge_many`
 (`candidates[].judgment_id`). Never drop the memory silently.
 
+**Export the memory.** After saving, run `engram sync` in the repo root and commit only that:
+
+- if it reports nothing new, stop here;
+- `git add .engram/`;
+- if `git diff --cached --name-only` lists anything outside `.engram/`, unstage it and stop;
+- if HEAD is detached, report and stop;
+- `git commit -m "chore: memory — story <slug>"`, and never push.
+
 ## Card body (HTML)
 
 Regenerate the whole `description` — never append. Escape `<`, `>`, `&`. Keep this order, and keep

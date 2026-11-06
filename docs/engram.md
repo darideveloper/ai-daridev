@@ -90,21 +90,34 @@ is never dropped silently.
 
 ## Freshness
 
-`/ai-daridev-pair`, `/ai-daridev-review` and `/ai-daridev-archive` run `engram sync --import` in the
-directory holding `.engram/config.json` before using memory. A failure warns and continues — an
-import problem must never block the work.
+`ai-daridev preflight` runs `engram sync --import` before every skill, so a teammate is current
+without remembering anything. A failure is a warning: an import problem must never block the work.
+Preflight also warns when `engram sync --status` reports chunks but `.engram/manifest.json` is
+missing — the exact shape of an empty export.
+
+## Exporting
+
+Every skill that writes memory ends by exporting and committing:
+
+```
+engram sync                     # nothing new → stop
+git add .engram/
+git diff --cached --name-only   # anything outside .engram/ → unstage and stop
+git commit -m "chore: memory — <backlog|story|review|pair|archive> <id>"
+# never push
+```
 
 ## Sharing through git
 
 The database never leaves the machine. Decisions travel as append-only, content-hashed chunks.
 
 ```bash
-# before pushing
+# the skills do this for you, at the end of every run
 engram sync
-git add .engram/ && git commit -m "chore: memory — <story>"
+git add .engram/ && git commit -m "chore: memory — <kind> <id>"
 
-# after pulling
-engram sync --import
+# after pulling, preflight imports automatically
+ai-daridev preflight
 ```
 
 ```
@@ -114,12 +127,16 @@ engram sync --import
 └── chunks/*.jsonl.gz  # ~2 KB per sync (committed)
 ```
 
-`/ai-daridev-pair` and `/ai-daridev-archive` both commit: after exporting, they stage `.engram/`
-only, refuse if anything else is staged, commit `chore: memory — <slug>`, and never push.
+All five skills commit: after exporting they stage `.engram/` only, refuse if anything else is
+staged, skip on a detached HEAD, commit `chore: memory — <kind> <id>`, and never push.
 
 `engram.db*` and `tmp/` are gitignored. Every sync writes a **new** chunk, so two people never edit
 the same file; the manifest is the only thing that can conflict and it merges by keeping both
 entries.
+
+**Conflict rule:** never hand-edit a chunk or the manifest. Take either side of the manifest, then
+run `engram sync --import`; the next `engram sync` rewrites the manifest from the chunks on disk.
+Chunks are content-hashed, so a duplicate import is a no-op.
 
 ## Privacy
 
