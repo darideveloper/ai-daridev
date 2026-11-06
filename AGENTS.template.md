@@ -57,6 +57,8 @@ same run.
 - Never mark a card done or cancelled; `state=Approved` + `date_end` is the agent's only claim.
 - Markers are the exception: they are validated with `1_done`.
 - Markers carry no detail: name + state only. Detail goes in the card's Review block.
+- Markers are subtasks with `display_in_project=False`: that flag is what keeps them out of the
+  board. Never write `project_id` (Odoo computes it from the parent) or `stage_id` on a marker.
 - `engram sync` runs where `.engram/config.json` lives. `/ai-daridev-pair` and
   `/ai-daridev-archive` commit, and only `.engram/`.
 ```

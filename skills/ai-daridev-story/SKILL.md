@@ -69,11 +69,15 @@ do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings`
 - Find the card by `project_id = <resolved id>` and `description ilike "engram: story/<slug>"`.
 - Found → update `description` only. Never touch `stage_id`, `state`, `sequence` or tags.
 - Not found → ask me "create it in Backlog?" before writing anything. If I say yes, create it in
-  the project's first stage (same rules as `/ai-daridev-backlog`).
+  the project's first stage with one tag, `sequence`, and `user_ids: [[6,0,[]]]` (Odoo assigns the
+  creator by default) — same rules as `/ai-daridev-backlog`.
 - **Markers** — read them from the card's children, or from the `Markers:` line in its
   description. Never invent a different set. If the card has none and Odoo is available, propose
-  2–4 for my approval before creating them (name only, `state=01_in_progress`; they are validated
-  to `1_done` later by `/ai-daridev-pair` or `/ai-daridev-review`).
+  2–4 for my approval before creating them as subtasks: `name`, `parent_id`, `state=01_in_progress`,
+  `user_ids=[]`, and **`display_in_project=False`** (that flag is what hides it from the board;
+  `project_id` is computed from the parent and must not be written), no `stage_id`. They are
+  validated to `1_done` later by `/ai-daridev-pair` or `/ai-daridev-review`. Read one back: if
+  `display_in_project` is not false, stop and report.
 - Missing tools → if Odoo is unavailable, continue and print the handout below. Engram is
   required: if the memory tools are missing, stop before doing anything.
 

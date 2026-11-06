@@ -88,7 +88,7 @@ human decision. Subtasks are the exception — markers use `1_done` (see below).
 | `description` | HTML body (below) | readable in Odoo, greppable by the key |
 | `tag_ids` | one of `frontend` / `backend` / `script` / `workflow`, default `card_tag` | one axis, no taxonomy drift |
 | `date_deadline` | only if the user gave one, UTC `YYYY-MM-DD 00:00:00` | a fake deadline is worse than none |
-| markers (subtasks) | created after the card: `name`, `parent_id`, `project_id`, `state=01_in_progress` | tracking only — no description, no column, no dates |
+| markers (subtasks) | created after the card: `name`, `parent_id`, `state=01_in_progress`, `user_ids=[]`, **`display_in_project=False`** — never `project_id` (computed), never `stage_id` | tracking only — no description, no column, no dates |
 
 Never set: `state` (defaults), `allocated_hours`, `priority`, `user_ids`, `partner_id`.
 
@@ -131,6 +131,11 @@ flowchart LR
     style D fill:#FFE4B5,stroke:#333,color:#000
 ```
 
+- **Hidden by `display_in_project=False`.** The project task action filters on
+  `display_in_project = True`, which is the supported switch (the form's "Hide the sub-task in your
+  pipeline" option). A subtask **cannot** be project-less: there is a SQL constraint, and
+  `project_id` is computed from the parent — so the skills never write it (nor `stage_id`). Making a
+  marker visible again is just toggling that flag in the UI.
 - Hidden inside the parent card, so their column is cosmetic: never write `stage_id`.
 - No description, no dates, no key. Detail belongs in the card's Review block.
 - **Markers are the only things that use `1_done`.** The card never uses Done/Canceled: it would

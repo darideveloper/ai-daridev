@@ -19,6 +19,9 @@ Every card may carry 2–4 **tracking markers**: component-sized names, mirrored
 subtasks and echoed on the card's `Markers:` line.
 
 - Name + state only. Never a description, a column, dates or a key.
+- **Hidden from the board**: markers are created with `display_in_project=False`, the same flag the
+  form exposes as "Hide the sub-task in your pipeline". `project_id` is computed from the parent
+  (and mandatory), so the skills never write it.
 - States: `01_in_progress` working · `1_done` validated · `02_changes_requested` rejected.
 - Markers use `1_done`; the **card** never does (it would vanish from the kanban). `1_canceled` is
   human-only on both.

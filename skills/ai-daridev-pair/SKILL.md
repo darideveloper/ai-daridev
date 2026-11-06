@@ -37,7 +37,10 @@ do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings`
   If it fails, warn once and continue.
 - Load the **markers** from the card's children, or from its `Markers:` line if the card was
   pasted. Markers are tracking only: a name and a state, never a description. Create a new one only
-  when I ask, and rewrite the `Markers:` line when you do.
+  when I ask — as a subtask with `parent_id`, `state=01_in_progress`, `user_ids=[]`,
+  **`display_in_project=False`** (never write `project_id`; Odoo computes it from the parent) and no
+  `stage_id` — then read it back to confirm `display_in_project` is false, and rewrite the
+  `Markers:` line.
 - Memory resolves its project from the working directory. If it resolves anything other than the
   `engram_project` in `AGENTS.md`, stop and tell me to reopen the agent in the directory that
   holds `.engram/config.json`. Never write memory into the wrong project.

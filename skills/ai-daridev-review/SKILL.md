@@ -44,9 +44,11 @@ do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings`
    - **approved** → list any marker that is not `1_done` and ask before proposing the move, then
      `stage: <current> → <done stage>`. Only from an active stage (`stages.active`); from the
      backlog stage, warn and ask first.
-   - **changes requested** → `create marker: <name>` for missing work,
+   - **changes requested** → `create marker: <name>` for missing work — subtask with `parent_id`,
+     `state=02_changes_requested`, `user_ids=[]`, **`display_in_project=False`** (never write
+     `project_id`; Odoo computes it from the parent) and no `stage_id` — then
      `state → 02_changes_requested` on the parent and on the failing markers only, and a new
-     `Review (ai-daridev)` block.
+     `Review (ai-daridev)` block. Read a created marker back: `display_in_project` must be false.
 8. **Two gates**:
    - Gate A — one approval for markers + states + description.
    - Gate B — a separate confirmation for the column move. Never bundled.

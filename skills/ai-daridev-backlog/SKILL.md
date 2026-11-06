@@ -87,12 +87,17 @@ which one you picked.
 4. Create the cards in one contiguous batch: `sequence` = max + 10, +20, +30…, `stage_id` = the
    first stage, `description` per the card body below, exactly one tag of
    frontend / backend / script / workflow (default `card_tag`), and `date_deadline` only if I gave
-   one (UTC, `YYYY-MM-DD 00:00:00`). Do not write `state`. Do not write `user_ids`: cards are
-   created unassigned unless I ask for an assignee in this same run.
-5. For each card, create its markers as subtasks: `name` (normalized for comparison),
-   `parent_id`, `project_id`, `state=01_in_progress`. No `description`, no `stage_id`, no dates.
-   Skip a marker whose normalized name already exists among the card's children.
-6. Report a table: id · name · stage · tag · markers. If I deny an approval mid-batch, stop and
+   one (UTC, `YYYY-MM-DD 00:00:00`). Write `user_ids: [[6,0,[]]]` explicitly — Odoo assigns the
+   creator by default — and do not write `state`.
+5. For each card, create its markers as subtasks: `name` (normalized for comparison), `parent_id`,
+   `state=01_in_progress`, `user_ids=[[6,0,[]]]`, and **`display_in_project=False`**. That last
+   flag is what keeps the marker out of the board: Odoo's task action filters on it, and a subtask
+   cannot live without a project (there is a SQL constraint), so `project_id` is computed from the
+   parent and must not be written. No `description`, no `stage_id`, no dates, no tag. Skip a marker
+   whose normalized name already exists among the card's children.
+6. Read one marker back. If `display_in_project` is not false, stop and report: the board would be
+   polluted.
+7. Report a table: id · name · stage · tag · markers. If I deny an approval mid-batch, stop and
    list what already exists so a re-run resumes without duplicates.
 
 Card body at creation (`/ai-daridev-story` later adds criteria, tests and the review block; the
