@@ -10,6 +10,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $legacy = @("backlog", "story", "pair", "archive", "review")
+$gone = @("check-plan")
 $home_ = $env:USERPROFILE
 $engramDir = Join-Path $env:LOCALAPPDATA "engram"
 $engramExe = Join-Path $engramDir "engram.exe"
@@ -63,7 +64,7 @@ if ($userPath -notlike "*$engramDir*") {
 
 # --- 2. Remove shadowing copies --------------------------------------------
 # OpenCode gives ~/.config/opencode/skills precedence over ~/.agents/skills.
-foreach ($id in ($ids + $legacy)) {
+foreach ($id in ($ids + $legacy + $gone)) {
     $shadow = Join-Path $home_ ".config\opencode\skills\$id"
     if (Test-Path $shadow) {
         Remove-Item $shadow -Recurse -Force
@@ -84,6 +85,19 @@ $agentDirs = @(
     (Join-Path $home_ ".config\devin\skills"),
     (Join-Path $home_ ".codex\skills")
 )
+
+# retired names: drop the local copy, its agent links and its command
+foreach ($id in $gone) {
+    $old = Join-Path $agentsRoot $id
+    if (Test-Path $old) { Remove-Item $old -Recurse -Force; Say "removed retired skill: $old" }
+    foreach ($dir in $agentDirs) {
+        $l = Join-Path $dir $id
+        $item = Get-Item -LiteralPath $l -Force -ErrorAction SilentlyContinue
+        if ($null -ne $item) { Remove-Item -LiteralPath $l -Recurse -Force }
+    }
+    $cmd = Join-Path $home_ ".config\opencode\commands\$id.md"
+    if (Test-Path $cmd) { Remove-Item $cmd -Force }
+}
 
 # remove links and commands from the pre-prefix era
 foreach ($id in $legacy) {

@@ -76,7 +76,7 @@ def render_block(cfg: dict) -> str:
     lines += [
         f"- engram_project: {cfg['engram_project']}",
         f"- decisions_dir: {cfg['decisions_dir']}",
-        f"- markers: {cfg['markers']['min']}-{cfg['markers']['max']}",
+        f"- plan_steps: {cfg['plan_steps']['min']}-{cfg['plan_steps']['max']}",
         f"- listing_limit: {cfg['listing_limit']}",
         block_mod.END,
     ]
@@ -125,7 +125,7 @@ def main() -> int:
     cfg: dict = {
         "version": 1, "odoo": None,
         "engram_project": None, "decisions_dir": "docs/decisions",
-        "listing_limit": 20, "markers": {"min": 2, "max": 4}, "assignees": False,
+        "listing_limit": 20, "plan_steps": {"min": 5, "max": 20}, "assignees": False,
     }
 
     # memory project

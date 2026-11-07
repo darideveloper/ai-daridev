@@ -74,9 +74,9 @@ sync: Odoo is authoritative for **state**, Engram for **knowledge**.
 flowchart TD
     IDEA([Idea]) --> BL["/ai-daridev-backlog"]
     BL --> BLW["Writes: N cards in the first stage<br/>one tag, sequence, optional deadline<br/>memory backlog/project"]
-    BLW --> OK["Backlog approved<br/>cards + markers"]
+    BLW --> OK["Backlog approved<br/>cards only, no subtasks"]
     OK --> ST["/ai-daridev-story"]
-    ST --> STW["Writes: card description as HTML<br/>memory story/slug<br/>no stage move"]
+    ST --> STW["Writes: plan steps as subtasks<br/>card description as HTML<br/>memory story/slug + plan/slug<br/>no stage move"]
     STW --> PAIR["/ai-daridev-pair — slug or pasted card"]
     PAIR --> MODE{"Repo has code<br/>and a test runner?"}
     MODE -->|Yes| CODE["TDD: red → green → stop"]
@@ -89,14 +89,14 @@ flowchart TD
     DEC -->|No| EPH["stays in chat"]
     MEM --> CLOSE
     EPH --> CLOSE
-    CLOSE["Close: state=Approved + date_end<br/>markers confirmed<br/>ADR if shared contract<br/>summary + engram sync"]
+    CLOSE["Close: state=Approved + date_end<br/>steps confirmed<br/>ADR if shared contract<br/>summary + engram sync"]
     CLOSE --> ARCH["/ai-daridev-archive — slug or bare"]
     ARCH --> OUT["Retro printed, memory retro/slug<br/>ADR only if it qualified"]
 
     TEAM([Card built by someone else]) --> RV["/ai-daridev-review"]
     RV --> VERD{"Verdict"}
     VERD -->|correct| MOVE["Propose: move to Sprint Complete<br/>(separate confirmation)"]
-    VERD -->|wrong| CHG["Markers + parent yellow<br/>Review block in the card"]
+    VERD -->|wrong| CHG["Failing steps + parent yellow<br/>Review block in the card"]
     CHG --> RV
     MOVE --> ARCH
 ```

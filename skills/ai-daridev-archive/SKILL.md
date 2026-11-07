@@ -27,13 +27,13 @@ install Engram and restart the agent. Do not continue without memory.
 ## Steps
 
 1. **Preflight.** Run `ai-daridev preflight` in the repo root and use its JSON (`project`, `stages`,
-`tags`, `uid`, `listing`, `markers`, `assignees`). If the command is missing, stop and say: run
+`tags`, `uid`, `listing`, `plan_steps`, `assignees`). If the command is missing, stop and say: run
 `./scripts/setup.sh` from the ai-daridev repo. If it exits non-zero, print its `errors` and stop —
 do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings` once, then continue.
 
 2. Memory is already imported by the preflight (step 1). Do not run `engram sync --import` again.
-3. Story mode: load `story/<slug>`, its `decision` memories, any `review/<slug>` record, and the
-   Odoo card.
+3. Story mode: load `story/<slug>`, `plan/<slug>`, its `decision` memories, any `review/<slug>`
+   record, and the Odoo card.
    Sprint mode: read the cards in the **done stage** (`stages.done`) (`name`, `description`, `state`, `date_end`,
    `date_last_stage_update`), extract `engram: story/<slug>` from each description, and skip the
    ones that already have a `retro/<slug>` memory.
@@ -42,8 +42,9 @@ do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings`
    - memory says shipped, card is not in Sprint Complete → "card not moved"
    - approved means any of: `state = 03_approved`, stage is "Sprint Complete", or a `review/*`
      record — only when none of them applies is it "not approved"
-   - a marker is still not `1_done` while the card sits in "Sprint Complete" → "marker still open:
+   - a step is still not `1_done` while the card sits in "Sprint Complete" → "step still open:
      <name>"; list them, never flip them here
+   - `plan/<slug>` still has `pending_sync` → "plan not synced to the tracker"
    - a decision contradicts the description → quote both
 5. Output the retro (format below). Offer follow-ups as a list; don't create cards.
 6. Save one memory `retro/<slug>` (type `learning`) with the retro body: `title` = `retro <slug>`,
@@ -56,10 +57,11 @@ do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings`
 8. **Export and commit the memory** (this skill may commit — the only one that may):
    - run `engram sync` in the directory holding `.engram/config.json`;
    - commit **only if** that directory (or its git root) contains `.engram/config.json`;
-   - stage only `.engram/`; if `git diff --cached --name-only` shows anything outside `.engram/`,
-     do not commit — list the staged files and stop;
-   - message: `chore: memory — <slug>`;
-   - never `git push`. If there is nothing to export or nothing staged, say so and continue.
+   - `git add .engram/`; detached HEAD, merge/rebase in progress or `.engram/` conflicts → report
+     and skip the commit (the sync already happened);
+   - `git commit --only -m "chore: memory — <slug>" -- .engram/`, leaving anything else staged
+     untouched; never `--no-verify`, never `git push`;
+   - nothing to export → say so and continue.
 
 ## Format
 
@@ -69,6 +71,7 @@ Shipped: ...
 Decisions: <dated, each with its Why>
 Deviations: ...
 Follow-ups: ...
+Plan: <done>/<total> steps · dropped <n> · open <n>
 Card: task <id> · state <state> · end <date_end or date_last_stage_update>
 Drift: <or "none">
 ```

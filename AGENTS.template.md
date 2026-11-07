@@ -17,7 +17,7 @@ Prefer generating it with `ai-daridev init` — it detects the stages, tags and 
 - card_tags: frontend, backend, script, workflow
 - engram_project: <the name used by engram init>
 - decisions_dir: docs/decisions
-- markers: 2-4
+- plan_steps: 5-20
 - listing_limit: 20
 <!-- ai-daridev:end -->
 ```
@@ -34,7 +34,7 @@ Prefer generating it with `ai-daridev init` — it detects the stages, tags and 
 | `card_tags` | the vocabulary the skills may use |
 | `engram_project` | must equal `.engram/config.json` |
 | `decisions_dir` | where ADRs go |
-| `markers` | `min-max` tracking markers per card |
+| `plan_steps` | `min-max` plan steps per card (each becomes a hidden subtask) |
 | `listing_limit` | page size for every listing |
 
 ## Personal, never committed
@@ -63,10 +63,13 @@ same run.
 - Run `ai-daridev preflight` before any write; if it fails, print its errors and stop.
 - Never move cards between columns; that is the owner's job, one card at a time.
 - Never mark a card done or cancelled; `state=Approved` + `date_end` is the agent's only claim.
-- Markers are the exception: they are validated with `1_done`.
-- Markers carry no detail: name + state only. Detail goes in the card's Review block.
-- Markers are subtasks with `display_in_project=False`: that flag is what keeps them out of the
-  board. Never write `project_id` (Odoo computes it from the parent) or `stage_id` on a marker.
-- `engram sync` runs where `.engram/config.json` lives. `/ai-daridev-pair` and
-  `/ai-daridev-archive` commit, and only `.engram/`.
+- Plan steps are the exception: they are validated with `1_done` (dropped steps use `1_canceled`).
+- Plan steps are subtasks with `display_in_project=False`: that flag is what keeps them out of the
+  board. Never write `project_id` (Odoo computes it from the parent) or `stage_id` on a step.
+- Every step carries a key in its description: `ai-daridev: plan/<slug>#pN`. The key is the
+  identity; names may change, keys never do.
+- Structure changes to the plan (add/rename/remove/reorder) ask once before writing to Odoo;
+  state changes are reported, not asked.
+- `engram sync` runs where `.engram/config.json` lives. Checkpoints commit with
+  `git commit --only -- .engram/`, so your staged files are never touched; never push.
 ```

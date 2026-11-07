@@ -113,6 +113,17 @@ else
   note "add '.engram/engram.db*' and '.engram/tmp/' to $GITIGNORE"
 fi
 
+echo "memory"
+if [ -f .engram/config.json ]; then
+  if [ -n "$(git status --porcelain -- .engram 2>/dev/null)" ]; then
+    note ".engram/ has uncommitted changes (checkpoint commits use: git commit --only -- .engram/)"
+  else
+    ok ".engram/ is clean"
+  fi
+else
+  note "no .engram/config.json here — memory checks skipped"
+fi
+
 echo
 if [ "$fails" -gt 0 ]; then
   echo "$fails problem(s), $warn warning(s). Fix the FAIL lines first."

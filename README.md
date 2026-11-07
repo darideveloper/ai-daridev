@@ -22,16 +22,23 @@ Odoo. **Engram is required** — the skills refuse to run without it. **Odoo is 
 | Skill | What it does | What it never does |
 |---|---|---|
 | [`/ai-daridev-backlog`](skills/ai-daridev-backlog/SKILL.md) | Turns an idea into a short backlog of vertical, one-line user stories. | Invent requirements, technical stories, estimates. |
-| [`/ai-daridev-story`](skills/ai-daridev-story/SKILL.md) | Takes **one** story, adds 2–3 Given/When/Then acceptance criteria and a mini plan (≤5 bullets) for your approval. | Write code. If it needs more than 3 criteria, it proposes splitting the story. |
+| [`/ai-daridev-story`](skills/ai-daridev-story/SKILL.md) | Takes **one** story, adds 2–3 Given/When/Then acceptance criteria and a 5–20 step plan (one hidden subtask per step) for your approval. | Write code. If it needs more than 3 criteria, it proposes splitting the story. |
 | [`/ai-daridev-pair`](skills/ai-daridev-pair/SKILL.md) | Pair programming: the AI drives, you navigate. One test → red → minimum code → green, then it stops and waits. For non-code work it investigates, proposes a numbered plan, and executes it one step at a time. | Commit, edit tests to make them pass, add things you didn't ask for, move tracker columns. |
-| [`/ai-daridev-review`](skills/ai-daridev-review/SKILL.md) | Reviews someone else's card against its criteria and markers, proposes the writes, and applies them after approval. | Move a card without a separate confirmation, invent a verdict, mark work done. |
+| [`/ai-daridev-review`](skills/ai-daridev-review/SKILL.md) | Reviews someone else's card against its criteria and plan steps, proposes the writes, and applies them after approval. | Move a card without a separate confirmation, invent a verdict, mark work done. |
 | [`/ai-daridev-archive`](skills/ai-daridev-archive/SKILL.md) | Closes a story or a sprint: asks which card(s), reconciles the tracker with memory, prints the retro, and exports the memory chunk. | Move cards, mark work done, invent a retro with no records. |
 
 Each skill's output is the next one's input, as blocks ready to paste into your tracker.
 
-Cards carry two extra things: a `Markers:` line (2–4 component-sized tracking items, mirrored as
-hidden subtasks) and a `Review (ai-daridev)` section once someone has reviewed the work. Subtasks
-are status markers only — never put detail in them.
+The plan is the checklist. `/ai-daridev-story` writes 5–20 steps and creates one hidden subtask per
+step, keyed `ai-daridev: plan/<slug>#pN` in its description. The card shows the steps (name and
+detail, no status); the subtasks carry the state. Structure changes ask once, state changes are
+reported, and every change prints the plan in chat with counts and the next step.
+
+Cards also carry a `Review (ai-daridev)` section once someone has reviewed the work.
+
+Outside the flow, [`/ai-daridev-check-plan`](skills/ai-daridev-check-plan/SKILL.md) audits a plain-text
+plan already in the chat, fixes the gaps and returns a leaner one. Chat-only: no Engram, no Odoo, no
+`preflight`.
 
 ## Principles
 
@@ -51,7 +58,7 @@ cd ai-daridev
 ```
 
 `setup` installs or upgrades **Engram** (version pinned in `VERSION`, staged write, aborts if
-`engram compatibility` refuses), symlinks the five skills and the OpenCode commands, **applies** the
+`engram compatibility` refuses), symlinks the skills and the OpenCode commands, **applies** the
 MCP entries with timestamped backups (Engram always; Odoo only when a wrapper and its 600-perm env
 file exist), and writes the `<!-- ai-daridev -->` block into the four agent instruction files.
 
@@ -100,7 +107,7 @@ Each repository declares where things go in its `AGENTS.md`, between markers. Ge
 - card_tags: frontend, backend, script, workflow
 - engram_project: acme-app
 - decisions_dir: docs/decisions
-- markers: 2-4
+- plan_steps: 5-20
 - listing_limit: 20
 <!-- ai-daridev:end -->
 ```
@@ -116,7 +123,7 @@ from the working directory, and `ai-daridev preflight` stops rather than write i
 Every skill starts with:
 
 ```bash
-ai-daridev preflight     # JSON: project, stages, tags, uid, listing, markers
+ai-daridev preflight     # JSON: project, stages, tags, uid, listing, plan_steps
 ```
 
 If it exits non-zero, the skill prints its errors and stops. The contract is in

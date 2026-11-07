@@ -30,6 +30,7 @@ ai-daridev doctor           # same, plus `engram doctor` and install checks
   "uid": 2,
   "engram": {"project": "acme-app", "match": true, "version": "engram 3.6.1"},
   "listing": {"limit": 20, "mine_only": false},
+  "plan_steps": {"min": 5, "max": 20},
   "markers": {"min": 2, "max": 4},
   "assignees": false,
   "errors": [],
@@ -51,6 +52,10 @@ teammate; a *wrong* password is a broken machine and must stop.
 
 Only `project.project`, `project.task.type` and `project.tags` — the same project models the global
 rules allow. It never reads `res.users`, and it never prints credentials.
+
+`plan_steps` is the plan granularity (5–20 steps). `markers` is the deprecated pre-plan key:
+preflight still emits it so blocks written before the plan existed keep validating, but every skill
+reads `plan_steps`.
 
 ## Schema
 

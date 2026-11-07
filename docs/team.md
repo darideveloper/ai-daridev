@@ -7,7 +7,7 @@ One person owns the board and the memory; everybody can work on the cards.
 | Role | Needs | Does |
 |---|---|---|
 | Owner | Engram, skills, Odoo | `/ai-daridev-backlog`, `/ai-daridev-story`, `/ai-daridev-pair`, `/ai-daridev-review`, `/ai-daridev-archive`; moves columns, validates work |
-| Teammate | Engram, skills (Odoo optional) | picks a card, pastes it into their agent, builds, flips markers, submits the change |
+| Teammate | Engram, skills (Odoo optional) | picks a card, pastes it into their agent, builds, flips plan steps, submits the change |
 
 The owner is the only one who moves cards and the only one who marks work done. That is what keeps
 the board honest.
@@ -19,23 +19,26 @@ someone owns work they did not accept.
 
 ## How the team builds
 
-**Everyone builds with the agent.** It is what makes the card, the markers and the memory agree
+**Everyone builds with the agent.** It is what makes the card, the plan steps and the memory agree
 with the code. Manual work is not forbidden, but then the person who did it updates the card and
-the markers by hand — the board may not silently disagree with reality.
+the step states by hand — the board may not silently disagree with reality.
 
 If the agent has no Odoo connection, it prints the checklist instead of writing: card state,
-markers and states, the text to paste, and "the column is the owner's". Nothing is left implicit.
+step names and states, the text to paste, and "the column is the owner's". Nothing is left implicit.
 
-## Markers
+## Plan steps
 
-Teammates create the markers they need (name only, no description) and flip them:
+The plan is the checklist: `/ai-daridev-story` creates one hidden subtask per step, with the key
+`ai-daridev: plan/<slug>#pN` in its description. Teammates flip them:
 
 - gray while working (`01_in_progress`),
 - done when they consider it validated (`1_done`) — this is what moves the card's `2/3` badge,
-- yellow only when a review asks for changes (`02_changes_requested`).
+- yellow only when a review asks for changes (`02_changes_requested`),
+- dropped when the plan changes and the step no longer applies (`1_canceled`), never deleted.
 
-Markers are hidden inside the card, so they never clutter a column. The card itself never uses Done
-or Canceled — it would disappear from the default kanban.
+Steps are hidden inside the card, so they never clutter a column. The card itself never uses Done
+or Canceled — it would disappear from the default kanban. Adding, renaming, removing or reordering
+steps asks the owner once; flipping a state does not.
 
 ## The loop
 
@@ -57,12 +60,12 @@ sequenceDiagram
     alt correct
         Owner->>O: move to Sprint Complete (separate confirmation)
     else changes requested
-        Owner->>O: markers + parent yellow, Review block written
-        T->>O: fixes, flips the yellow markers
+        Owner->>O: failing steps + parent yellow, Review block written
+        T->>O: fixes, flips the yellow steps
         Owner->>Owner: /ai-daridev-review (re-review)
     end
     Owner->>Owner: /ai-daridev-archive if it was a tracked story
-    Note over Owner,O: state + markers, never a silent column move
+    Note over Owner,O: state + steps, never a silent column move
     Owner->>R: engram sync + commit chunks
     T->>R: git pull
     T->>TE: engram sync --import
@@ -82,7 +85,7 @@ ai-daridev uid <your-odoo-id>   # optional: marks "mine"
 ai-daridev preflight            # must pass before using any skill
 ```
 
-`setup` brings Engram, links the five skills and applies the MCP entries with backups. The repo's
+`setup` brings Engram, links the skills and applies the MCP entries with backups. The repo's
 `AGENTS.md` block is committed by the owner, so a teammate never runs `init` and never answers a
 question about stages or projects. Odoo is optional: without credentials, `preflight` degrades and
 the skills print the manual checklist.

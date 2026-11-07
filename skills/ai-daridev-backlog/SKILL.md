@@ -43,30 +43,23 @@ Expensive decisions: <the ones that apply, or "none">
 
 ## Backlog
 1. As a <actor>, I want <action>, so that <benefit>.
-   Markers: button component · input field · form organism
 2. As a <actor>, I want <action>, so that <benefit>. Requires: #1
 ```
 
 Add `Requires: #N` only when a story makes no sense without another.
 
-## Markers
+## No plan, no subtasks
 
-Every story may carry **2–4 tracking markers**: component-sized names, no description, no dates.
-They are how the implementer follows progress inside the card.
-
-- Optional: a story with no natural breakdown gets none.
-- Names only, chosen with me during the approval pass (I can edit your proposal).
-- They become Odoo subtasks, hidden inside the card, and are echoed in the card description on a
-  `Markers:` line so someone without Odoo access can recreate them.
-- States: `01_in_progress` working · `1_done` validated · `02_changes_requested` rejected.
-  Never `03_approved` on a marker: the card closes at `03_approved`, the markers use `1_done`.
+A backlog card is just the story. The plan is 5–20 steps and belongs to `/ai-daridev-story`, which
+creates one hidden Odoo subtask per step. Do not create subtasks or a `Markers:` line here: two
+skills writing the same checklist is how cards drift.
 
 When done, offer to save the context and stack in `AGENTS.md`. The stories go to my tracker; don't save them to files unless I ask.
 
 ## Projection (only if the tools are available)
 
 **Preflight.** Run `ai-daridev preflight` in the repo root and use its JSON (`project`, `stages`,
-`tags`, `uid`, `listing`, `markers`, `assignees`). If the command is missing, stop and say: run
+`tags`, `uid`, `listing`, `plan_steps`, `assignees`). If the command is missing, stop and say: run
 `./scripts/setup.sh` from the ai-daridev repo. If it exits non-zero, print its `errors` and stop —
 do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings` once, then continue.
 
@@ -89,29 +82,18 @@ which one you picked.
    frontend / backend / script / workflow (default `card_tag`), and `date_deadline` only if I gave
    one (UTC, `YYYY-MM-DD 00:00:00`). Write `user_ids: [[6,0,[]]]` explicitly — Odoo assigns the
    creator by default — and do not write `state`.
-5. For each card, create its markers as subtasks: `name` (normalized for comparison), `parent_id`,
-   `state=01_in_progress`, `user_ids=[[6,0,[]]]`, and **`display_in_project=False`**. That last
-   flag is what keeps the marker out of the board: Odoo's task action filters on it, and a subtask
-   cannot live without a project (there is a SQL constraint), so `project_id` is computed from the
-   parent and must not be written. No `description`, no `stage_id`, no dates, no tag. Skip a marker
-   whose normalized name already exists among the card's children.
-6. Read one marker back. If `display_in_project` is not false, stop and report: the board would be
-   polluted.
-7. Report a table: id · name · stage · tag · markers. If I deny an approval mid-batch, stop and
-   list what already exists so a re-run resumes without duplicates.
+5. Create no subtasks. `/ai-daridev-story` turns the approved plan into steps and subtasks.
+6. Report a table: id · name · stage · tag. If I deny an approval mid-batch, stop and list what
+   already exists so a re-run resumes without duplicates.
 
-Card body at creation (`/ai-daridev-story` later adds criteria, tests and the review block; the
-`Markers:` line and the `engram:` key stay):
+Card body at creation (`/ai-daridev-story` later adds criteria, plan, tests and the review block;
+the `engram:` key stays):
 
 ```html
 <h1>{story title}</h1>
 <p>{As a …, I want …, so that …}</p>
-<p>Markers: {marker 1} · {marker 2}</p>
 <p><em>engram: story/{slug}</em></p>
 ```
-
-When a marker is added or removed later, the `Markers:` line is rewritten to match — it is the only
-way someone without Odoo access knows the list.
 
 **Engram** — the memory MCP (`mem_save`; `engram_mem_save` in OpenCode, `mcp__engram__mem_save`
 in Claude Code). One memory:
@@ -133,7 +115,6 @@ If the answer carries `judgment_required`, ask me once about the conflict and re
 - `git commit -m "chore: memory — backlog <engram_project>"`, and never push.
 
 **Without Odoo** — print the full checklist and stop: each card's title, the HTML description to
-paste, the markers to create (names), their state (`01_in_progress`), and a reminder that the
-first column is where a new card goes.
+paste, and a reminder that the first column is where a new card goes. No subtasks.`
 
 Engram is required — if the memory tools are missing, stop before doing anything.

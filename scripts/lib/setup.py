@@ -37,9 +37,10 @@ Work is tracked with the `ai-daridev` skills (installed globally, invoked manual
 backlog → story → pair → review → archive. In a repo whose `AGENTS.md` has a
 `<!-- ai-daridev:start -->` block, run `ai-daridev preflight` first and use its JSON; if it exits
 non-zero, print its errors and stop. Engram is required; Odoo is optional. Never move Odoo cards
-between columns, never mark cards done or cancelled, never set assignees. Markers are validated
-with `1_done`. The Engram store is global (`~/.engram/engram.db`); exported chunks live in
-`.engram/` and are committed by the five skills as `chore: memory — …`. `ai-daridev preflight`
+between columns, never mark cards done or cancelled, never set assignees. Plan steps are validated
+with `1_done` (dropped steps use `1_canceled`); structure changes ask once, state changes do not.
+The Engram store is global (`~/.engram/engram.db`); exported chunks live in
+`.engram/` and are committed at each checkpoint as `chore: memory — …`. `ai-daridev preflight`
 imports pending chunks before every skill; never hand-edit a chunk.
 <!-- ai-daridev -->"""
 

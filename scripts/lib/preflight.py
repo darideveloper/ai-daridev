@@ -146,6 +146,7 @@ def main() -> int:
         "uid": None,
         "engram": {"project": None, "match": False},
         "listing": {"limit": 20, "mine_only": False},
+        "plan_steps": {"min": 5, "max": 20},
         "markers": {"min": 2, "max": 4},
         "assignees": False,
         "errors": errors,
@@ -161,6 +162,8 @@ def main() -> int:
 
     result["config"]["version"] = cfg["version"]
     result["listing"]["limit"] = cfg["listing_limit"]
+    result["plan_steps"] = cfg["plan_steps"]
+    # deprecated: kept one release so old skills/blocks keep working
     result["markers"] = cfg["markers"]
     result["assignees"] = cfg["assignees"]
 

@@ -12,7 +12,7 @@ flowchart LR
         D["description — HTML, whole rewrite"]
         STG["stage_id — first stage, create only"]
         SIG["card: state=03_approved + date_end — at close"]
-        MK["markers: 01_in_progress / 1_done / 02_changes_requested"]
+        MK["plan steps: 01_in_progress / 1_done / 02_changes_requested / 1_canceled"]
         SEQ["sequence — max+10"]
         TAG["one tag: frontend, backend, script, workflow"]
         DDL["date_deadline — if given"]
@@ -75,7 +75,8 @@ stateDiagram-v2
 
 On a **card**, `Done` and `Canceled` are never written by a skill, even when the work is finished:
 the card would disappear from the default kanban. "Finished" for a card is `Approved`; shipping is a
-human decision. Subtasks are the exception — markers use `1_done` (see below).
+human decision. Plan steps (subtasks) are the exception — they use `1_done` and `1_canceled` (see
+below).
 
 ## Fields written at creation
 
@@ -88,7 +89,7 @@ human decision. Subtasks are the exception — markers use `1_done` (see below).
 | `description` | HTML body (below) | readable in Odoo, greppable by the key |
 | `tag_ids` | one of `frontend` / `backend` / `script` / `workflow`, default `card_tag` | one axis, no taxonomy drift |
 | `date_deadline` | only if the user gave one, UTC `YYYY-MM-DD 00:00:00` | a fake deadline is worse than none |
-| markers (subtasks) | created after the card: `name`, `parent_id`, `state=01_in_progress`, `user_ids=[]`, **`display_in_project=False`** — never `project_id` (computed), never `stage_id` | tracking only — no description, no column, no dates |
+| plan steps (subtasks) | created after the card from the plan: `name`, `description` = `ai-daridev: plan/<slug>#pN` + detail, `sequence` = index × 10, `parent_id`, `state=01_in_progress`, `user_ids=[]`, **`display_in_project=False`** — never `project_id` (computed), never `stage_id` | the plan is the checklist; detail lives here and on the card |
 
 Never set: `state` (defaults), `allocated_hours`, `priority`, `user_ids`, `partner_id`.
 
@@ -101,54 +102,112 @@ Regenerate the whole `description` on every update — never append. Escape `<`,
 <p>{one-line goal}</p>
 <h2>Acceptance criteria</h2>
 <ul><li>Given …, when …, then …</li></ul>
+<h2>Plan</h2>
+<ol><li><b>p1</b> {step name}<ul><li>{detail: files, command, rollback}</li></ul></li></ol>
 <h2>Tests</h2>
-<ol><li>{test name} — {where it runs}</li></ol>
+<ol><li>{test name} — {where it runs} — covers p1</li></ol>
 <h2>Review (ai-daridev)</h2>
 <p><b>{date}</b> — changes requested</p>
-<ul><li><b>{marker}</b>: {what is wrong}</li></ul>
-<p>Markers: {marker 1} · {marker 2}</p>
+<ul><li><b>p3 · {step}</b>: {what is wrong}</li></ul>
+<p>Plan: p1=14843 · p2=14844</p>
 <p><em>engram: story/{slug}</em></p>
 ```
 
 - `<h1>` is read from the live task name first, so renaming a card is not reverted on the next update.
 - No `<pre>` for prose; monospace only for code.
-- The `Markers:` line mirrors the subtasks, so a teammate without Odoo can recreate them. It is
-  rewritten whenever a marker is added or removed.
+- `<h2>Plan</h2>` is the human-readable list: step name plus its detail sub-bullet, **no status**
+  (status lives in the subtasks). It is regenerated from `plan/<slug>` on every plan change.
+- The `Plan:` line is machine-owned and derived from the children: keys and their Odoo ids only.
+  A human edit is ignored and rebuilt on the next sync; it is never the authority.
 - The `Review (ai-daridev)` block belongs to `/ai-daridev-review`. It runs from its heading to the
   `engram:` line; other skills preserve it verbatim and re-insert it in the same place.
 - The `engram:` line is the idempotency key and stays last.
 
-## Markers (subtasks)
+## Plan steps (subtasks)
 
 ```mermaid
 flowchart LR
-    A["backlog<br/>creates them"] --> B["working<br/>01_in_progress"]
+    A["story<br/>creates them"] --> B["working<br/>01_in_progress"]
     B --> C["validated<br/>1_done"]
     B --> D["review rejects<br/>02_changes_requested"]
     D --> C
+    B --> E["dropped<br/>1_canceled"]
     style A fill:#90EE90,stroke:#333,color:darkgreen
     style C fill:#90EE90,stroke:#333,color:darkgreen
     style D fill:#FFE4B5,stroke:#333,color:#000
+    style E fill:#E0E0E0,stroke:#333,color:#000
 ```
 
+One checklist per card: the plan steps **are** the subtasks. There is no separate "markers" concept.
+
+- **Key.** `description` starts with `ai-daridev: plan/<slug>#pN`, followed by the detail HTML.
+  The key is the identity: names may change, keys never do and are never reused.
+- **Name.** The step as it appears in the card's `<h2>Plan</h2>`: verb-first, ≤80 chars.
 - **Hidden by `display_in_project=False`.** The project task action filters on
   `display_in_project = True`, which is the supported switch (the form's "Hide the sub-task in your
   pipeline" option). A subtask **cannot** be project-less: there is a SQL constraint, and
-  `project_id` is computed from the parent — so the skills never write it (nor `stage_id`). Making a
-  marker visible again is just toggling that flag in the UI.
-- Hidden inside the parent card, so their column is cosmetic: never write `stage_id`.
-- No description, no dates, no key. Detail belongs in the card's Review block.
-- **Markers are the only things that use `1_done`.** The card never uses Done/Canceled: it would
-  disappear from the default kanban. The card closes at `03_approved`.
-- Because `closed_subtask_count` counts Done + Canceled, a card with two validated markers shows
-  `2/3` — that is exactly why markers use `1_done` and not `03_approved`.
+  `project_id` is computed from the parent — so the skills never write it (nor `stage_id`).
+- **Sequence** = step index × 10, so the form order matches the plan. Rewritten only when the
+  order changes.
+- **One call per subtask.** The MCP has no bulk create, so a 10-step plan is 10 `odoo_create`
+  calls; with `ask` permissions that is one approval per step, by design.
+- **States.** `01_in_progress` open · `1_done` validated · `02_changes_requested` rejected by a
+  review · `1_canceled` dropped. Only open/blocked steps can be dropped; a validated step is never
+  canceled. The **card** never uses `1_done` or `1_canceled`: it closes at `03_approved`.
+- Because `closed_subtask_count` counts Done + Canceled, dropped steps inflate Odoo's progress
+  badge; the chat render always prints the real breakdown (`done · dropped · open · blocked`).
+
+### Sync (split authority)
+
+Odoo records **what exists**; `plan/<slug>` records **intent**. Neither silently overwrites the
+other.
+
+1. Read the card (by `engram: story/<slug>`), its children (`name`, `description`, `state`,
+   `sequence`) and `write_date`.
+2. Index children by key in `description`; fall back to normalized name only for legacy children.
+3. Diff against `plan/<slug>`: added, renamed, reordered, removed, state changed.
+4. **Structure** (added/renamed/reordered/removed) → one approval gate with a `Was | Now` table and
+   the exact writes. **State** changes → no gate, reported inline.
+5. If `write_date` changed since step 1, re-read and re-diff before writing.
+6. Apply: create → update states → sequences → description → read back `display_in_project`.
+7. Resolution is written to the losing side, so the same conflict is never asked twice.
+8. A keyed child that disappeared was deleted by a human: ask **restore** or **drop**, never
+   silently recreate.
+9. Unkeyed children are never touched. List them once and ask: adopt as steps or ignore. The
+   answer is remembered in `plan/<slug>`.
+10. Idempotency: a second sync with no changes must produce zero writes.
+
+### Legacy cards
+
+Cards with a `Markers:` line and no `Plan:` line are legacy. The first sync asks once: convert the
+markers into steps (same ids, gain keys and sequence) or start a fresh plan. Conversion is the
+default; the answer is remembered. Converted steps start with an empty detail.
+
+### Rendering
+
+Every skill that changes the plan prints it in chat, with or without Odoo:
+
+```
+Plan · charge-before-scan · 4/9 done · 1 dropped · synced
+- [x] p1 Re-export live automations — agent — done
+- [x] p2 Charge in one statement — agent — done
+- [ ] p3 409 response — agent — changes requested
+- [ ] p4 Drop project join — agent — dropped
+- [ ] p5 Staging test with a 1-use code — you — open
+
+next: p5 (you)
+```
+
+Full list on any plan change, **including a state flip**; only a stop with nothing changed prints
+the single `plan 4/9 · next p5` line. When Odoo is unavailable the footer says `not synced` and the state comes from
+`plan/<slug>`. The card description stays status-free.
 
 ## Without Odoo
 
 Every skill that would write prints a copy-paste checklist instead:
 
 - the card name and the state to set,
-- the markers to create or flip, and to which state,
+- the steps to create, rename, drop or flip, and to which state,
 - the description or Review block to paste,
 - the column move as a manual action: "in Odoo, or ask the owner".
 
@@ -158,7 +217,8 @@ Before creating anything, search the project for a description containing `engra
 
 - found → update instead of create (and ask before creating when a story is new);
 - not found → create, in one contiguous batch, reporting `id · name · stage · tag`;
-- approval denied mid-batch → stop and list what exists, so a re-run resumes without duplicates.
+- approval denied mid-batch → stop and list what exists, so a re-run resumes without duplicates;
+- the plan's step keys (the `pN` in `description`) are the idempotency key for subtasks.
 
 ## Why stages are never automated
 

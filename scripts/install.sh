@@ -10,6 +10,7 @@ FORK="${AI_DARIDEV_FORK:-${HOLA_AI_FORK:-$(cd "$(dirname "$0")/.." && pwd)}}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 VER="${ENGRAM_VERSION:-$(cat "$ROOT/VERSION" 2>/dev/null || echo 3.6.1)}"
 LEGACY="backlog story pair archive review"
+GONE="check-plan"
 AGENT_DIRS="$HOME/.claude $HOME/.gemini $HOME/.continue $HOME/.codeium/windsurf $HOME/.kiro $HOME/.config/devin $HOME/.codex"
 CMD_DIR="$HOME/.config/opencode/commands"
 
@@ -90,7 +91,7 @@ say "engram: verified ($("$engram_bin" version 2>/dev/null))"
 # --- 2. Remove shadowing copies --------------------------------------------
 # OpenCode gives ~/.config/opencode/skills precedence over ~/.agents/skills, so an
 # older copy silently wins over the linked skill.
-for id in $IDS $LEGACY; do
+for id in $IDS $LEGACY $GONE; do
   shadow="$HOME/.config/opencode/skills/$id"
   if [ -e "$shadow" ] || [ -L "$shadow" ]; then
     rm -rf "$shadow"
@@ -100,6 +101,19 @@ done
 
 # --- 3. Skills: clone -> ~/.agents/skills -> each agent ---------------------
 mkdir -p "$HOME/.agents/skills"
+# retired names: drop the local copy, its agent links and its command
+for id in $GONE; do
+  path="$HOME/.agents/skills/$id"
+  if [ -e "$path" ] || [ -L "$path" ]; then
+    rm -rf "$path"
+    say "removed retired skill: $path"
+  fi
+  for a in $AGENT_DIRS; do
+    link="$a/skills/$id"
+    if [ -L "$link" ] || [ -e "$link" ]; then rm -rf "$link"; fi
+  done
+  rm -f "$CMD_DIR/$id.md"
+done
 # remove links from the pre-prefix era so only the new names remain
 for id in $LEGACY; do
   rm -rf "$HOME/.agents/skills/$id"
@@ -111,9 +125,15 @@ for id in $LEGACY; do
 done
 
 for id in $IDS; do
-  ln -sfn "$FORK/skills/$id" "$HOME/.agents/skills/$id"
+  # a pre-existing real directory would swallow the link; remove it first
+  dst="$HOME/.agents/skills/$id"
+  if [ -e "$dst" ] && [ ! -L "$dst" ]; then rm -rf "$dst"; fi
+  ln -sfn "$FORK/skills/$id" "$dst"
   for a in $AGENT_DIRS; do
-    [ -d "$a/skills" ] && ln -sfn "$HOME/.agents/skills/$id" "$a/skills/$id"
+    [ -d "$a/skills" ] || continue
+    link="$a/skills/$id"
+    if [ -e "$link" ] && [ ! -L "$link" ]; then rm -rf "$link"; fi
+    ln -sfn "$HOME/.agents/skills/$id" "$link"
   done
 done
 say "skills: linked $IDS into ~/.agents/skills and existing agent dirs"

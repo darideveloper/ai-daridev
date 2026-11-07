@@ -1,6 +1,6 @@
 # Agents
 
-The same five skills, one clone, symlinked everywhere. **Engram is required** — the skills stop if
+The same skills, one clone, symlinked everywhere. **Engram is required** — the skills stop if
 its MCP is missing. **Odoo is optional** — without it they remember decisions but create no cards.
 
 | Agent | Skills read from | Slash commands | Notes |

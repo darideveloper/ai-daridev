@@ -19,7 +19,7 @@ KNOWN = {
     "version", "odoo_project",
     "odoo_stage_backlog", "odoo_stage_active", "odoo_stage_done", "odoo_stage_cancelled",
     "odoo_assignees", "card_tag", "card_tags",
-    "engram_project", "decisions_dir", "markers", "listing_limit",
+    "engram_project", "decisions_dir", "markers", "plan_steps", "listing_limit",
 }
 ODOO_REQUIRED = {"odoo_stage_backlog", "odoo_stage_active", "odoo_stage_done", "card_tag"}
 PLACEHOLDER = re.compile(r"<[^>]*>|one of\b", re.I)
@@ -82,7 +82,9 @@ def parse(text: str) -> dict:
         "engram_project": raw["engram_project"],
         "decisions_dir": raw.get("decisions_dir", "docs/decisions"),
         "listing_limit": 20,
+        # `markers` is the pre-plan key; still parsed so old blocks keep working.
         "markers": {"min": 2, "max": 4},
+        "plan_steps": {"min": 5, "max": 20},
         "assignees": False,
     }
 
@@ -94,14 +96,19 @@ def parse(text: str) -> dict:
         if cfg["listing_limit"] <= 0:
             raise BlockError("listing_limit must be > 0")
 
-    if "markers" in raw:
-        m = re.fullmatch(r"(\d+)-(\d+)", raw["markers"])
+    for key in ("markers", "plan_steps"):
+        if key not in raw:
+            continue
+        m = re.fullmatch(r"(\d+)-(\d+)", raw[key])
         if not m:
-            raise BlockError(f"markers must look like 2-4, got {raw['markers']!r}")
+            raise BlockError(f"{key} must look like 5-20, got {raw[key]!r}")
         lo, hi = int(m.group(1)), int(m.group(2))
         if lo < 1 or hi < lo:
-            raise BlockError(f"markers range is invalid: {raw['markers']!r}")
-        cfg["markers"] = {"min": lo, "max": hi}
+            raise BlockError(f"{key} range is invalid: {raw[key]!r}")
+        cfg[key] = {"min": lo, "max": hi}
+    if "plan_steps" not in raw:
+        # migrate the old cap: markers were 2-4 tracking items, not real steps
+        cfg["plan_steps"] = {"min": 5, "max": 20}
 
     if odoo:
         tags = [t.strip() for t in raw.get("card_tags", ",".join(DEFAULT_TAGS)).split(",") if t.strip()]
