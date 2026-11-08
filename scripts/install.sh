@@ -1,173 +1,167 @@
 #!/usr/bin/env bash
-# ai-daridev installer (Linux / macOS).
-# Engram is REQUIRED: the installer aborts if it cannot install or verify it.
-# Skills and OpenCode commands are SYMLINKED, so a git pull updates them with no re-run.
-# Usage: ./scripts/install.sh
-#        AI_DARIDEV_FORK=/path/to/clone ./scripts/install.sh
-set -eu
+# ai-daridev installer: link the skills and the OpenCode commands, migrate the global block.
+# Usage: ./scripts/install.sh [--check]
+set -euo pipefail
 
-FORK="${AI_DARIDEV_FORK:-${HOLA_AI_FORK:-$(cd "$(dirname "$0")/.." && pwd)}}"
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VER="${ENGRAM_VERSION:-$(cat "$ROOT/VERSION" 2>/dev/null || echo 3.6.1)}"
-LEGACY="backlog story pair archive review"
-GONE="check-plan"
-AGENT_DIRS="$HOME/.claude $HOME/.gemini $HOME/.continue $HOME/.codeium/windsurf $HOME/.kiro $HOME/.config/devin $HOME/.codex"
+FORK="$(cd "$(dirname "$0")/.." && pwd)"
+SKILLS_DIR="$HOME/.agents/skills"
 CMD_DIR="$HOME/.config/opencode/commands"
+AGENT_HOMES=(
+  "$HOME/.claude"
+  "$HOME/.codex"
+  "$HOME/.gemini"
+  "$HOME/.continue"
+  "$HOME/.codeium/windsurf"
+  "$HOME/.kiro"
+  "$HOME/.config/devin"
+)
+INSTRUCTIONS=(
+  "$HOME/.config/opencode/AGENTS.md"
+  "$HOME/.claude/CLAUDE.md"
+  "$HOME/.gemini/GEMINI.md"
+  "$HOME/.codex/AGENTS.md"
+)
+RETIRED=(ai-daridev-check-plan)
+BLOCK='<!-- ai-daridev -->
+Work is tracked with the `ai-daridev` skills, invoked manually: backlog → story → pair → review →
+archive. The repo root is the nearest `AGENTS.md` holding an `ai-daridev:start` block; read it
+before writing. Never move an Odoo card between stages, never mark a card done or cancelled, never
+assign. Repo memory lives in `docs/ai-daridev/` and is committed by a human.
+<!-- ai-daridev -->'
 
 say() { printf '%s\n' "$*"; }
-die() { printf '\nerror: %s\n' "$*" >&2; exit 1; }
+die() { printf 'error: %s\n' "$*" >&2; exit 1; }
 
-# Skills come from the clone, never from a hardcoded list that can drift.
-IDS=""
-for dir in "$FORK"/skills/*/; do
-  [ -d "$dir" ] || continue
-  id="$(basename "$dir")"
-  [ -f "$dir/SKILL.md" ] || die "skill '$id' has no SKILL.md in $FORK"
-  IDS="${IDS:+$IDS }$id"
+[ -d "$FORK/skills" ] || die "no skills/ in $FORK"
+IDS=()
+for d in "$FORK"/skills/*/; do
+  [ -d "$d" ] && IDS+=("$(basename "$d")")
 done
-[ -n "$IDS" ] || die "no skills found in $FORK/skills"
+[ "${#IDS[@]}" -gt 0 ] || die "no skills found in $FORK/skills"
 
-# --- 1. Engram (required) ---------------------------------------------------
-engram_bin="$(command -v engram || true)"
-[ -n "$engram_bin" ] || engram_bin="$HOME/.local/bin/engram"
-
-installed=""
-if [ -x "$engram_bin" ]; then
-  installed="$("$engram_bin" version 2>/dev/null | awk '{print $2}')"
-fi
-
-if [ "$installed" = "$VER" ]; then
-  say "engram: already installed ($installed)"
-elif [ -n "$installed" ]; then
-  say "engram: $installed found, installing $VER into $HOME/.local/bin"
-fi
-
-if [ "$installed" != "$VER" ]; then
-  case "$(uname -s)" in
-    Linux)  OS=linux ;;
-    Darwin) OS=darwin ;;
-    *) die "unsupported OS '$(uname -s)'. Install Engram manually: https://github.com/Gentleman-Programming/engram" ;;
-  esac
-  case "$(uname -m)" in
-    x86_64|amd64)  ARCH=amd64 ;;
-    arm64|aarch64) ARCH=arm64 ;;
-    *) die "unsupported architecture '$(uname -m)'. Install Engram manually." ;;
-  esac
-
-  asset="engram_${VER}_${OS}_${ARCH}.tar.gz"
-  base="https://github.com/Gentleman-Programming/engram/releases/download/v$VER"
-  tmp="$(mktemp -d)"
-  trap 'rm -rf "$tmp"' EXIT
-
-  curl -fsSL -o "$tmp/$asset" "$base/$asset"      || die "could not download $asset"
-  curl -fsSL -o "$tmp/checksums.txt" "$base/checksums.txt" || die "could not download checksums.txt"
-
-  if command -v sha256sum >/dev/null 2>&1; then
-    ( cd "$tmp" && grep "$asset" checksums.txt | sha256sum -c - ) || die "checksum failed for $asset"
-  elif command -v shasum >/dev/null 2>&1; then
-    ( cd "$tmp" && grep "$asset" checksums.txt | shasum -a 256 -c - ) || die "checksum failed for $asset"
-  else
-    say "warning: no sha256 tool found, skipping checksum verification"
-  fi
-
-  tar -xzf "$tmp/$asset" -C "$tmp" || die "could not extract $asset"
-  [ -f "$tmp/engram" ] || die "engram binary not found inside $asset"
-  mkdir -p "$HOME/.local/bin"
-  # Write then rename: the old binary may still be executing as an MCP server.
-  install -m755 "$tmp/engram" "$HOME/.local/bin/.engram.new" || die "could not stage engram in ~/.local/bin"
-  mv -f "$HOME/.local/bin/.engram.new" "$HOME/.local/bin/engram" || die "could not install engram to ~/.local/bin"
-  say "engram: installed $VER at $HOME/.local/bin/engram"
-fi
-
-# Engram is required: prove it works before touching anything else.
-[ -n "$engram_bin" ] || engram_bin="$HOME/.local/bin/engram"
-[ -x "$engram_bin" ] || die "engram not found on PATH and not at ~/.local/bin/engram"
-"$engram_bin" version >/dev/null 2>&1 || die "engram is installed but not runnable ($engram_bin)"
-if ! "$engram_bin" doctor >/dev/null 2>&1; then
-  say "warning: 'engram doctor' reported findings — run it and review before relying on memory"
-fi
-say "engram: verified ($("$engram_bin" version 2>/dev/null))"
-
-# --- 2. Remove shadowing copies --------------------------------------------
-# OpenCode gives ~/.config/opencode/skills precedence over ~/.agents/skills, so an
-# older copy silently wins over the linked skill.
-for id in $IDS $LEGACY $GONE; do
-  shadow="$HOME/.config/opencode/skills/$id"
-  if [ -e "$shadow" ] || [ -L "$shadow" ]; then
-    rm -rf "$shadow"
-    say "removed shadowing copy: $shadow"
-  fi
+targets=("$SKILLS_DIR")
+for a in "${AGENT_HOMES[@]}"; do
+  [ -d "$a" ] && targets+=("$a/skills")
 done
 
-# --- 3. Skills: clone -> ~/.agents/skills -> each agent ---------------------
-mkdir -p "$HOME/.agents/skills"
-# retired names: drop the local copy, its agent links and its command
-for id in $GONE; do
-  path="$HOME/.agents/skills/$id"
-  if [ -e "$path" ] || [ -L "$path" ]; then
-    rm -rf "$path"
-    say "removed retired skill: $path"
+migrate_block() {
+  local file="$1" tmp n
+  [ -f "$file" ] || return 0
+  n="$(grep -c '<!-- ai-daridev -->' "$file" || true)"
+  if [ "$n" -eq 0 ]; then return 0; fi
+  if [ "$n" -lt 2 ]; then say "skip $file (single marker)"; return 0; fi
+  tmp="$(mktemp)"
+  awk -v block="$BLOCK" '
+    /<!-- ai-daridev -->/ {
+      n++
+      if (n == 1) { print block; skip = 1 }
+      else if (n == 2) { skip = 0 }
+      next
+    }
+    skip { next }
+    { print }
+  ' "$file" > "$tmp"
+  if cmp -s "$file" "$tmp"; then
+    rm -f "$tmp"
+    say "ok    $file"
+    return 0
   fi
-  for a in $AGENT_DIRS; do
-    link="$a/skills/$id"
-    if [ -L "$link" ] || [ -e "$link" ]; then rm -rf "$link"; fi
+  cp -p "$file" "$file.bak.$(date +%Y%m%d%H%M%S)"
+  mv "$tmp" "$file"
+  say "block $file"
+}
+
+check() {
+  local rc=0 t id f n
+  for t in "${targets[@]}"; do
+    for id in "${IDS[@]}"; do
+      if [ -e "$t/$id/SKILL.md" ]; then say "ok    $t/$id"; else say "MISS  $t/$id"; rc=1; fi
+    done
   done
-  rm -f "$CMD_DIR/$id.md"
-done
-# remove links from the pre-prefix era so only the new names remain
-for id in $LEGACY; do
-  rm -rf "$HOME/.agents/skills/$id"
-  for a in $AGENT_DIRS; do
-    link="$a/skills/$id"
-    if [ -L "$link" ] || [ -e "$link" ]; then rm -rf "$link"; fi
+  for f in "$FORK"/commands/*.md; do
+    n="$(basename "$f")"
+    if [ -e "$CMD_DIR/$n" ]; then say "ok    $CMD_DIR/$n"; else say "MISS  $CMD_DIR/$n"; rc=1; fi
   done
-  rm -f "$CMD_DIR/$id.md"
-done
+  for t in "${targets[@]}" "$HOME/.config/opencode/skills"; do
+    for id in "${RETIRED[@]}"; do
+      if [ -e "$t/$id" ]; then say "STALE $t/$id"; rc=1; fi
+    done
+  done
+  if [ -e "$CMD_DIR/ai-daridev-check-plan.md" ]; then
+    say "STALE $CMD_DIR/ai-daridev-check-plan.md"
+    rc=1
+  fi
+  for f in "${INSTRUCTIONS[@]}"; do
+    [ -f "$f" ] || continue
+    n="$(grep -c '<!-- ai-daridev -->' "$f" || true)"
+    if [ "$n" -lt 2 ]; then
+      say "skip  block $f (no marker pair)"
+      continue
+    fi
+    if grep -q 'Repo memory lives in' "$f" && ! grep -q 'ai-daridev preflight' "$f"; then
+      say "ok    block $f"
+    else
+      say "STALE block $f"
+      rc=1
+    fi
+  done
+  return $rc
+}
 
-for id in $IDS; do
-  # a pre-existing real directory would swallow the link; remove it first
-  dst="$HOME/.agents/skills/$id"
-  if [ -e "$dst" ] && [ ! -L "$dst" ]; then rm -rf "$dst"; fi
-  ln -sfn "$FORK/skills/$id" "$dst"
-  for a in $AGENT_DIRS; do
-    [ -d "$a/skills" ] || continue
-    link="$a/skills/$id"
-    if [ -e "$link" ] && [ ! -L "$link" ]; then rm -rf "$link"; fi
-    ln -sfn "$HOME/.agents/skills/$id" "$link"
+if [ "${1:-}" = "--check" ]; then
+  check
+  exit $?
+fi
+
+# 1. skills into ~/.agents/skills and every installed agent
+for t in "${targets[@]}"; do mkdir -p "$t"; done
+for id in "${IDS[@]}"; do
+  for t in "${targets[@]}"; do
+    dst="$t/$id"
+    if [ -e "$dst" ] && [ ! -L "$dst" ]; then rm -rf "$dst"; fi
+    ln -sfn "$FORK/skills/$id" "$dst"
   done
 done
-say "skills: linked $IDS into ~/.agents/skills and existing agent dirs"
+say "skills: linked ${#IDS[@]} into ${#targets[@]} directories"
 
-# --- 4. OpenCode commands (symlinked) --------------------------------------
+# 2. OpenCode prefers ~/.config/opencode/skills, so a copy there would shadow the link
+for id in "${IDS[@]}" "${RETIRED[@]}"; do
+  if [ -e "$HOME/.config/opencode/skills/$id" ] || [ -L "$HOME/.config/opencode/skills/$id" ]; then
+    rm -rf "$HOME/.config/opencode/skills/$id"
+    say "removed shadowing copy: ~/.config/opencode/skills/$id"
+  fi
+done
+
+# 3. retired skills
+for t in "${targets[@]}"; do
+  for id in "${RETIRED[@]}"; do
+    if [ -e "$t/$id" ] || [ -L "$t/$id" ]; then
+      rm -rf "$t/$id"
+      say "removed retired skill: $t/$id"
+    fi
+  done
+done
+
+# 4. OpenCode commands (Claude Code and Codex invoke the skills directly)
 mkdir -p "$CMD_DIR"
 for src in "$FORK"/commands/*.md; do
-  [ -f "$src" ] || die "no commands found in $FORK/commands"
-  name="$(basename "$src")"
-  rm -f "$CMD_DIR/$name"
-  ln -sfn "$src" "$CMD_DIR/$name"
+  ln -sfn "$src" "$CMD_DIR/$(basename "$src")"
 done
-# drop links whose source left the repo
 for link in "$CMD_DIR"/*.md; do
   [ -L "$link" ] || continue
-  [ -e "$link" ] || { rm -f "$link"; say "removed stale command link: $(basename "$link")"; }
+  if [ ! -e "$link" ]; then rm -f "$link"; say "removed stale link: $link"; fi
 done
 say "commands: linked to $CMD_DIR"
 
-# --- 4b. CLI ---------------------------------------------------------------
-mkdir -p "$HOME/.local/bin"
-ln -sfn "$ROOT/scripts/ai-daridev" "$HOME/.local/bin/ai-daridev"
-say "cli: linked ~/.local/bin/ai-daridev"
+# 5. global instruction block
+for f in "${INSTRUCTIONS[@]}"; do migrate_block "$f"; done
 
-# --- 5. MCP: print, never rewrite someone's config --------------------------
+# 6. MCP
 say ""
-say "Engram is required — register it in every agent you use:"
-say "  OpenCode -> ~/.config/opencode/opencode.json, under mcp.servers:"
-say '    "engram": { "type": "local", "command": ["'"$HOME"'/.local/bin/engram", "mcp", "--tools=agent"], "disabled": false }'
-say "  Claude Code -> claude mcp add --scope user engram -- $HOME/.local/bin/engram mcp --tools=agent"
-say "  Codex -> ~/.codex/config.toml: [mcp_servers.engram] command = \"$HOME/.local/bin/engram\" / args = [\"mcp\", \"--tools=agent\"]"
-say "  Gemini CLI -> ~/.gemini/settings.json, under mcpServers:"
-say '    "engram": { "command": "'"$HOME"'/.local/bin/engram", "args": ["mcp", "--tools=agent"] }'
+say "Odoo is optional. To enable cards, register the MCP in the agent you use:"
+say "  OpenCode  ~/.config/opencode/opencode.json, under mcp.servers:"
+say '    "odoo": { "type": "local", "command": ["<path>/mcp.sh"], "disabled": false }'
+say "  Claude    claude mcp add --scope user odoo -- <path>/mcp.sh"
+say '  Codex     ~/.codex/config.toml: [mcp_servers.odoo] command = "<path>/mcp.sh"'
 say ""
-say "Odoo is optional. Without it the skills still remember decisions, they just create no cards."
-say "Restart the agent afterwards, then verify by using a memory tool in a NEW session."
-say "Run scripts/verify.sh in a project to check the wiring; skills and commands need no re-run after a pull."
+say "Then run: $FORK/scripts/install.sh --check"
