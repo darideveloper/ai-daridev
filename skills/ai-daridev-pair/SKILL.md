@@ -1,217 +1,126 @@
 ---
 name: ai-daridev-pair
-description: Pair programming with the AI on an already refined story. The AI writes code in small test-driven steps (one test → minimum code) and stops to wait for my go-ahead. Never commits code.
+description: Pairs on one refined story. The agent drives in small test-driven steps (one test, minimum code, green) or plan-and-execute for non-code work, stops after every step, and never commits.
 disable-model-invocation: true
 ---
 
 # Pair
 
-You are the driver: you write the code. I am the navigator: I review, decide and tell you yes or no. We work one story per session.
-
-## Requirement
-
-This workflow needs **Engram**, the memory MCP. If its tools are not available, stop and tell me to
-install Engram and restart the agent. Do not continue without memory.
+You drive, I navigate. One story per session, one step at a time, and you stop after each step.
 
 ## 1. Open the story
 
-**Preflight.** Run `ai-daridev preflight` in the repo root and use its JSON (`project`, `stages`,
-`tags`, `uid`, `listing`, `plan_steps`, `assignees`). If the command is missing, stop and say: run
-`./scripts/setup.sh` from the ai-daridev repo. If it exits non-zero, print its `errors` and stop —
-do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings` once, then continue.
+- `/ai-daridev-pair <slug>` → the card carrying `ai-daridev: story/<slug>` (legacy `engram: story/<slug>` is accepted).
+- No slug → list cards in the active stages (not the backlog stage, not `odoo_stage_done`), limit 20, and ask which one. No Odoo → ask me to paste the story.
+- No story at all → treat it as new: propose criteria and a checklist, one gate, then continue.
+- Checklist = the card's subtasks by `sequence`; fall back to `<h2>Checklist</h2>` in the description. If neither exists, propose 3–7 steps and get one approval before starting.
+- If a step was renamed or a child disappeared, show the difference and ask once. Never recreate silently.
 
-- `/ai-daridev-pair <slug>`: load `story/<slug>` from memory.
-- `/ai-daridev-pair` with a pasted card or story block: derive the slug from its title (kebab-case, ≤40 chars) and upsert `story/<slug>` with what I pasted.
-- `/ai-daridev-pair` with nothing: if Odoo is available, list the project's cards in the active
-  stages (`project_id` + `stage_id in stages.active`, `limit` from preflight, never unbounded) and
-  ask which one; mark the ones assigned to `uid` as yours. Otherwise list `story/*` memories. If neither exists, treat it as a new
-  story and say so.
-- Open a session first: `mem_session_start` with
-  `id = "ai-daridev-<slug>-<YYYYMMDD-HHmmss>"` and `directory = <cwd>`. Engram does not generate
-  the id: invent it once and pass it as `session_id` on **every** `mem_save` of this block, and as
-  the summary argument of `mem_session_summary`. Memory is required; there is no sessionless mode.
-- **One session per working block.** Finalize it (summary + `mem_session_end`) at every stop or
-  handoff, not only at §8. When I resume, open a new session with a new timestamp. Never leave a
-  session open with zero observations.
-- Tool names: OpenCode `engram_mem_save` / `odoo_odoo_search_read`, inside Code Mode (`execute`)
-  `tools.engram.mem_save` / `tools.odoo.odoo_search_read`. Claude Code `mcp__engram__*`,
-  `mcp__odoo__*`.
-- Memory is already imported by the preflight. Do not run `engram sync --import` again.
-- Load the **plan**: `plan/<slug>` from memory, falling back to the card's `<h2>Plan</h2>` and
-  its children. Index the children by the key in `description` (`ai-daridev: plan/<slug>#pN`);
-  fall back to a normalized name only for legacy children. The plan is the checklist: one hidden
-  subtask per step, `display_in_project=False`, `sequence` = index × 10, `parent_id`,
-  `user_ids=[]`, never `project_id`, never `stage_id`.
-- **Plan sync gates.** Structure changes (add / rename / remove / reorder) need one approval with a
-  `Was | Now` diff before any Odoo write. State changes do not ask. If `write_date` changed since
-  you read the card, re-read and re-diff first. A keyed child that disappeared was deleted by a
-  human: ask restore or drop, never recreate silently. Unkeyed children are never touched. Write a
-  resolved rename to the losing side (`plan/<slug>` or the subtask) so it is never asked twice.
-  Never drop a step that is already `1_done`; only open or blocked steps can be dropped. If Odoo is
-  unavailable, set `pending_sync: <YYYY-MM-DD>` in `plan/<slug>` and print the diff as a handout.
-- If a legacy card still has a `Markers:` line and no `Plan:`, ask once whether to convert the
-  markers into steps (default) or start a fresh plan, and remember the answer in `plan/<slug>`.
-- Memory resolves its project from the working directory. If it resolves anything other than the
-  `engram_project` in `AGENTS.md`, stop and tell me to reopen the agent in the directory that
-  holds `.engram/config.json`. Never write memory into the wrong project.
+## 2. Mode
 
-## 2. Review
-
-- Read the story I give you (ideally the block generated by `/ai-daridev-story`: criteria, plan, "Out of scope").
-- Check the plan against the current code. If something no longer fits, tell me before starting.
-- If there's no plan, propose 5–20 steps (verb-first, ≤80 chars, detail in a sub-bullet, each
-  `[agent]` or `[you]`) and wait for my approval; then sync them like any other structure change.
-
-## 3. Mode
-
-- Real code plus a test runner in this repo → test-driven mode (§4–§6).
-- Only JSON/YAML/config, or no test runner → non-code mode (§7).
+- Code plus a test runner in this repo → TDD (§3–§5).
+- Only config/JSON/YAML or no test runner → non-code (§6).
 - Both signals or neither → ask me once.
 
-## 4. Test list
+## 3. Test list
 
-- From the acceptance criteria, propose **the test list: names only, don't write them yet.**
-- Say **where** each one is tested (endpoint, service, component…) and **which step it covers**:
-  `test name — where it runs — covers p3`. Prefer the highest practical level.
-- Mark criteria that can't be tested well (for example, visual ones) as **manual verification**.
-- Wait for my approval. This list is the spec: I approve it, not you.
-- Save the approved list into `story/<slug>`.
-- If the list means the plan must change (a step split, a new step, a step that no longer makes
-  sense), that is a **structure change**: show the step diff and ask once, then apply. Tests prove a
-  step; they do not become steps themselves.
+From the criteria, propose **the test list: names only**. Say where each runs and which step it
+covers: `test name — where — covers p3`. Mark criteria that cannot be tested (visual ones) as
+**manual verification**. Prefer the highest practical level. Wait for my approval; the list is the
+spec. It lives in this conversation only — if the session resumes, propose it again.
 
-## 5. Cycle
-
-One step = one test from the list:
+## 4. Cycle
 
 1. Write the test.
-2. Run it and **show that it fails** (red).
-3. Write the **minimum code** that makes it pass. Nothing the test doesn't require.
-4. Run the tests and show that they pass (green).
+2. Run it; show that it fails (red).
+3. Write the minimum code that makes it pass.
+4. Run it; show that it passes (green).
 
-By default you do **1 step** and stop. If I say "do N", you do N full cycles (test → code → green, one after another), never "N tests and then the code".
-
-When you stop, send a micro message:
+One step per stop. "Do N" means N full cycles, never "N tests and then the code". Then send:
 
 ```
-✅ Passes "<test name>". <what I did in one line> (<file:line>)
+✅ Passes "<test>". <one line> (<file:line>)
 Plan: p3 → done (agent) · 4/9 done · next p4
 Decided: <judgment call, if any>
-Change anything or continue with "<next test>"?
+Anything to change, or continue with "<next test>"?
 ```
 
-Flip a step to `1_done` only when every test covering it is green, and only on verified evidence.
-A step owned by `[you]` flips only when you say so; never infer it. Never guess a mapping: if it is
-unclear which step a test completes, ask.
+Flip the step to `1_done` only when every test covering it is green, and only on evidence. A `[you]`
+step flips only when I say so. If it is unclear which step a test completes, ask.
 
-After every cycle save a checkpoint: one `mem_save` with `session_id`, title `<slug> step pN`, type
-`bugfix`/`decision` as fits, content What/Why/Where/Learned; update the step state in
-`plan/<slug>`. Do **not** export or commit per cycle: the local store is already durable, and a
-batch would produce one commit and one chunk per test.
+### Stop immediately
 
-At the stop or handoff, once: **finalize the block** (`mem_session_summary` with `session_id` and
-the six `##` headings, then `mem_session_end { id }`), `engram sync`, `git add .engram/`, and
-`git commit --only -m "chore: memory — pair <slug>" -- .engram/` (skip on detached HEAD,
-merge/rebase or `.engram/` conflicts — the sync already happened). When I continue, open a new
-session with a new timestamp.
+- A design decision that is not in the checklist.
+- Adding something I did not ask for.
+- Making a test pass would need changing, skipping or deleting a test.
+- Two attempts without green.
+- The step exceeds ~50 lines or touches more than 3 files → propose splitting it.
 
-Print the plan after each cycle. Full checklist whenever the plan changed, including a state flip;
-otherwise `plan N/M · next pX`:
+### Decisions
 
-```
-Plan · <slug> · 4/9 done · 1 dropped · synced
-- [x] p1 Re-export live automations — agent — done
-- [x] p2 Charge in one statement — agent — done
-- [ ] p3 409 response — agent — changes requested
-- [ ] p4 Drop project join — agent — dropped
-- [ ] p5 Staging test with a 1-use code — you — open
+A `Decided:` line that is project-wide, hard to reverse or a shared/ops contract → append one
+section to `docs/ai-daridev/decisions.md` (create the file with `# Decisions` if needed):
 
-next: p5 (you)
+```markdown
+## YYYY-MM-DD — <decision>
+Why: <one line>
+Where: <files or systems it affects>
 ```
 
-Without Odoo the footer says `not synced` and the state comes from `plan/<slug>`. Steps are the
-only things that use `1_done`/`1_canceled`; the card is never set to Done or Canceled.
+Per-step choices stay in the conversation.
 
-In a batch of N, show the tests first and then the code: the tests are what I most need to review.
+## 5. Check
 
-### Decisions worth saving
+When the list is green: verify the manual criteria with me. Suggest that I run my agent's code
+review; do not review yourself. Suggest a refactor only when something repeats — I decide. Refactor
+only with tests green and never mixed with new functionality.
 
-Save a memory for a `Decided:` line only when it is **project-wide or hard to reverse** (schema, auth model, wire format, dependency choice, external contract). Type `decision`, title ≤10 words, content What/Why/Where, and pass `session_id`. Per-step choices stay ephemeral.
+## 6. Non-code stories (n8n, server, infra, config)
 
-`mem_save` needs `title` and `content` in `**What** / **Why** / **Where** / **Learned**` form, and
-`session_id` for the block. A `topic_key` upserts instead of piling up records. If the answer
-carries `judgment_required`, ask me once about the conflict and resolve it with `mem_judge_many`
-(`candidates[].judgment_id`).
+1. Investigate read-only. No changes.
+2. Propose a numbered plan, each step `[agent]` or `[you]`.
+3. One approval of the whole list.
+4. Execute `[agent]` steps one at a time. After each: the exact command, its output, the resulting
+   state (diff, `systemctl status`, `docker ps`, curl) and a one-line rollback. Stop if anything
+   differs from the plan.
+5. Flip the step only when the state shown proves it; `[you]` steps flip when I say so.
+6. Destructive steps (`rm`, `drop`, restart, delete, migration) ask again on their own.
+7. Then §7.
 
-### Stop immediately (even mid-batch) if:
+## 7. Close (only when the work is done and I say yes)
 
-- You need to make a design decision that isn't in the plan.
-- You think of adding something I didn't ask for, even if it seems reasonable.
-- Making a test pass would require changing, skipping or deleting a test.
-- You've had two attempts without reaching green.
-- The step exceeds ~50 lines or touches more than 3 files: propose splitting it.
+1. List every step that is not `1_done` and ask: flip it, leave the card open, or drop it
+   (`1_canceled` + `(dropped)`, never deleted).
+2. Card (Odoo): `state = 03_approved`, `date_end = <UTC now, YYYY-MM-DD HH:MM:SS>`. Do not touch
+   `stage_id` or `user_ids`. Never mark the card done or cancelled.
+3. `docs/ai-daridev/spec.md`: if the behavior changed, add or replace **one sentence** in the right
+   domain section (`## <domain>`), creating the file with `# <project> spec` if needed. Show the line
+   in the close block.
+4. Print what shipped, the decisions saved, the spec line, the card id and state, the step summary,
+   and the commit message I should use. **Never commit.**
 
-### Test rules
+Never write the card description; it belongs to `/ai-daridev-story` and `/ai-daridev-review`.
 
-- The expected value comes from the acceptance criterion, **never computed with the same logic as the code**.
-- Test behavior through the public interface, not internal details.
+Without Odoo: print the close checklist (state, date, steps to flip, the spec line) and write only
+the files.
 
-## 6. Check
+## Always
 
-When the list is green:
-
-- Let's verify together the criteria marked as **manual verification**.
-- Suggest I run the code-review command of whichever agent this is (Claude Code `/code-review`, OpenCode/Codex `/review`); don't review yourself.
-- If something repeats or looks messy, **suggest** the refactor; I decide. Refactor only with tests green, and never mixed with new functionality.
-- If we made a decision that applies to the whole project, propose a line for `AGENTS.md`.
-
-## 7. Non-code stories (n8n workflow, server, infra, config)
-
-Skip the red/green cycle and run this instead:
-
-1. **Investigate read-only.** No changes yet.
-2. **Propose a numbered plan**, marking each step `[agent]` or `[you]`.
-3. **Wait for one approval of the whole list.**
-4. **Execute the `[agent]` steps one at a time.** After each step show: the exact command, its output, the resulting state (a diff for file edits; `systemctl status` / `docker ps` / curl for remote changes), and a one-line rollback. Stop if anything differs from the plan.
-5. **Flip the step** to `1_done` only when the state shown proves it; `[you]` steps flip only when I say so. Sync the plan like any other state change and render it.
-6. **Destructive steps** (`rm`, `drop`, restart, delete, migration) always ask again on their own.
-7. Then continue with §8.
-
-## 8. Close (only when the work is done and I say yes)
-
-1. **ADR** — write `docs/decisions/<slug>.md` if the story produced a decision that is project-wide, hard to reverse, **or affects a shared/ops contract** (env var, deploy step, credential, shared workflow). Dated, one section.
-2. **Odoo** (if available) — the preflight already resolved and validated everything. On the **card**:
-   `state = 03_approved` and `date_end = <UTC now, YYYY-MM-DD HH:MM:SS>`. Steps were already
-   flipped as they were verified; do not re-flip them here. Never touch `stage_id`, `user_ids`,
-   never mark the card done or cancelled, never move a column.
-3. **Steps still open** — before closing, list every step that is not `1_done` and ask: flip it,
-   leave the card open, or skip. A step that no longer applies is `1_canceled` + `(dropped)`, never
-   deleted. Never close over a silent gap.
-4. **Memory** — `mem_session_summary` with `content` in exactly this shape using the six `##`
-   headings (`## Goal`, `## Instructions`, `## Discoveries`, `## Accomplished`, `## Next Steps`,
-   `## Relevant Files`) and `session_id` (not `id`). Then `mem_session_end { id }`. After those:
-   - make sure `plan/<slug>` matches the final step states;
-   - run `engram sync` in the directory holding `.engram/config.json`;
-   - `git add .engram/`;
-   - commit only if that directory (or its git root) contains `.engram/config.json`, the branch is
-     not detached, and no merge/rebase is in progress; if `.engram/` has conflicts, report and skip;
-   - `git commit --only -m "chore: memory — pair <slug>" -- .engram/`, leaving anything else I
-     staged untouched; never `--no-verify`, never push;
-   - nothing to export → say so and continue.
-5. Print a close block: what shipped, decisions saved, ADR written or skipped, card id and state,
-   step state summary, memory commit, and the final plan render.
-
-### Without Odoo
-
-Print a copy-paste close checklist instead of writing:
-
-- the card name, and that it should be set to **Approved** with today as the end date,
-- the steps to flip to **Done** (names) and any to mark dropped,
-- the reminder that the column move is the owner's,
-- the `engram sync` + commit line for `.engram/` (you run it, since the skill cannot write).
-
-## 9. Commit
-
-**Never commit code.** When there's a good point (tests green, a logical unit), let me know and
-suggest the message, separating functionality and refactor into different commits. I make the code
-commit. The only commits this skill makes are the `.engram/` memory commits at its checkpoints.
+- **Root.** Walk up from the current directory to the nearest `AGENTS.md` that holds
+  `<!-- ai-daridev:start -->`. That directory is the root: read and write `docs/ai-daridev/` there
+  and write nothing outside it. No block → ask once: create it here, use the git root, or chat-only.
+- **Config.** Read `odoo_project`, `odoo_stage_done` and `card_tag` from the block. No
+  `odoo_project` → Odoo is off. Resolve the project, the tags and the stages by exact name; 0 or 2+
+  matches → stop and list the real ones. Backlog stage = lowest `sequence`. Default tag `backend`.
+- **Never move a card** between stages, never set a card `1_done`/`1_canceled`, never assign.
+  Agents write: the description (story), subtask states, `state=03_approved` + `date_end` (close),
+  `state=02_changes_requested` (review).
+- **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
+- **Odoo unavailable** → print the handout and continue; the files are still written.
+- **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to
+  reverse or a shared/ops contract. Everything else stays in the conversation.
+- **Fold-in.** If `docs/ai-daridev/` is missing and `docs/decisions/*.md` or `openspec/` exists, ask
+  once to fold them into `decisions.md` and `spec.md`; the originals stay as frozen history.
+- **Never commit.** Never write secrets or client data into the three files.
+- **Cards** are found by `<p><em>ai-daridev: story/<slug></em></p>`; the legacy
+  `engram: story/<slug>` is accepted on read.

@@ -1,39 +1,32 @@
 ---
 name: ai-daridev-backlog
-description: Turns a software idea or a discussed feature into a backlog of short, vertical user stories. No acceptance criteria or implementation; that's /ai-daridev-story's job.
+description: Turns an idea into a short backlog of vertical one-line user stories and creates the Odoo cards. No acceptance criteria, no plan; that is /ai-daridev-story's job.
 disable-model-invocation: true
 ---
 
 # Backlog
 
-Your job is to help me split what I tell you into user stories. I bring the requirements; you order and slice them.
-
-## Requirement
-
-This workflow needs **Engram**, the memory MCP. If its tools are not available, stop and tell me to
-install Engram and restart the agent. Do not continue without memory.
+Split what I tell you into vertical user stories. I bring the requirements; you order and slice them.
 
 ## Conversation
 
-1. Listen to the idea or feature. If something is unclear, ask. One question at a time, with your suggested answer.
-2. If it's a new project, let's discuss the stack. Only the stack, not the architecture or implementation.
-3. Ask whether any of these expensive-to-change decisions apply. Only ask, don't design them:
-   - Multi-tenant or multi-organization
-   - Permissions or roles model
-   - Offline or sync
-   - Multi-language or multi-currency
-4. Propose the backlog. I adjust it.
+1. Listen. If something is unclear, ask — one question at a time, with your suggested answer.
+2. New project → discuss the stack only, not the architecture.
+3. Ask whether these expensive-to-change decisions apply; do not design them: multi-tenant,
+   permissions or roles, offline or sync, multi-language or multi-currency.
+4. Propose the backlog; I adjust it.
 
 ## Rules
 
-- **Don't invent requirements.** Only split what I told you. If you see a gap, ask me; don't fill it.
-- **Each story delivers value on its own** and cuts through every layer (data, backend, UI). Never split by layer.
-- **No technical stories.** The actor is never the developer or the system. "Set up the database" or "create the user model" are not stories; that infrastructure gets built inside the first story that needs it.
-- **Few stories.** 10–15 max. I'd rather add than cut.
-- **One line per story.** No acceptance criteria, no technical details, no estimates or priorities.
-- The first story is the smallest one usable end to end (walking skeleton).
+- **Don't invent requirements.** Only split what I told you; a gap gets a question.
+- **Each story delivers value on its own** and cuts through every layer. Never split by layer.
+- **No technical stories.** "Set up the database" or "create the user model" are built inside the
+  first story that needs them.
+- **10 stories max**, one line each: no criteria, no technical details, no estimates, no priorities.
+- The first story is the smallest thing usable end to end (walking skeleton).
+- `Requires: #N` only when a story makes no sense without another.
 
-## Output format
+## Output
 
 ```markdown
 ## Context
@@ -46,75 +39,42 @@ Expensive decisions: <the ones that apply, or "none">
 2. As a <actor>, I want <action>, so that <benefit>. Requires: #1
 ```
 
-Add `Requires: #N` only when a story makes no sense without another.
+## Cards (Odoo only)
 
-## No plan, no subtasks
+On approval, create the cards in one batch. Slug = kebab-case of the title, ≤40 chars; skip a story
+whose card already carries `ai-daridev: story/<slug>` (or the legacy `engram: story/<slug>`).
 
-A backlog card is just the story. The plan is 5–20 steps and belongs to `/ai-daridev-story`, which
-creates one hidden Odoo subtask per step. Do not create subtasks or a `Markers:` line here: two
-skills writing the same checklist is how cards drift.
+- `name`: the story title. `project_id`: resolved. `stage_id`: the backlog stage (lowest `sequence`).
+- `sequence`: `max(sequence in project) + 10, +20, +30…`.
+- `tag_ids`: one tag — the repo's `card_tag` unless the work clearly belongs to another of the four.
+- `user_ids: [[6,0,[]]]` (Odoo assigns the creator by default). No `state`, no deadline unless I
+  gave one.
+- Description, exactly:
+  `<h1>{title}</h1><p>{As a …, I want …, so that …}</p><p><em>ai-daridev: story/{slug}</em></p>`
+- No subtasks; `/ai-daridev-story` owns them.
+- Report a table: id · name · stage · tag. If I deny an approval mid-batch, stop and list what
+  already exists so a re-run resumes without duplicates.
 
-When done, offer to save the context and stack in `AGENTS.md`. The stories go to my tracker; don't save them to files unless I ask.
+Without Odoo: print the same block, the description to paste, and a reminder that the first column
+is where a new card goes. Write no files.
 
-## Projection (only if the tools are available)
+## Always
 
-**Preflight.** Run `ai-daridev preflight` in the repo root and use its JSON (`project`, `stages`,
-`tags`, `uid`, `listing`, `plan_steps`, `assignees`). If the command is missing, stop and say: run
-`./scripts/setup.sh` from the ai-daridev repo. If it exits non-zero, print its `errors` and stop —
-do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings` once, then continue.
-
-**Tool names.** OpenCode: `odoo_odoo_search_read`, `engram_mem_save` — inside Code Mode
-(`execute`) as `tools.odoo.odoo_search_read`, `tools.engram.mem_save`. Claude Code:
-`mcp__odoo__*`, `mcp__engram__*`.
-
-**Tags** are one of `frontend` / `backend` / `script` / `workflow`. `card_tag` in `AGENTS.md` is the
-**default** for this repo; pick another per story only when the work clearly belongs to it, and say
-which one you picked.
-
-**Odoo** — the project-management MCP tools (`odoo_search_read`, `odoo_create`):
-
-1. Use the project id, first stage and tags resolved in the preflight — do not resolve them twice.
-2. Read the current `max(sequence)` among that project's tasks.
-3. For each story: slug = kebab-case of the title, ≤40 chars, unique within the project. Skip it
-   if a card's description already contains `engram: story/<slug>`.
-4. Create the cards in one contiguous batch: `sequence` = max + 10, +20, +30…, `stage_id` = the
-   first stage, `description` per the card body below, exactly one tag of
-   frontend / backend / script / workflow (default `card_tag`), and `date_deadline` only if I gave
-   one (UTC, `YYYY-MM-DD 00:00:00`). Write `user_ids: [[6,0,[]]]` explicitly — Odoo assigns the
-   creator by default — and do not write `state`.
-5. Create no subtasks. `/ai-daridev-story` turns the approved plan into steps and subtasks.
-6. Report a table: id · name · stage · tag. If I deny an approval mid-batch, stop and list what
-   already exists so a re-run resumes without duplicates.
-
-Card body at creation (`/ai-daridev-story` later adds criteria, plan, tests and the review block;
-the `engram:` key stays):
-
-```html
-<h1>{story title}</h1>
-<p>{As a …, I want …, so that …}</p>
-<p><em>engram: story/{slug}</em></p>
-```
-
-**Engram** — the memory MCP (`mem_save`; `engram_mem_save` in OpenCode, `mcp__engram__mem_save`
-in Claude Code). One memory:
-
-- `title`: `backlog <engram_project>` (short, searchable).
-- `topic_key`: `backlog/<engram_project>` — it upserts, so a re-run updates the same record.
-- `type`: `architecture`.
-- `content`: the approved block + the task ids, in `**What** / **Why** / **Where** / **Learned**`.
-
-If the answer carries `judgment_required`, ask me once about the conflict and resolve it with
-`mem_judge_many` (`candidates[].judgment_id`). Never drop the memory silently.
-
-**Export the memory.** After saving, run `engram sync` in the repo root and commit only that:
-
-- if it reports nothing new, stop here;
-- `git add .engram/`;
-- if `git diff --cached --name-only` lists anything outside `.engram/`, unstage it and stop;
-- if HEAD is detached, report and stop;
-- `git commit -m "chore: memory — backlog <engram_project>"`, and never push.
-
-**Without Odoo** — print the full checklist and stop: each card's title, the HTML description to
-paste, and a reminder that the first column is where a new card goes. No subtasks.`
-
-Engram is required — if the memory tools are missing, stop before doing anything.
+- **Root.** Walk up from the current directory to the nearest `AGENTS.md` that holds
+  `<!-- ai-daridev:start -->`. That directory is the root: read and write `docs/ai-daridev/` there
+  and write nothing outside it. No block → ask once: create it here, use the git root, or chat-only.
+- **Config.** Read `odoo_project`, `odoo_stage_done` and `card_tag` from the block. No
+  `odoo_project` → Odoo is off. Resolve the project, the tags and the stages by exact name; 0 or 2+
+  matches → stop and list the real ones. Backlog stage = lowest `sequence`. Default tag `backend`.
+- **Never move a card** between stages, never set a card `1_done`/`1_canceled`, never assign.
+  Agents write: the description (story), subtask states, `state=03_approved` + `date_end` (close),
+  `state=02_changes_requested` (review).
+- **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
+- **Odoo unavailable** → print the handout and continue; the files are still written.
+- **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to
+  reverse or a shared/ops contract. Everything else stays in the conversation.
+- **Fold-in.** If `docs/ai-daridev/` is missing and `docs/decisions/*.md` or `openspec/` exists, ask
+  once to fold them into `decisions.md` and `spec.md`; the originals stay as frozen history.
+- **Never commit.** Never write secrets or client data into the three files.
+- **Cards** are found by `<p><em>ai-daridev: story/<slug></em></p>`; the legacy
+  `engram: story/<slug>` is accepted on read.

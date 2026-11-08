@@ -1,6 +1,6 @@
 interface:
   display_name: "Archive"
-  short_description: "Close a story or sprint with a retro"
+  short_description: "Close a story with a retro log entry"
   default_prompt: "Use $ai-daridev-archive to close this work."
 policy:
   allow_implicit_invocation: false

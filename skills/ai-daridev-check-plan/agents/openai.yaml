@@ -1,6 +1,0 @@
-interface:
-  display_name: "Check plan"
-  short_description: "Audit and polish a plan pasted in chat"
-  default_prompt: "Use $ai-daridev-check-plan to audit and polish the plan in this conversation."
-policy:
-  allow_implicit_invocation: false

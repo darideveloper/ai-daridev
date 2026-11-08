@@ -1,89 +1,63 @@
 ---
 name: ai-daridev-archive
-description: Closes a finished story or sprint. Reconciles the Odoo card with the decisions and work already recorded in memory and produces the retro. Reads and summarises; never moves cards, never marks work done.
+description: Closes a finished story or sprint. Reconciles the card with the decisions already recorded and appends the retro to docs/ai-daridev/log.md. Never moves cards, never marks work done.
 disable-model-invocation: true
 ---
 
 # Archive
 
-You are closing work that is already finished. You do not decide what shipped: the card and the
-memories do. Never invent a retro for a story with no record; report the gap instead.
-
-## Requirement
-
-This workflow needs **Engram**, the memory MCP. If its tools are not available, stop and tell me to
-install Engram and restart the agent. Do not continue without memory.
+Close work that is already finished. The card and the files are the record; never invent a retro.
 
 ## Inputs
 
-- `/ai-daridev-archive <slug>` → that story.
-- `/ai-daridev-archive` → list the candidates and **ask**: one of them, all, or cancel. Never
-  assume "all".
-  - With Odoo: cards in "Sprint Complete" of the configured project (`project_id` + `stage_id`,
-    `limit` from preflight, paginate with `offset`) that have no `retro/<slug>` memory. Mark the ones
-    assigned to `uid` as yours.
-  - Without Odoo: `story/*` memories that have no `retro/*` memory.
+- `/ai-daridev-archive <slug>` → that story, even if the card has not been moved yet.
+- Bare → cards in `odoo_stage_done` that are not yet in `docs/ai-daridev/log.md`; ask one, all, or
+  cancel. Never assume "all". No `odoo_stage_done` or no Odoo → require a slug or a pasted story.
 
 ## Steps
 
-1. **Preflight.** Run `ai-daridev preflight` in the repo root and use its JSON (`project`, `stages`,
-`tags`, `uid`, `listing`, `plan_steps`, `assignees`). If the command is missing, stop and say: run
-`./scripts/setup.sh` from the ai-daridev repo. If it exits non-zero, print its `errors` and stop —
-do not ask, do not guess, do not read `AGENTS.md` yourself. Print its `warnings` once, then continue.
-
-2. Memory is already imported by the preflight (step 1). Do not run `engram sync --import` again.
-3. Story mode: load `story/<slug>`, `plan/<slug>`, its `decision` memories, any `review/<slug>`
-   record, and the Odoo card.
-   Sprint mode: read the cards in the **done stage** (`stages.done`) (`name`, `description`, `state`, `date_end`,
-   `date_last_stage_update`), extract `engram: story/<slug>` from each description, and skip the
-   ones that already have a `retro/<slug>` memory.
-4. Reconcile and **flag** drift, without fixing it:
-   - card exists and neither `story/*` nor `review/*` exists → "no agent record"
-   - memory says shipped, card is not in Sprint Complete → "card not moved"
-   - approved means any of: `state = 03_approved`, stage is "Sprint Complete", or a `review/*`
-     record — only when none of them applies is it "not approved"
-   - a step is still not `1_done` while the card sits in "Sprint Complete" → "step still open:
-     <name>"; list them, never flip them here
-   - `plan/<slug>` still has `pending_sync` → "plan not synced to the tracker"
-   - a decision contradicts the description → quote both
-5. Output the retro (format below). Offer follow-ups as a list; don't create cards.
-6. Save one memory `retro/<slug>` (type `learning`) with the retro body: `title` = `retro <slug>`,
-   `content` in `**What** / **Why** / **Where** / **Learned**`. Sprint mode saves
-   `retro/sprint-<YYYY-MM-DD>` and adds totals, cross-story decisions and all follow-ups. If the
-   answer carries `judgment_required`, ask me once and resolve it with `mem_judge_many`
-   (`candidates[].judgment_id`).
-7. Write `docs/decisions/<slug>.md` **only if** the story produced a decision that is
-   project-wide, hard to reverse, or affects a shared/ops contract. Otherwise create no file.
-8. **Export and commit the memory** (this skill may commit — the only one that may):
-   - run `engram sync` in the directory holding `.engram/config.json`;
-   - commit **only if** that directory (or its git root) contains `.engram/config.json`;
-   - `git add .engram/`; detached HEAD, merge/rebase in progress or `.engram/` conflicts → report
-     and skip the commit (the sync already happened);
-   - `git commit --only -m "chore: memory — <slug>" -- .engram/`, leaving anything else staged
-     untouched; never `--no-verify`, never `git push`;
-   - nothing to export → say so and continue.
-
-## Format
+1. **Reconcile** the card, its subtasks and the decisions. Flag drift, do not fix it: card not moved,
+   steps still open, a decision that contradicts the description (quote both), a behavior change
+   with no spec entry.
+2. **Print the retro**:
 
 ```
 ## <slug> — shipped <date>
-Shipped: ...
+Shipped: <one or two lines>
 Decisions: <dated, each with its Why>
-Deviations: ...
-Follow-ups: ...
+Follow-ups: <or "none">
 Plan: <done>/<total> steps · dropped <n> · open <n>
 Card: task <id> · state <state> · end <date_end or date_last_stage_update>
 Drift: <or "none">
 ```
 
-Sprint mode groups the same blocks and adds: total shipped, cross-story decisions, the full
-follow-up list, and all drift.
+3. **Append** the block to `docs/ai-daridev/log.md` unless the slug is already there. Create the file
+   with `# Log` if needed. Nothing else is written.
+4. Follow-ups are listed, never turned into cards.
 
 ## Rules
 
-- Never move a card, never write `stage_id`, never set `state` to done or canceled.
-- If I ask to move or close a card, do it as a separate explicit request, one card at a time.
-- No file writes outside `docs/decisions/`. The commit in step 8 is the only git write this skill
-  makes, and it touches `.engram/` only.
-- Missing tools: Engram is required — stop if memory is unavailable. If Odoo is unavailable, still
-  produce the retro from memory and say what could not be checked.
+- Never move a card, never write `stage_id`, never set `state` to done or cancelled.
+- Read `docs/ai-daridev/spec.md` and `decisions.md` first; the retro quotes them, it does not
+  reinvent them.
+
+## Always
+
+- **Root.** Walk up from the current directory to the nearest `AGENTS.md` that holds
+  `<!-- ai-daridev:start -->`. That directory is the root: read and write `docs/ai-daridev/` there
+  and write nothing outside it. No block → ask once: create it here, use the git root, or chat-only.
+- **Config.** Read `odoo_project`, `odoo_stage_done` and `card_tag` from the block. No
+  `odoo_project` → Odoo is off. Resolve the project, the tags and the stages by exact name; 0 or 2+
+  matches → stop and list the real ones. Backlog stage = lowest `sequence`. Default tag `backend`.
+- **Never move a card** between stages, never set a card `1_done`/`1_canceled`, never assign.
+  Agents write: the description (story), subtask states, `state=03_approved` + `date_end` (close),
+  `state=02_changes_requested` (review).
+- **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
+- **Odoo unavailable** → print the handout and continue; the files are still written.
+- **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to
+  reverse or a shared/ops contract. Everything else stays in the conversation.
+- **Fold-in.** If `docs/ai-daridev/` is missing and `docs/decisions/*.md` or `openspec/` exists, ask
+  once to fold them into `decisions.md` and `spec.md`; the originals stay as frozen history.
+- **Never commit.** Never write secrets or client data into the three files.
+- **Cards** are found by `<p><em>ai-daridev: story/<slug></em></p>`; the legacy
+  `engram: story/<slug>` is accepted on read.
