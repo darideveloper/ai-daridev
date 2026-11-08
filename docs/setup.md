@@ -1,6 +1,8 @@
 # Setup
 
 Requirements: `bash` and `git`. Python, Node and Engram are not needed. Odoo is optional.
+`playwright-cli` is used for browser evidence; ImageMagick `convert` is optional for the screenshot
+cap.
 
 ## Install
 
@@ -83,12 +85,17 @@ Register it:
 
 Verify by calling a read tool in a **new session**, not by listing servers.
 
+The agent's Odoo allowlist must include `ir.attachment` (read/create only, scoped to `project.task`
+attachments) so pair can attach evidence.
+
 ## Permissions
 
 A story creates one card and up to seven subtasks, so a per-call `ask` policy means up to eight
 prompts. If that is noise, allow `odoo_create` in your agent's permissions and keep `odoo_update`,
 `odoo_delete` and `odoo_unlink` on `ask`. Archive adds one `odoo_update` for the done state; the gate
-is the approval, but the client may still prompt. The skills never delete or bulk-update.
+is the approval, but the client may still prompt. Evidence adds one `ir.attachment` create and one
+`odoo_update` per step; caps: screenshot ≤500 KB, file ≤2 MB. Redact secrets and mask client data
+before upload. The skills never delete or bulk-update.
 
 ## Windows
 

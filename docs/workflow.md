@@ -17,6 +17,9 @@ moves a card between stages.
   `state=1_done` (archive, on the card).
 - **One gate per phase.** Structure changes and archive's done write ask once; the other state
   changes are reported.
+- **Evidence.** Every `1_done` step carries an artifact or a waiver on its subtask: a screenshot, a
+  curl and its response, a diff or a file. Pair captures it; review and archive refuse a step
+  without it.
 - **Decisions only when they last.** Project-wide, hard to reverse or a shared/ops contract goes to
   `decisions.md`; everything else stays in the conversation.
 
@@ -65,22 +68,29 @@ blocking and needs re-planning.
 
 1. **Test list first**, names only: `retry keeps one record — tests/test_upload.py — covers p1`.
    Manual criteria are marked as such. One approval; the list lives in the conversation.
-2. **One step per stop**: write the test, show it red, write the minimum code, show it green, flip
-   that subtask to `1_done`, print `Plan 4/9 · next p5`.
+2. **One step per stop**: write the test, show it red, write the minimum code, show it green,
+   capture and attach the evidence, flip that subtask to `1_done`, print `Plan 4/9 · next p5`.
 3. **Stop immediately** on an unplanned design decision, an unrequested addition, a test that would
    have to change, two failed attempts, or a step over ~50 lines / 3 files.
 4. **Non-code** (n8n, server, infra): read-only investigation, numbered plan, one approval, execute
    one step at a time showing command, output, state and rollback. Destructive steps ask again.
 
-At close: open steps are listed and decided, the card gets `state=03_approved` + `date_end`, one
-sentence is added or replaced in `spec.md` when behavior changed, and the agent prints the commit
-message for **you** to run. It never commits.
+Each step leaves an `Evidence` block on its subtask: a screenshot via `playwright-cli`, the curl and
+response in a code block, or the file attached. Redact secrets and mask client data. No artifact → a
+waiver, never a silent done.
+
+At close: open steps are listed and decided, every closed step already carries its evidence, the card
+gets `state=03_approved` + `date_end`, one sentence is added or replaced in `spec.md` when behavior
+changed, and the agent prints the commit message for **you** to run. It never commits.
 
 ## 4. Review
 
 `/ai-daridev-review <card>` is for work someone else built. It reads the card, asks for a diff or a
 screenshot only when the card does not settle it, and prints a verdict table: each criterion
 pass/fail/manual and each step pass/fail/not reached, with one evidence line.
+
+Each completed step must carry an artifact or a waiver; a `1_done` step without one fails, even when
+the test passed.
 
 - **Approved** → it proposes the column move and the validated gray dot as *your* actions, and lists
   any step still open. It never writes `stage_id`.
@@ -93,7 +103,8 @@ pass/fail/manual and each step pass/fail/not reached, with one evidence line.
 
 `/ai-daridev-archive <slug>` marks the card done and appends its retro to `log.md`. The gate stops
 unless the card is in `odoo_stage_done`, is green, gray or already done (not yellow, waiting or
-canceled), and every step is closed; it then shows the dependents it frees and waits for your yes.
+canceled), and every step is closed with evidence or a waiver; it then shows the dependents it frees
+and waits for your yes.
 
 ```
 ## retry-safe-upload — shipped 2026-11-07
@@ -124,10 +135,25 @@ cards.
 <p><em>ai-daridev: story/{slug}</em></p>  <!-- idempotency key, always last -->
 ```
 
+Subtask description (pair appends the evidence, story and check-plan preserve it):
+
+```html
+<p>{detail}</p>
+<h3>Evidence</h3>
+<p><b>{YYYY-MM-DD HH:MM:SS UTC}</b></p>
+<ul>
+  <li><b>screenshot</b><br/><img src="/web/image/{id}" alt="evidence" style="max-width:100%"/></li>
+  <li><b>curl</b><pre><code>{command and response, escaped}</code></pre></li>
+  <li><b>file</b> <a href="/web/content/{id}?download=true">{name}</a></li>
+</ul>
+```
+
 - Subtasks: `name` = `<step> — [agent|you]` (the owner lives here, so it survives a restart;
   legacy names without the suffix still match), `description` = the detail, `parent_id`,
   `sequence = index × 10`, `state=01_in_progress`, `display_in_project=False`, never `project_id`
   or `stage_id`.
+- Evidence: one dated `<ul>` per attempt with labels `screenshot`, `curl`, `output`, `diff`, `file`
+  or `waiver`; never overwrite an attempt; a step without one is not `1_done`.
 - Step states: `01_in_progress` open · `1_done` done · `02_changes_requested` rejected ·
   `1_canceled` dropped. Only open steps can be dropped; validated steps are never cancelled.
 - The card closes at `03_approved` (green) and archive marks it `1_done`; no skill sets `1_canceled`

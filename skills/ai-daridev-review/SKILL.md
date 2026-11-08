@@ -13,13 +13,17 @@ decide. One card per run unless I ask for a batch.
 
 1. **Load the card** by id or name. No argument → list the active-stage cards (not the backlog
    stage, not `odoo_stage_done`), limit 20, and ask which one. Without Odoo, ask me to paste it.
-2. **Read it:** name, description sections, `state`, children, `write_date`. No acceptance criteria
-   in the description → say so and ask me what "correct" means; never invent a verdict.
+2. **Read it:** name, description sections, `state`, children, `write_date`, `attachment_ids`. No
+   acceptance criteria in the description → say so and ask me what "correct" means; never invent a
+   verdict.
 3. **Evidence only when the card does not settle it.** Ask for a diff, PR, screenshot or paste, and
    state what you could not verify.
 4. **Verdict table:** every criterion (pass / fail / manual) and every step (pass / fail / not
-   reached), one evidence line each. A step passes only when every test covering it is green or the
-   verification is shown.
+   reached), one evidence line each. A step passes only when every test covering it is green and its
+   evidence is valid. Read the child description and `attachment_ids`: a valid attempt has an artifact
+   `<li>` or a `waiver` with reason, who and date; `screenshot`/`file` ids must resolve;
+   `curl`/`output`/`diff` need a non-empty `<pre><code>`. A `1_done` step with no valid attempt is a
+   fail, even when the test passed.
 5. **Propose the writes**, then one gate:
    - Approved → print two of **my** actions, the column move (`<current> → <odoo_stage_done>`) and
      the dot to the validated gray, so the card lands validated and not archived; list any step that
@@ -50,6 +54,7 @@ touch anything else in the description.
 
 - **Never move a card**, never write `stage_id`, never create cards, never mark work done or
   cancelled. The column is mine.
+- The evidence check reads the attachment record and the description; it never fetches `/web/image`.
 - Re-review only the yellow steps; proposing to flip the fixed ones is part of the gate.
 - No plan mirror, no `Plan:` line.
 
