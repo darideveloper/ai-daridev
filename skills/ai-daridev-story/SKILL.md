@@ -69,8 +69,9 @@ writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of the card 
   (no key prefix), `parent_id`, `sequence` = index × 10, `state=01_in_progress`, `user_ids=[]`,
   `display_in_project=False`. Never write `project_id` or `stage_id`. Read one back: if
   `display_in_project` is not false, stop and report.
-- Match existing children by exact name: update the ones that changed, create the missing ones,
-  never delete. List extras and leave them alone; a rename asks once.
+- Match existing children by exact name, ignoring a trailing ` — [agent]`/`— [you]` on legacy
+  cards: update the ones that changed (rewriting the name in the new form), create the missing
+  ones, never delete. List extras and leave them alone; a rename asks once.
 - No file writes.
 
 Without Odoo: print the description HTML, the step list with owners, and where to paste them.

@@ -111,9 +111,10 @@ cancel. Follow-ups are listed, never turned into cards.
 <p><em>ai-daridev: story/{slug}</em></p>  <!-- idempotency key, always last -->
 ```
 
-- Subtasks: `name` = `<step> — [agent|you]` (the owner lives here, so it survives a restart),
-  `description` = the detail, `parent_id`, `sequence = index × 10`,
-  `state=01_in_progress`, `display_in_project=False`, never `project_id` or `stage_id`.
+- Subtasks: `name` = `<step> — [agent|you]` (the owner lives here, so it survives a restart;
+  legacy names without the suffix still match), `description` = the detail, `parent_id`,
+  `sequence = index × 10`, `state=01_in_progress`, `display_in_project=False`, never `project_id`
+  or `stage_id`.
 - Step states: `01_in_progress` open · `1_done` validated · `02_changes_requested` rejected ·
   `1_canceled` dropped. Only open steps can be dropped; validated steps are never cancelled.
 - The card itself never uses `1_done`/`1_canceled`; it closes at `03_approved` and the column move is
