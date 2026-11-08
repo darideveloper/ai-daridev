@@ -10,10 +10,13 @@ moves a card between stages.
   No block → the skill asks once (create it here, use the git root, or chat-only).
 - **Odoo is optional.** Without an `odoo_project` key there are no cards: stories live in the
   conversation and only the three files are written.
-- **The board is yours.** No skill writes `stage_id`, sets a card `1_done`/`1_canceled` or assigns
-  anyone. The agent writes the description (story), subtask states, `state=03_approved` + `date_end`
-  (close) and `state=02_changes_requested` (review).
-- **One gate per phase.** Structure changes ask once; state changes are reported.
+- **The board is yours.** No skill writes `stage_id` or assigns anyone. Archive is the only skill
+  that sets a **card** `1_done`, after its gate; no skill sets `1_canceled` on a visible card (you
+  can, to abandon, and dependents stay blocked). The agent writes the description (story), subtask
+  states, `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review) and
+  `state=1_done` (archive, on the card).
+- **One gate per phase.** Structure changes and archive's done write ask once; the other state
+  changes are reported.
 - **Decisions only when they last.** Project-wide, hard to reverse or a shared/ops contract goes to
   `decisions.md`; everything else stays in the conversation.
 
@@ -28,7 +31,9 @@ moves a card between stages.
 
 Each story delivers value on its own and cuts through every layer. No technical stories, no
 estimates. The first one is the walking skeleton. On approval the cards are created in the backlog
-stage, unassigned, one tag each, no subtasks.
+stage, unassigned, one tag each, no subtasks. A backward `Requires: #N` is written as a real Odoo
+**Blocked By** link (`depend_on_ids`) in the create call itself, and a second pass covers forward
+references; the clause never stays in the name or description.
 
 ## 2. Story
 
@@ -54,6 +59,10 @@ per step is created. Existing children are matched by name, updated, never delet
 
 `/ai-daridev-pair <slug>` loads the card and its checklist.
 
+Before anything else it reads the card's blockers. Only `1_done`, outside the Cancelled column,
+frees a dependent; anything else is a hard stop: no override, no test list. A canceled blocker keeps
+blocking and needs re-planning.
+
 1. **Test list first**, names only: `retry keeps one record — tests/test_upload.py — covers p1`.
    Manual criteria are marked as such. One approval; the list lives in the conversation.
 2. **One step per stop**: write the test, show it red, write the minimum code, show it green, flip
@@ -73,16 +82,18 @@ message for **you** to run. It never commits.
 screenshot only when the card does not settle it, and prints a verdict table: each criterion
 pass/fail/manual and each step pass/fail/not reached, with one evidence line.
 
-- **Approved** → it proposes the column move as *your* action and lists any step still open. It never
-  writes `stage_id`.
+- **Approved** → it proposes the column move and the validated gray dot as *your* actions, and lists
+  any step still open. It never writes `stage_id`.
 - **Changes requested** → the failing steps and the card go to `02_changes_requested`, and the
-  `<h2>Review (ai-daridev)</h2>` section is replaced with the dated findings. Missing work becomes
-  new steps, in the same gate.
+  `<h2>Review (ai-daridev)</h2>` section is replaced with the dated findings. If the card is in
+  `odoo_stage_done`, it proposes moving it back to Sprint in Progress as *your* action. Missing work
+  becomes new steps, in the same gate.
 
 ## 5. Archive
 
-`/ai-daridev-archive <slug>` reconciles the card, its steps and the decisions, prints the retro and
-appends it to `log.md`:
+`/ai-daridev-archive <slug>` marks the card done and appends its retro to `log.md`. The gate stops
+unless the card is in `odoo_stage_done`, is green, gray or already done (not yellow, waiting or
+canceled), and every step is closed; it then shows the dependents it frees and waits for your yes.
 
 ```
 ## retry-safe-upload — shipped 2026-11-07
@@ -90,12 +101,14 @@ Shipped: uploads survive retries, exactly one record.
 Decisions: 2026-11-07 — dedupe by hash, not a unique index (see decisions.md)
 Follow-ups: backfill dedupe for legacy rows
 Plan: 4/4 steps · dropped 0 · open 0
-Card: task 14842 · state 03_approved · end 2026-11-07 10:12:00
+Card: task 14842 · state 1_done · end 2026-11-07 10:12:00
 Drift: none
 ```
 
-Bare `/ai-daridev-archive` lists cards in the done stage that are not in `log.md` and asks one, all or
-cancel. Follow-ups are listed, never turned into cards.
+Odoo clears the blocked-by badge of the dependents when the card turns `1_done`. Bare
+`/ai-daridev-archive` lists ready cards in the done stage that are not in `log.md` and asks one, all
+or cancel; not-ready cards are listed with the reason. Follow-ups are listed, never turned into
+cards.
 
 ## The card
 
@@ -115,10 +128,10 @@ cancel. Follow-ups are listed, never turned into cards.
   legacy names without the suffix still match), `description` = the detail, `parent_id`,
   `sequence = index × 10`, `state=01_in_progress`, `display_in_project=False`, never `project_id`
   or `stage_id`.
-- Step states: `01_in_progress` open · `1_done` validated · `02_changes_requested` rejected ·
+- Step states: `01_in_progress` open · `1_done` done · `02_changes_requested` rejected ·
   `1_canceled` dropped. Only open steps can be dropped; validated steps are never cancelled.
-- The card itself never uses `1_done`/`1_canceled`; it closes at `03_approved` and the column move is
-  yours.
+- The card closes at `03_approved` (green) and archive marks it `1_done`; no skill sets `1_canceled`
+  on a visible card. The column moves are yours.
 
 ## The three files
 

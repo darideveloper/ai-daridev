@@ -18,14 +18,13 @@ cd ai-daridev
    `~/.config/devin`);
 2. removes `~/.config/opencode/skills/ai-daridev-*` copies, because OpenCode gives that directory
    precedence and a stale copy would shadow the link;
-3. removes the retired `ai-daridev-check-plan` skill and command;
-4. symlinks `commands/*.md` into `~/.config/opencode/commands`;
-5. replaces the old `<!-- ai-daridev -->` block in the global instruction files with the current
+3. symlinks `commands/*.md` into `~/.config/opencode/commands`;
+4. replaces the old `<!-- ai-daridev -->` block in the global instruction files with the current
    one, keeping a timestamped backup;
-6. prints the Odoo MCP snippet.
+5. prints the Odoo MCP snippet.
 
 It never installs packages, never edits JSON/TOML, never touches credentials. `--check` verifies the
-links, the retired names and the global block, and lists what is missing.
+links, the commands and the global block, and lists what is missing.
 
 A `git pull` is enough after the first install: skills and commands are symlinks.
 
@@ -47,8 +46,10 @@ Add the block to the `AGENTS.md` of the repo (or subproject) that uses the workf
 - A block with no keys (just the two markers) is valid for a files-only repo.
 - `odoo_project` must be the **exact** name in Odoo. Zero or two matches → the skill stops and lists
   the real ones.
-- `odoo_stage_done` is only used by review (to name the column you should move to) and archive (to
-  list finished cards).
+- `odoo_stage_done` is the validated column: review names the move you should make, and archive
+  refuses to mark a card done outside it. Pair unblocks on `1_done`, not on the column. It must
+  match the exact stage name. Archived cards (`1_done`) are hidden by the default board filter;
+  enable `Closed Tasks` to see them.
 - Existing 3.x blocks work unchanged; unknown keys are ignored.
 
 ## Odoo MCP
@@ -86,7 +87,8 @@ Verify by calling a read tool in a **new session**, not by listing servers.
 
 A story creates one card and up to seven subtasks, so a per-call `ask` policy means up to eight
 prompts. If that is noise, allow `odoo_create` in your agent's permissions and keep `odoo_update`,
-`odoo_delete` and `odoo_unlink` on `ask`. The skills never delete or bulk-update.
+`odoo_delete` and `odoo_unlink` on `ask`. Archive adds one `odoo_update` for the done state; the gate
+is the approval, but the client may still prompt. The skills never delete or bulk-update.
 
 ## Windows
 

@@ -21,11 +21,14 @@ decide. One card per run unless I ask for a batch.
    reached), one evidence line each. A step passes only when every test covering it is green or the
    verification is shown.
 5. **Propose the writes**, then one gate:
-   - Approved → print the column move as **my** action (`<current> → <odoo_stage_done>`) and list
-     any step that is not `1_done`. Never write `stage_id`.
+   - Approved → print two of **my** actions, the column move (`<current> → <odoo_stage_done>`) and
+     the dot to the validated gray, so the card lands validated and not archived; list any step that
+     is not `1_done`. Never write `stage_id`.
    - Changes requested → the failing steps and the card to `state=02_changes_requested`, plus the
-     review block. If work is missing, propose new steps (name, detail) and create them as hidden
-     subtasks like `/ai-daridev-story` does, in the same gate.
+     review block. If the card is in `odoo_stage_done`, propose moving it back to Sprint in Progress
+     as **my** action; from a later stage, stop and report. If work is missing, propose new steps
+     (name, detail) and create them as hidden subtasks like `/ai-daridev-story` does, in the same
+     gate.
 6. **Apply** after the gate: new steps → states (one `odoo_update` with all the ids) → the review
    section. Re-read `write_date` first; if it changed, show the difference and re-apply.
 7. Print the verdict and the checklist with the review states.

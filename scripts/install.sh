@@ -24,8 +24,10 @@ INSTRUCTIONS=(
 BLOCK='<!-- ai-daridev -->
 Work is tracked with the `ai-daridev` skills, invoked manually: backlog → story → pair → review →
 archive. The repo root is the nearest `AGENTS.md` holding an `ai-daridev:start` block; read it
-before writing. Never move an Odoo card between stages, never mark a card done or cancelled, never
-assign. Repo memory lives in `docs/ai-daridev/` and is committed by a human.
+before writing. Never move an Odoo card between stages, never assign. Only `/ai-daridev-archive` may
+set a card `1_done`; hidden checklist steps use `1_done` when a step passes. Never set `1_canceled`
+(the only exception is the hidden dropped-step marker).
+Repo memory lives in `docs/ai-daridev/` and is committed by a human.
 <!-- ai-daridev -->'
 
 say() { printf '%s\n' "$*"; }
@@ -71,7 +73,7 @@ migrate_block() {
 }
 
 check() {
-  local rc=0 t id f n
+  local rc=0 t id f n found
   for t in "${targets[@]}"; do
     for id in "${IDS[@]}"; do
       if [ -e "$t/$id/SKILL.md" ]; then say "ok    $t/$id"; else say "MISS  $t/$id"; rc=1; fi
@@ -88,7 +90,8 @@ check() {
       say "skip  block $f (no marker pair)"
       continue
     fi
-    if grep -q 'Repo memory lives in' "$f" && ! grep -q 'ai-daridev preflight' "$f"; then
+    found="$(awk '/<!-- ai-daridev -->/ { n++; if (n == 1) { print; next } else if (n == 2) { print; exit } } n == 1 { print }' "$f")"
+    if [ "$found" = "$BLOCK" ]; then
       say "ok    block $f"
     else
       say "STALE block $f"
@@ -133,10 +136,10 @@ for link in "$CMD_DIR"/*.md; do
 done
 say "commands: linked to $CMD_DIR"
 
-# 5. global instruction block
+# 4. global instruction block
 for f in "${INSTRUCTIONS[@]}"; do migrate_block "$f"; done
 
-# 6. MCP
+# 5. MCP
 say ""
 say "Odoo is optional. To enable cards, register the MCP in the agent you use:"
 say "  OpenCode  ~/.config/opencode/opencode.json, under mcp.servers:"

@@ -11,15 +11,21 @@ Refine one story right before building it. You propose, I decide. No code.
 ## Steps
 
 1. **Load the story** by slug, card or pasted text. Read `docs/ai-daridev/spec.md` if it exists, the
-   code the story touches, and `rg` `docs/ai-daridev/decisions.md` for that area.
-2. **Acceptance criteria** — 1–3, Given/When/Then, user-visible only, never implementation.
-3. **More than 3 criteria → split.** Print the new stories in backlog format and continue with the
-   first one.
-4. **Checklist** — 3–7 steps: verb-first, ≤80 chars, one verifiable action each. Add a detail
+   code the story touches, `rg` `docs/ai-daridev/decisions.md` for that area, and the card's
+   `depend_on_ids` (id, name, stage).
+2. **Blocked by** — show the blockers in the proposal. When I name one, resolve it by `#id`, task
+   URL or `story/<slug>` (0 or 2+ matches → stop and list) and propose the append in the same gate:
+   `depend_on_ids: [[4, <id>]]`. Same project, no self-link, no cycle; never remove a link.
+3. **Acceptance criteria** — 1–3, Given/When/Then, user-visible only, never implementation.
+4. **More than 3 criteria → split.** Print the new stories in backlog format and continue with the
+   first one. If the card has blockers or dependents, ask in the same gate whether the links stay on
+   the original (the first slice) or are left untouched for me to fix; the other slices get theirs
+   when they become cards.
+5. **Checklist** — 3–7 steps: verb-first, ≤80 chars, one verifiable action each. Add a detail
    sub-bullet (file, command, rollback) only when you already read the code. Mark every step
    `[agent]` or `[you]`; a `[you]` step is one I must do myself. More than 7 steps is a story to
    split.
-5. **Wait for my approval.**
+6. **Wait for my approval.**
 
 ## Rules
 
@@ -34,6 +40,9 @@ Refine one story right before building it. You propose, I decide. No code.
 ```markdown
 ## Story
 As a <actor>, I want <action>, so that <benefit>.
+
+## Blocked by                 <!-- only when the card has blockers -->
+- #<id> <name> — <stage>
 
 ## Acceptance criteria
 - [ ] Given …, when …, then ….
@@ -57,6 +66,8 @@ writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of the card 
 
 - Find the card by `ai-daridev: story/<slug>` (or legacy `engram: story/<slug>`). Not found → ask
   "create it in the backlog stage?" and create it with `/ai-daridev-backlog`'s card rules.
+- A blocker is one of the exact writes: `odoo_update` with `depend_on_ids: [[4, <id>]]`, in the same
+  gate. Never regenerate the description to carry it.
 - **Regenerate the description** (never append), escaping `<`, `>` and `&`, in this order:
   `<h1>{the card's CURRENT name, read it first}</h1>`, `<p>{goal}</p>`,
   `<h2>Acceptance criteria</h2>`, `<h2>Checklist</h2>` (step name, its `[agent]`/`[you]` owner

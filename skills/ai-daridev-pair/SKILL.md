@@ -13,6 +13,14 @@ You drive, I navigate. One story per session, one step at a time, and you stop a
 - `/ai-daridev-pair <slug>` → the card carrying `ai-daridev: story/<slug>` (legacy `engram: story/<slug>` is accepted).
 - No slug → list cards in the active stages (not the backlog stage, not `odoo_stage_done`), limit 20, and ask which one. No Odoo → ask me to paste the story.
 - No story at all → treat it as new: propose criteria and a checklist, one gate, then continue.
+- **Blocked by (Odoo).** Read `depend_on_ids` before anything else. A blocker is satisfied only when
+  its `state=1_done` and its stage is not the Cancelled stage; anything else blocks. Print
+  `Blocked by #<id> "<name>" — <stage> · <state>.` and stop before proposing a mode or a test list.
+  Then say what unblocks it: in `odoo_stage_done` → archive it; in the Cancelled stage → re-plan; in
+  another later stage → move it back or mark it done; earlier → finish it, then archive it. A
+  `1_canceled` blocker also says the dependency needs re-planning. A blocker in another project, or
+  one that is a hidden subtask, stops and reports (a subtask as its parent card). No Odoo → say
+  dependencies cannot be verified and continue.
 - Checklist = the card's subtasks by `sequence`; fall back to `<h2>Checklist</h2>` in the description.
   A subtask name ends with `— [agent]` or `— [you]`: that is the step's owner. A legacy subtask
   without the suffix takes its owner from the checklist line; if that is missing too, ask once and
@@ -117,7 +125,8 @@ the files.
   matches → stop and list the real ones. Backlog stage = lowest `sequence`. Default tag `backend`.
 - **Never move a card** between stages, never set a card `1_done`/`1_canceled`, never assign.
   Agents write: the description (story), subtask states, `state=03_approved` + `date_end` (close),
-  `state=02_changes_requested` (review).
+  `state=02_changes_requested` (review). Never write `depend_on_ids`; only backlog and story add
+  links, and nothing removes one.
 - **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.
 - **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to

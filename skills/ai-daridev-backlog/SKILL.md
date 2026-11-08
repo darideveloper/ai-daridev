@@ -24,7 +24,8 @@ Split what I tell you into vertical user stories. I bring the requirements; you 
   first story that needs them.
 - **10 stories max**, one line each: no criteria, no technical details, no estimates, no priorities.
 - The first story is the smallest thing usable end to end (walking skeleton).
-- `Requires: #N` only when a story makes no sense without another.
+- `Requires: #N` only when a story makes no sense without another. `N` is a position in this list,
+  never a card id; a link to a card from an earlier run goes through `/ai-daridev-story`.
 
 ## Output
 
@@ -41,22 +42,34 @@ Expensive decisions: <the ones that apply, or "none">
 
 ## Cards (Odoo only)
 
-On approval, create the cards in one batch. Slug = kebab-case of the title, ≤40 chars; skip a story
-whose card already carries `ai-daridev: story/<slug>` (or the legacy `engram: story/<slug>`).
+On approval, create the cards in one ordered batch, story 1 first. Slug = kebab-case of the title,
+≤40 chars; skip a story whose card already carries `ai-daridev: story/<slug>` (or the legacy
+`engram: story/<slug>`).
 
-- `name`: the story title. `project_id`: resolved. `stage_id`: the backlog stage (lowest `sequence`).
+- `name`: the story title, with any `Requires: #N` removed. `project_id`: resolved. `stage_id`: the
+  backlog stage (lowest `sequence`).
 - `sequence`: `max(sequence in project) + 10, +20, +30…`.
 - `tag_ids`: one tag — the repo's `card_tag` unless the work clearly belongs to another of the four.
 - `user_ids: [[6,0,[]]]` (Odoo assigns the creator by default). No `state`, no deadline unless I
   gave one.
 - Description, exactly:
   `<h1>{title}</h1><p>{As a …, I want …, so that …}</p><p><em>ai-daridev: story/{slug}</em></p>`
+  — the `Requires: #N` clause is not prose and never appears here.
 - No subtasks; `/ai-daridev-story` owns them.
-- Report a table: id · name · stage · tag. If I deny an approval mid-batch, stop and list what
+- **Dependencies.** Put a backward `Requires: #N` (the target card already exists) in the create
+  call itself: `depend_on_ids: [[4, <id>]]`. After the batch, one pass writes the remaining forward
+  references and the links for cards that already existed. Append, never `[[6, 0, …]]`, so a link
+  set by hand in Odoo is never wiped. A `Requires` whose target was denied or never created stops
+  the batch and lists it.
+- Guards: no self-link, no duplicate, same project only, and no cycle — walk the blockers' existing
+  `depend_on_ids` together with the links this batch is about to add. A loop stops the batch and
+  shows it. Never remove a link.
+- Report a table: id · name · stage · tag · blocked by. `blocked by` holds card ids; the approved
+  block above already shows the `#N` positions. If I deny an approval mid-batch, stop and list what
   already exists so a re-run resumes without duplicates.
 
 Without Odoo: print the same block, the description to paste, and a reminder that the first column
-is where a new card goes. Write no files.
+is where a new card goes; `Requires: #N` stays in the list as text. Write no files.
 
 ## Always
 
