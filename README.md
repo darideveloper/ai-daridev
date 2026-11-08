@@ -23,7 +23,7 @@ The agent splits, proposes and writes code in small steps. You decide.
 | `/ai-daridev-pair` | Drives: one test → red → minimum code → green, stops after every step. Plan-and-execute for non-code work. | Commit, edit tests to pass, add what you didn't ask for, move columns. |
 | `/ai-daridev-review` | Grades someone else's card against its criteria and steps, proposes the writes. | Move a card, invent a verdict, mark work done. |
 | `/ai-daridev-archive` | Reconciles a finished story and appends its retro to `docs/ai-daridev/log.md`. | Move cards, create cards, invent a retro. |
-| `/ai-daridev-check-plan` | Audits any plan in detail, fixes the gaps one question at a time and renders the final plan. Outside the flow; with a named card it also updates the checklist. | Invent requirements, write files, move cards. |
+| `/ai-daridev-check-plan` | Audits any plan in detail, fixes the gaps one question at a time and renders an ordered checklist. Outside the flow; with a named card it also updates the card checklist. | Invent requirements, write files, move cards. |
 
 Each phase ends waiting for your approval. The board is yours: the agent never moves a card between
 stages, never marks a card done or cancelled and never assigns.

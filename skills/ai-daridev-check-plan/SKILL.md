@@ -16,8 +16,9 @@ lean output.
   decisions.
 - **Standalone** otherwise: any plan in the conversation or pasted. No repo, no files, no Odoo.
 
-A bare number is never a card. A named slug with no matching card → ask "treat it as standalone?" and
-wait.
+A bare number is never a card: if the invocation looks like one (`14842`), say "bare `14842` is not a
+card; use `#14842` or `--card 14842`" and continue standalone. A named slug with no matching card →
+ask "treat it as standalone?" and wait.
 
 ## 1. Select the plan
 
@@ -38,6 +39,10 @@ pain points, the preferences. Do not relabel them as "the card" or "the ticket".
 Check the plan on: coverage, accuracy, scope creep, clarity, consistency, feasibility and order,
 risks, and a simpler or more standard alternative. Classify each issue internally; the labels never
 reach the output.
+
+Also check the checklist contract: one verifiable action per step (a compound "remove X and the Y
+lines" is split), verb first, ≤40 words, an owner on every step, no duplicate step. When a card is
+named, 3–7 steps; over 7 is one gap: "split it, or treat it as a standalone runbook".
 
 Resolution:
 
@@ -68,10 +73,11 @@ Always return the full plan, even when no question was asked. This is the shape;
 
 ```markdown
 ## Plan: <title>
+_standalone · no card_        <!-- or: _card #14842 · checklist will update_ -->
 
 **Goal.** One sentence, ≤25 words.
 
-**Start here** → <owner>: <the single blocking action>.
+**Start here** → [agent]: <the single blocking action>.
 
 **Touched:** `file`, `file`, `new file`, `external system` — not: <what stays untouched>.
 
@@ -82,17 +88,10 @@ Always return the full plan, even when no question was asked. This is the shape;
 
 _<one note line per reorder or contradiction>_
 
-### Steps
-
-**Me**
-- [ ] <one action, imperative verb first>
+### Checklist
+- [ ] p1 <one action, imperative verb first> — [agent]
   - <detail: files, patterns, command>
-
-**You**
-- [ ] ...
-
-**Close**
-- [ ] ...
+- [ ] p2 <one action> — [you]
 
 ### Open decision
 **D1 — ...**
@@ -100,13 +99,13 @@ _<one note line per reorder or contradiction>_
 ### Risks
 - <risk and its guard>
 
-_<N>/<N> requirements traced, certain · <N> auto-fixes · <N> answers_
+_5 steps · 3 agent · 2 you · <N>/<N> requirements traced · <N> auto-fixes · <N> answers_
 ```
 
-Rules: ≤6 change rows (more means the plan was too vague — say so); checkboxes ≤40 words, one
-action each; no numbers as references, use the action's name; commands in a fenced block; **never
-fence the whole plan**. `show audit` or `full report` expands the per-issue detail from this
-conversation without re-auditing.
+Rules: ≤6 change rows (more means the plan was too vague — say so); one action per step, ≤40 words,
+verb first, owner on every line; no group headings; no numbering as a reference in prose (use the
+step's name); commands in a fenced block; **never fence the whole plan**. `show audit` or
+`full report` expands the per-issue detail from this conversation without re-auditing.
 
 ## 7. Workflow: update the card (only when a card is named)
 
@@ -120,7 +119,8 @@ Two gates. Never write before Gate 2.
 - `+<N> subtasks`, `~<N> renamed`, `<N> dropped`, `sequence: pN…`.
 
 Re-read the card's `write_date` first; if it changed since step 1, re-read, re-diff and show the new
-writes. If nothing differs, say "the card already matches" and write nothing.
+writes. If nothing differs, say "the card already matches" and write nothing. The rendered checklist
+is exactly what gets written: same `pN` order, same owners, no regrouping.
 
 Apply in this order, then read one created subtask back:
 

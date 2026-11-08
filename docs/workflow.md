@@ -138,8 +138,8 @@ they are folded into these three files and the originals stay as frozen history.
 ## Outside the flow
 
 `/ai-daridev-check-plan` audits any plan in detail — pasted, from the conversation, or a card's
-current checklist — fixes the gaps, asks one question at a time and renders the corrected plan in
-the same lean format. Standalone it writes nothing. If you name a card (`#14842`, a task URL,
+current checklist — fixes the gaps, asks one question at a time and renders it as an ordered
+`p1..pN` checklist in the same format as a card. Standalone it writes nothing. If you name a card (`#14842`, a task URL,
 `--card`, `story/<slug>`), it also updates that card's `<h2>Checklist</h2>` and its subtasks after
 two gates (the plan, then the exact writes). It never creates a card, never deletes a subtask and
 never drops a `1_done` step.
