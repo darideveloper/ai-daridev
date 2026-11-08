@@ -21,7 +21,6 @@ INSTRUCTIONS=(
   "$HOME/.gemini/GEMINI.md"
   "$HOME/.codex/AGENTS.md"
 )
-RETIRED=(ai-daridev-check-plan)
 BLOCK='<!-- ai-daridev -->
 Work is tracked with the `ai-daridev` skills, invoked manually: backlog → story → pair → review →
 archive. The repo root is the nearest `AGENTS.md` holding an `ai-daridev:start` block; read it
@@ -82,15 +81,6 @@ check() {
     n="$(basename "$f")"
     if [ -e "$CMD_DIR/$n" ]; then say "ok    $CMD_DIR/$n"; else say "MISS  $CMD_DIR/$n"; rc=1; fi
   done
-  for t in "${targets[@]}" "$HOME/.config/opencode/skills"; do
-    for id in "${RETIRED[@]}"; do
-      if [ -e "$t/$id" ]; then say "STALE $t/$id"; rc=1; fi
-    done
-  done
-  if [ -e "$CMD_DIR/ai-daridev-check-plan.md" ]; then
-    say "STALE $CMD_DIR/ai-daridev-check-plan.md"
-    rc=1
-  fi
   for f in "${INSTRUCTIONS[@]}"; do
     [ -f "$f" ] || continue
     n="$(grep -c '<!-- ai-daridev -->' "$f" || true)"
@@ -125,24 +115,14 @@ done
 say "skills: linked ${#IDS[@]} into ${#targets[@]} directories"
 
 # 2. OpenCode prefers ~/.config/opencode/skills, so a copy there would shadow the link
-for id in "${IDS[@]}" "${RETIRED[@]}"; do
+for id in "${IDS[@]}"; do
   if [ -e "$HOME/.config/opencode/skills/$id" ] || [ -L "$HOME/.config/opencode/skills/$id" ]; then
     rm -rf "$HOME/.config/opencode/skills/$id"
     say "removed shadowing copy: ~/.config/opencode/skills/$id"
   fi
 done
 
-# 3. retired skills
-for t in "${targets[@]}"; do
-  for id in "${RETIRED[@]}"; do
-    if [ -e "$t/$id" ] || [ -L "$t/$id" ]; then
-      rm -rf "$t/$id"
-      say "removed retired skill: $t/$id"
-    fi
-  done
-done
-
-# 4. OpenCode commands (Claude Code and Codex invoke the skills directly)
+# 3. OpenCode commands (Claude Code and Codex invoke the skills directly)
 mkdir -p "$CMD_DIR"
 for src in "$FORK"/commands/*.md; do
   ln -sfn "$src" "$CMD_DIR/$(basename "$src")"

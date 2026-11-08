@@ -1,0 +1,157 @@
+---
+name: ai-daridev-check-plan
+description: Audits a plan in detail (pasted or from the conversation), fixes the gaps, asks one at a time, and renders the final plan. Use when asked to check, review, validate or polish a plan, or when a plan is pasted for review. Works standalone; with a named card it also updates the checklist and the subtasks after approval.
+disable-model-invocation: true
+---
+
+# Check plan
+
+Audit a plan against what I actually asked for, fix it, and return the corrected plan. Deep analysis,
+lean output.
+
+## Modes
+
+- **Workflow** when the invocation or the message names a card: `#14842`, a task URL, `--card <id>`,
+  or `story/<slug>`. Read that card and, read-only, `docs/ai-daridev/spec.md` and the related
+  decisions.
+- **Standalone** otherwise: any plan in the conversation or pasted. No repo, no files, no Odoo.
+
+A bare number is never a card. A named slug with no matching card → ask "treat it as standalone?" and
+wait.
+
+## 1. Select the plan
+
+1. A plan pasted in this message.
+2. The most recent plan in the last ~20 messages.
+3. Workflow mode with nothing pasted → the card's current `<h2>Checklist</h2>` and its subtasks.
+4. Nothing → ask me to paste one and stop. Never invent a plan.
+
+Several candidates → ask which one.
+
+## 2. Extract the intent
+
+In my words, quote: the goal, the explicit requirements, the constraints, the scope boundaries, the
+pain points, the preferences. Do not relabel them as "the card" or "the ticket".
+
+## 3. Analyze
+
+Check the plan on: coverage, accuracy, scope creep, clarity, consistency, feasibility and order,
+risks, and a simpler or more standard alternative. Classify each issue internally; the labels never
+reach the output.
+
+Resolution:
+
+- **Auto-fix** everything unambiguous: a contradiction where one side matches my intent, an ambiguity
+  the intent settles, an obvious missing step, wording.
+- **Ask** only when the answer changes an action: scope creep, a real disagreement with my intent, an
+  ambiguity nothing settles, an architecture fork.
+- **Never invent a requirement.** A gap with no basis becomes a question or is dropped as out of
+  scope.
+
+## 4. Ask one at a time
+
+Ask a single question, with the recommended answer first and the alternatives after it. Wait for the
+answer, update the working plan, and check again. Repeat until no gap remains.
+
+- Use a question tool only if the agent has one; otherwise ask in prose.
+- Do not batch questions.
+- More than 10 gaps → stop: the plan is too vague to audit, ask me to rewrite it.
+
+## 5. Verify
+
+Map every requirement from step 2 to a step in the plan. An untraced requirement is a gap: go back to
+step 4. Print only the footer count; show the mapping only if a requirement is uncertain.
+
+## 6. Render
+
+Always return the full plan, even when no question was asked. This is the shape; omit empty sections.
+
+```markdown
+## Plan: <title>
+
+**Goal.** One sentence, ≤25 words.
+
+**Start here** → <owner>: <the single blocking action>.
+
+**Touched:** `file`, `file`, `new file`, `external system` — not: <what stays untouched>.
+
+### What changed
+| Was | Now |
+|---|---|
+| ... | ... |
+
+_<one note line per reorder or contradiction>_
+
+### Steps
+
+**Me**
+- [ ] <one action, imperative verb first>
+  - <detail: files, patterns, command>
+
+**You**
+- [ ] ...
+
+**Close**
+- [ ] ...
+
+### Open decision
+**D1 — ...**
+
+### Risks
+- <risk and its guard>
+
+_<N>/<N> requirements traced, certain · <N> auto-fixes · <N> answers_
+```
+
+Rules: ≤6 change rows (more means the plan was too vague — say so); checkboxes ≤40 words, one
+action each; no numbers as references, use the action's name; commands in a fenced block; **never
+fence the whole plan**. `show audit` or `full report` expands the per-issue detail from this
+conversation without re-auditing.
+
+## 7. Workflow: update the card (only when a card is named)
+
+Two gates. Never write before Gate 2.
+
+**Gate 1 — the plan.** Show the render above. If I change something, go back to step 4.
+
+**Gate 2 — the writes.** List exactly what will change on the card:
+
+- `checklist: <N> steps` (the `<h2>Checklist</h2>` section, replaced whole),
+- `+<N> subtasks`, `~<N> renamed`, `<N> dropped`, `sequence: pN…`.
+
+Re-read the card's `write_date` first; if it changed since step 1, re-read, re-diff and show the new
+writes. If nothing differs, say "the card already matches" and write nothing.
+
+Apply in this order, then read one created subtask back:
+
+1. Replace **only** `<h2>Checklist</h2>`. Keep the title, goal, criteria, review block and the
+   `ai-daridev: story/<slug>` line byte-for-byte. No Checklist → replace `<h2>Plan</h2>` if it
+   exists, otherwise insert before the review heading, else before the key line. Delete any old
+   `Plan:` id line.
+2. Create a hidden subtask for every missing step: `name` = `<step> — [agent|you]`,
+   `description` = `<p>{detail}</p>`, `parent_id`, `sequence` = index × 10, `state=01_in_progress`,
+   `user_ids=[]`, `display_in_project=False`. Never `project_id`, never `stage_id`.
+3. Rename changed steps (update `name` and `description`). Exactly one step removed and one added →
+   ask "rename or replace?"; never guess.
+4. Drop a removed step with `state=1_canceled` and ` (dropped)` appended to the name. **Never drop a
+   `1_done` step**: it stays in the checklist, marked done.
+5. Update `sequence` only for the steps whose index changed.
+6. Read one created subtask back: `display_in_project` must be false, else stop and report.
+
+A second run with no changes produces zero writes.
+
+### Never
+
+- Create a card. No card exists → render the plan and end with "run `/ai-daridev-story`".
+- Delete a subtask, touch a `1_done` state, or re-open a dropped step.
+- Touch the card `state`, `stage_id`, tags or assignees.
+- Regenerate the description outside the checklist section.
+- Write files. `spec.md` and `decisions.md` belong to `/ai-daridev-pair`.
+- Invent a requirement, a step or an acceptance criterion.
+
+## Context
+
+- Root: nearest `AGENTS.md` with `<!-- ai-daridev:start -->`. Only needed in workflow mode.
+- Config: `odoo_project`, `odoo_stage_done`, `card_tag`; project by exact name, 0 or 2+ → stop.
+- Never move a card between stages, never mark it done or cancelled, never assign.
+- Odoo unavailable → stay standalone and say so in one line.

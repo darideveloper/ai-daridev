@@ -1,0 +1,6 @@
+interface:
+  display_name: "Check plan"
+  short_description: "Audit and fix a plan in detail"
+  default_prompt: "Use $ai-daridev-check-plan to audit this plan."
+policy:
+  allow_implicit_invocation: false
