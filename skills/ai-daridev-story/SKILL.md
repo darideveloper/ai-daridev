@@ -59,13 +59,14 @@ writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of the card 
   "create it in the backlog stage?" and create it with `/ai-daridev-backlog`'s card rules.
 - **Regenerate the description** (never append), escaping `<`, `>` and `&`, in this order:
   `<h1>{the card's CURRENT name, read it first}</h1>`, `<p>{goal}</p>`,
-  `<h2>Acceptance criteria</h2>`, `<h2>Checklist</h2>` (step name plus optional detail, **no
-  status**), any existing `<h2>Review (ai-daridev)</h2>` section copied **verbatim**, and finally
+  `<h2>Acceptance criteria</h2>`, `<h2>Checklist</h2>` (step name, its `[agent]`/`[you]` owner
+  and optional detail, **no status**), any existing `<h2>Review (ai-daridev)</h2>` section copied
+  **verbatim**, and finally
   `<p><em>ai-daridev: story/{slug}</em></p>`.
 - Re-read the description right before writing. If `write_date` changed since your first read, show
   what changed and ask once.
-- **Subtasks: one per step.** `name` = the step, `description` = `<p>{detail}</p>` (no key prefix),
-  `parent_id`, `sequence` = index × 10, `state=01_in_progress`, `user_ids=[]`,
+- **Subtasks: one per step.** `name` = `<step> — [agent|you]`, `description` = `<p>{detail}</p>`
+  (no key prefix), `parent_id`, `sequence` = index × 10, `state=01_in_progress`, `user_ids=[]`,
   `display_in_project=False`. Never write `project_id` or `stage_id`. Read one back: if
   `display_in_project` is not false, stop and report.
 - Match existing children by exact name: update the ones that changed, create the missing ones,

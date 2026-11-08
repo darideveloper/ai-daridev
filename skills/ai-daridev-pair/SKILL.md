@@ -13,7 +13,9 @@ You drive, I navigate. One story per session, one step at a time, and you stop a
 - `/ai-daridev-pair <slug>` → the card carrying `ai-daridev: story/<slug>` (legacy `engram: story/<slug>` is accepted).
 - No slug → list cards in the active stages (not the backlog stage, not `odoo_stage_done`), limit 20, and ask which one. No Odoo → ask me to paste the story.
 - No story at all → treat it as new: propose criteria and a checklist, one gate, then continue.
-- Checklist = the card's subtasks by `sequence`; fall back to `<h2>Checklist</h2>` in the description. If neither exists, propose 3–7 steps and get one approval before starting.
+- Checklist = the card's subtasks by `sequence`; fall back to `<h2>Checklist</h2>` in the description.
+  A subtask name ends with `— [agent]` or `— [you]`: that is the step's owner. If neither exists,
+  propose 3–7 steps and get one approval before starting.
 - If a step was renamed or a child disappeared, show the difference and ask once. Never recreate silently.
 
 ## 2. Mode
