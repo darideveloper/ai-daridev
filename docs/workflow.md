@@ -1,185 +1,141 @@
 # Workflow
 
-Two paths, same entry point. `/ai-daridev-pair` picks one from the repository, not from the story text.
+Five phases, one story at a time. Each phase ends waiting for your approval, and the agent never
+moves a card between stages.
 
-## Roles
+## The rules that apply everywhere
 
-| Role | Does | Does not |
-|---|---|---|
-| **Owner** | `/ai-daridev-backlog`, `/ai-daridev-story`, `/ai-daridev-pair` for own work, `/ai-daridev-review` for someone else's card, moves columns | build every card alone |
-| **Team member** | builds (with the agent), flips plan steps, hands the change back | move columns, mark cards done, create cards |
+- **Root.** The repo root is the nearest `AGENTS.md` holding `<!-- ai-daridev:start -->`, walking up
+  from the current directory. `docs/ai-daridev/` is always relative to it; nothing is written above.
+  No block → the skill asks once (create it here, use the git root, or chat-only).
+- **Odoo is optional.** Without an `odoo_project` key there are no cards: stories live in the
+  conversation and only the three files are written.
+- **The board is yours.** No skill writes `stage_id`, sets a card `1_done`/`1_canceled` or assigns
+  anyone. The agent writes the description (story), subtask states, `state=03_approved` + `date_end`
+  (close) and `state=02_changes_requested` (review).
+- **One gate per phase.** Structure changes ask once; state changes are reported.
+- **Decisions only when they last.** Project-wide, hard to reverse or a shared/ops contract goes to
+  `decisions.md`; everything else stays in the conversation.
 
-The column is the owner's acceptance signal. That is the one rule nothing bypasses.
-`/ai-daridev-pair` already closes your own work; `/ai-daridev-review` is for a card someone else
-built — running it on your own pair output is optional and redundant.
+## 1. Backlog
 
-## Plan
-
-The plan is the checklist. `/ai-daridev-story` writes 5–20 steps (a step is one verifiable action,
-verb-first, ≤80 chars, with its detail in a sub-bullet) and creates one hidden Odoo subtask per
-step:
-
-- The card shows `<h2>Plan</h2>` with names and detail, **no status**.
-- Each subtask carries `ai-daridev: plan/<slug>#pN` in its description. The key is the identity;
-  names may change, keys are never reused.
-- States: `01_in_progress` open · `1_done` validated · `02_changes_requested` rejected ·
-  `1_canceled` dropped. Steps use `1_done`; the **card** never does (it would vanish from the
-  kanban).
-- Detail lives in the card and in the subtask description; `plan/<slug>` in Engram holds intent.
-- Created by `/ai-daridev-story`, maintained by `/ai-daridev-pair`, graded by
-  `/ai-daridev-review`, optionally synced by `/ai-daridev-check-plan`.
-- Structure changes (add/rename/remove/reorder) ask once; state changes are reported. Odoo records
-  what exists, Engram records intent — a disagreement is shown and asked, never overwritten.
-- The `Plan:` line (`p1=14843 · p2=14844`) is machine-owned: ids only, rebuilt from the children.
-- Every change prints the plan in chat: `pN · name · owner · state`, with counts. See
-  [odoo.md](odoo.md#rendering).
-
-## Choosing the path
-
-| Signal in the repo | Path |
-|---|---|
-| application code + a test runner | test-driven (§1) |
-| only JSON / YAML / config, no test runner | non-code (§2) |
-| both or neither | `/ai-daridev-pair` asks once |
-
-## 1. Code project
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor You
-    participant A as Agent
-    participant S as skill pair
-    participant E as Engram
-    participant O as Odoo
-    participant G as Git
-
-    You->>A: /ai-daridev-pair <slug>
-    A->>S: load skill
-    S->>E: session_start + story/<slug> + plan/<slug>
-    E-->>S: spec, plan, past decisions
-    S->>O: find card by engram key
-    O-->>S: id, title, state
-    S->>You: test list, names only
-    You-->>S: approve
-    loop one test per step
-        S->>S: write failing test
-        S-->>You: red output
-        S->>S: minimum code
-        S-->>You: green output
-        opt decision is durable
-            S->>E: mem_save type=decision (session_id)
-        end
-        S->>E: step log (session_id) + plan state
-        S->>You: micro message + plan render + next test?
-    end
-    You->>S: close it
-    S->>O: state=03_approved, date_end
-    S->>E: session summary + end (this block)
-    S->>E: engram sync in project dir
-    E-->>G: chunks ready
-    S->>You: commit .engram + ADR
-```
-
-1. `/ai-daridev-backlog` — stories in the first stage, one tag each, order preserved.
-2. `/ai-daridev-story` — criteria, plan and tests into the card; steps become subtasks; spec and plan into memory.
-3. `/ai-daridev-pair <slug>` — test list approved, then one red/green step at a time. It stops after every step.
-4. Each cycle saves its step log with `session_id`; durable decisions are saved silently, small ones stay in the conversation.
-5. Close — green dot + end date, ADR only when it affects other people.
-6. `engram sync`, then `git commit --only -- .engram/`; your index is untouched. **You** commit code.
-7. `/ai-daridev-archive <slug>` when done; `/ai-daridev-archive` alone for the sprint.
-
-## 2. Non-code project
-
-Same card, same memory, different execution.
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor You
-    participant A as Agent
-    participant S as skill pair
-    participant H as Target host or n8n
-    participant E as Engram
-    participant O as Odoo
-
-    You->>A: /ai-daridev-pair <slug>
-    A->>S: load skill, detect mode
-    S->>H: read-only investigation
-    H-->>S: current state
-    S->>You: numbered plan, each step [agent] or [you]
-    You-->>S: approve the list once (one gate for the subtask batch)
-    loop each agent step
-        S->>H: command
-        H-->>S: output
-        S->>You: command + output + state + rollback
-        opt destructive step
-            S->>You: confirm this step on its own
-        end
-    end
-    S->>E: plan state per step
-    S->>You: the [you] steps, verbatim
-    You->>S: done (only then do [you] steps flip)
-    S->>O: state=03_approved + date_end
-    S->>E: summary + decisions + sync
-```
-
-1. The agent investigates **without changing anything**.
-2. It proposes a numbered plan, marking each step `[agent]` or `[you]`.
-3. You approve the list once.
-4. It runs its steps one at a time and shows, after each: the command, the output, the resulting
-   state (diff, service status, curl result) and a one-line rollback.
-5. Destructive steps ask again on their own — being in the plan is not permission.
-6. It hands you the steps only you can do, then closes the story like any other.
-
-## 3. Reviewing someone else's work
-
-`/ai-daridev-review <card>` (or bare: list "Sprint in Progress" and ask). It reads the card, asks
-for evidence only when the card does not settle it, prints a verdict table, and proposes writes.
-
-**Case i — correct**
+`/ai-daridev-backlog` splits the idea into ≤10 one-line stories:
 
 ```
-Verdict: all criteria pass
-Proposed: stage Sprint in Progress → Sprint Complete
+1. As a visitor, I want to retry an upload, so that a flaky network doesn't lose my file.
+2. As an operator, I want to see failed uploads, so that I can follow up. Requires: #1
 ```
 
-One write, after a separate confirmation. Step states are left alone.
+Each story delivers value on its own and cuts through every layer. No technical stories, no
+estimates. The first one is the walking skeleton. On approval the cards are created in the backlog
+stage, unassigned, one tag each, no subtasks.
 
-**Case ii — wrong, no plan**
+## 2. Story
 
-```
-Proposed:
-  create steps: p1 "fix: header nav links", p2 "fix: mobile spacing"  (one structure gate)
-  parent + new steps → 02_changes_requested
-  Review (ai-daridev) block with the detail
-  no column move
-```
-
-**Case iii — partially wrong**
+`/ai-daridev-story` refines exactly one story. It reads `spec.md`, the code the story touches and
+the related decisions, then proposes:
 
 ```
-Verdict per step: p1 pass · p2 fail · p3 fail
-Proposed:
-  parent → 02_changes_requested
-  only the failing steps → 02_changes_requested
-  Review block listing only the failures
-  no column move
+## Acceptance criteria
+- [ ] Given a 500 from storage, when I retry, then exactly one record exists.
+
+## Checklist
+- p1 Reproduce a retry twice — [agent]
+  - tests/test_upload.py; run `pytest -k retry`
+- p2 Make the write idempotent — [agent]
+- p3 Run the staging check — [you]
 ```
 
-Re-review only touches the yellow steps. Nothing green is re-litigated.
+1–3 criteria, 3–7 steps. More than that is a story to split. One gate, then the card description is
+regenerated (`<h2>Acceptance criteria</h2>`, `<h2>Checklist</h2>`, no status) and one hidden subtask
+per step is created. Existing children are matched by name, updated, never deleted.
 
-Without Odoo it prints the checklist (states, steps, Review block, "move it in Odoo or ask the
-owner") and writes nothing.
+## 3. Pair
 
-## Closing checklist
+`/ai-daridev-pair <slug>` loads the card and its checklist.
 
-- [ ] acceptance criteria verified, manual ones included
-- [ ] plan steps reflect reality (done only where validated, dropped steps marked)
-- [ ] review block written when the work was reviewed by someone else
-- [ ] durable decisions saved
-- [ ] ADR written if the decision is project-wide, hard to reverse, or affects a shared contract
-- [ ] card: `state=03_approved`, `date_end` set, **stage untouched**
-- [ ] `user_ids` untouched: cards stay unassigned unless you asked for an assignee
-- [ ] session summary saved, `engram sync` run
-- [ ] `.engram/` and `docs/decisions/` committed by a human
+1. **Test list first**, names only: `retry keeps one record — tests/test_upload.py — covers p1`.
+   Manual criteria are marked as such. One approval; the list lives in the conversation.
+2. **One step per stop**: write the test, show it red, write the minimum code, show it green, flip
+   that subtask to `1_done`, print `Plan 4/9 · next p5`.
+3. **Stop immediately** on an unplanned design decision, an unrequested addition, a test that would
+   have to change, two failed attempts, or a step over ~50 lines / 3 files.
+4. **Non-code** (n8n, server, infra): read-only investigation, numbered plan, one approval, execute
+   one step at a time showing command, output, state and rollback. Destructive steps ask again.
+
+At close: open steps are listed and decided, the card gets `state=03_approved` + `date_end`, one
+sentence is added or replaced in `spec.md` when behavior changed, and the agent prints the commit
+message for **you** to run. It never commits.
+
+## 4. Review
+
+`/ai-daridev-review <card>` is for work someone else built. It reads the card, asks for a diff or a
+screenshot only when the card does not settle it, and prints a verdict table: each criterion
+pass/fail/manual and each step pass/fail/not reached, with one evidence line.
+
+- **Approved** → it proposes the column move as *your* action and lists any step still open. It never
+  writes `stage_id`.
+- **Changes requested** → the failing steps and the card go to `02_changes_requested`, and the
+  `<h2>Review (ai-daridev)</h2>` section is replaced with the dated findings. Missing work becomes
+  new steps, in the same gate.
+
+## 5. Archive
+
+`/ai-daridev-archive <slug>` reconciles the card, its steps and the decisions, prints the retro and
+appends it to `log.md`:
+
+```
+## retry-safe-upload — shipped 2026-11-07
+Shipped: uploads survive retries, exactly one record.
+Decisions: 2026-11-07 — dedupe by hash, not a unique index (see decisions.md)
+Follow-ups: backfill dedupe for legacy rows
+Plan: 4/4 steps · dropped 0 · open 0
+Card: task 14842 · state 03_approved · end 2026-11-07 10:12:00
+Drift: none
+```
+
+Bare `/ai-daridev-archive` lists cards in the done stage that are not in `log.md` and asks one, all or
+cancel. Follow-ups are listed, never turned into cards.
+
+## The card
+
+```
+<h1>{current card name}</h1>
+<p>{one-line goal}</p>
+<h2>Acceptance criteria</h2>
+<ul><li>Given …, when …, then …</li></ul>
+<h2>Checklist</h2>
+<ol><li><b>p1</b> {step}<ul><li>{detail}</li></ul></li></ol>
+<h2>Review (ai-daridev)</h2>            <!-- owned by review, preserved verbatim by story -->
+<p><b>{date}</b> — changes requested</p>
+<p><em>ai-daridev: story/{slug}</em></p>  <!-- idempotency key, always last -->
+```
+
+- Subtasks: `name` = the step, `description` = the detail, `parent_id`, `sequence = index × 10`,
+  `state=01_in_progress`, `display_in_project=False`, never `project_id` or `stage_id`.
+- Step states: `01_in_progress` open · `1_done` validated · `02_changes_requested` rejected ·
+  `1_canceled` dropped. Only open steps can be dropped; validated steps are never cancelled.
+- The card itself never uses `1_done`/`1_canceled`; it closes at `03_approved` and the column move is
+  yours.
+
+## The three files
+
+```
+docs/ai-daridev/
+├── spec.md        # what the product does now
+├── decisions.md   # why it is built this way (append-only)
+└── log.md         # what shipped (append-only)
+```
+
+Query them with `rg`, or let the agent read them at the start of a story. `spec.md` is edited by
+section; `decisions.md` and `log.md` only grow. No secrets or client data: they are committed.
+
+First run in a repo that already has `docs/decisions/*.md` or an `openspec/` folder: one gate, then
+they are folded into these three files and the originals stay as frozen history.
+
+## Without Odoo
+
+Every phase still works. Backlog and story print the card and the subtask list to paste; pair loads
+the story from what you pasted and keeps the checklist in the conversation; review takes the card as
+text; archive requires a slug or a pasted story. Only the three files are written, and the printed
+close checklist tells you what to update by hand.
