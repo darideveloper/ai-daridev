@@ -105,13 +105,14 @@ cancel. Follow-ups are listed, never turned into cards.
 <h2>Acceptance criteria</h2>
 <ul><li>Given …, when …, then …</li></ul>
 <h2>Checklist</h2>
-<ol><li><b>p1</b> {step}<ul><li>{detail}</li></ul></li></ol>
+<ol><li><b>p1</b> {step} — [agent]<ul><li>{detail}</li></ul></li></ol>
 <h2>Review (ai-daridev)</h2>            <!-- owned by review, preserved verbatim by story -->
 <p><b>{date}</b> — changes requested</p>
 <p><em>ai-daridev: story/{slug}</em></p>  <!-- idempotency key, always last -->
 ```
 
-- Subtasks: `name` = the step, `description` = the detail, `parent_id`, `sequence = index × 10`,
+- Subtasks: `name` = `<step> — [agent|you]` (the owner lives here, so it survives a restart),
+  `description` = the detail, `parent_id`, `sequence = index × 10`,
   `state=01_in_progress`, `display_in_project=False`, never `project_id` or `stage_id`.
 - Step states: `01_in_progress` open · `1_done` validated · `02_changes_requested` rejected ·
   `1_canceled` dropped. Only open steps can be dropped; validated steps are never cancelled.
@@ -132,6 +133,15 @@ section; `decisions.md` and `log.md` only grow. No secrets or client data: they 
 
 First run in a repo that already has `docs/decisions/*.md` or an `openspec/` folder: one gate, then
 they are folded into these three files and the originals stay as frozen history.
+
+## Outside the flow
+
+`/ai-daridev-check-plan` audits any plan in detail — pasted, from the conversation, or a card's
+current checklist — fixes the gaps, asks one question at a time and renders the corrected plan in
+the same lean format. Standalone it writes nothing. If you name a card (`#14842`, a task URL,
+`--card`, `story/<slug>`), it also updates that card's `<h2>Checklist</h2>` and its subtasks after
+two gates (the plan, then the exact writes). It never creates a card, never deletes a subtask and
+never drops a `1_done` step.
 
 ## Without Odoo
 
