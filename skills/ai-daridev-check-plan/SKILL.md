@@ -42,7 +42,7 @@ reach the output.
 
 Also check the checklist contract: one verifiable action per step (a compound "remove X and the Y
 lines" is split), verb first, ≤40 words, an owner on every step, no duplicate step. When a card is
-named, 3–7 steps; over 7 is one gap: "split it, or treat it as a standalone runbook".
+named, any number of steps; one action each.
 
 Resolution:
 

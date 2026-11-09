@@ -24,7 +24,7 @@ You drive, I navigate. One story per session, one step at a time, and you stop a
 - Checklist = the card's subtasks by `sequence`; fall back to `<h2>Checklist</h2>` in the description.
   A subtask name ends with `— [agent]` or `— [you]`: that is the step's owner. A legacy subtask
   without the suffix takes its owner from the checklist line; if that is missing too, ask once and
-  assume nothing. If neither exists, propose 3–7 steps and get one approval before starting.
+  assume nothing. If neither exists, propose the steps and get one approval before starting.
 - If a step was renamed or a child disappeared, show the difference and ask once. Never recreate silently.
 
 ## 2. Mode

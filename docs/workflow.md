@@ -54,7 +54,7 @@ the related decisions, then proposes:
 - p3 Run the staging check — [you]
 ```
 
-1–3 criteria, 3–7 steps. More than that is a story to split. One gate, then the card description is
+As many criteria and steps as the story needs; no count cap. One gate, then the card description is
 regenerated (`<h2>Acceptance criteria</h2>`, `<h2>Checklist</h2>`, no status) and one hidden subtask
 per step is created. Existing children are matched by name, updated, never deleted.
 

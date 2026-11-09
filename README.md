@@ -13,13 +13,13 @@ The agent splits, proposes and writes code in small steps. You decide.
 ```
 /ai-daridev-backlog → /ai-daridev-story → /ai-daridev-pair → /ai-daridev-review → /ai-daridev-archive
    the idea            criteria + a        red → green,        someone else's      the retro
-   as stories          3-7 step checklist   one step at a time  card, graded
+   as stories          step checklist       one step at a time  card, graded
 ```
 
 | Command | Does | Never does |
 |---|---|---|
 | `/ai-daridev-backlog` | Turns an idea into ≤10 vertical, one-line stories, creates the cards and links each `Requires: #N` as Blocked By. | Invent requirements, technical stories, estimates. |
-| `/ai-daridev-story` | Adds 1–3 Given/When/Then criteria and a 3–7 step checklist to **one** card, one hidden subtask per step. | Write code. More than 3 criteria → it proposes splitting. |
+| `/ai-daridev-story` | Adds Given/When/Then criteria and a step checklist to **one** card, one hidden subtask per step. | Write code. |
 | `/ai-daridev-pair` | Drives: one test → red → minimum code → green, stops after every step and attaches evidence. Plan-and-execute for non-code work. | Commit, edit tests to pass, add what you didn't ask for, move columns, start a blocked card. |
 | `/ai-daridev-review` | Grades someone else's card against its criteria, steps and evidence, proposes the writes. | Move a card, invent a verdict, mark work done. |
 | `/ai-daridev-archive` | Gates on the evidence, marks the card done so Odoo frees its dependents, then appends the retro to `docs/ai-daridev/log.md`. | Move cards, cancel, create cards, invent a retro. |
@@ -107,7 +107,7 @@ Declare the project in the repo's `AGENTS.md`:
 
 - **Don't invent.** Missing information gets asked, not filled in.
 - **The simplest thing that works.** No abstractions "for the future".
-- **Slice vertically and small.** One story = one session, ≤3 files, 1–3 criteria, 3–7 steps.
+- **Slice vertically and small.** One story = one session, ≤3 files; as many criteria and steps as it needs.
 - **Suggest, don't decide.** Patterns, refactors and commits are your call.
 - **Explicit checkpoints.** Every phase waits for your approval.
 

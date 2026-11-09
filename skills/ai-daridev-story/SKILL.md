@@ -1,6 +1,6 @@
 ---
 name: ai-daridev-story
-description: Refines ONE user story into 1-3 acceptance criteria and a 3-7 step checklist on its Odoo card, with one hidden subtask per step. Writes no code; implementation is /ai-daridev-pair's job.
+description: Refines ONE user story into acceptance criteria and a step checklist on its Odoo card, with one hidden subtask per step. Writes no code; implementation is /ai-daridev-pair's job.
 disable-model-invocation: true
 ---
 
@@ -16,20 +16,17 @@ Refine one story right before building it. You propose, I decide. No code.
 2. **Blocked by** — show the blockers in the proposal. When I name one, resolve it by `#id`, task
    URL or `story/<slug>` (0 or 2+ matches → stop and list) and propose the append in the same gate:
    `depend_on_ids: [[4, <id>]]`. Same project, no self-link, no cycle; never remove a link.
-3. **Acceptance criteria** — 1–3, Given/When/Then, user-visible only, never implementation.
-4. **More than 3 criteria → split.** Print the new stories in backlog format and continue with the
-   first one. If the card has blockers or dependents, ask in the same gate whether the links stay on
-   the original (the first slice) or are left untouched for me to fix; the other slices get theirs
-   when they become cards.
-5. **Checklist** — 3–7 steps: verb-first, ≤80 chars, one verifiable action each. Add a detail
-   sub-bullet (file, command, rollback) only when you already read the code. Mark every step
-   `[agent]` or `[you]`; a `[you]` step is one I must do myself. More than 7 steps is a story to
-   split.
-6. **Wait for my approval.**
+3. **Acceptance criteria** — one or more, Given/When/Then, user-visible only, never implementation.
+4. **Checklist** — as many steps as the story needs: verb-first, ≤80 chars, one verifiable action
+   each. Add a detail sub-bullet (file, command, rollback) only when you already read the code. Mark
+   every step `[agent]` or `[you]`; a `[you]` step is one I must do myself.
+5. **Wait for my approval.**
 
 ## Rules
 
 - Don't invent requirements; ask.
+- No count cap: as many criteria and steps as the story needs. Do not split for the count; split
+  only if it is genuinely more than one story.
 - The simplest thing that meets the criteria. No abstractions, layers or configuration "for the
   future".
 - Suggest a pattern only when the code already shows the signal; put it under Suggestions.
