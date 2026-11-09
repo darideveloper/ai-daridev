@@ -29,8 +29,8 @@ only when you ask or approve it, and always in one write that keeps the column a
 - **One gate per phase.** Structure changes, a column move and archive's done write ask once; the
   other state changes are reported.
 - **Evidence.** Every `1_done` step carries an artifact or a waiver on its subtask: a screenshot, a
-  curl and its response, a diff or a file. Pair captures it; review and archive refuse a step
-  without it.
+  curl and its response, a diff or a file. Pair captures it and review refuses a step without it;
+  archive names it as drift and archives anyway on your word.
 - **Decisions only when they last.** Project-wide, hard to reverse or a shared/ops contract goes to
   `decisions.md`; everything else stays in the conversation.
 
@@ -118,9 +118,10 @@ the test passed.
 
 `/ai-daridev-archive <slug>` marks the card done and appends its retro to `log.md`. The gate stops
 unless the card is in `odoo_stage_done`, is **green** (`03_approved`) or already done (not gray,
-yellow, waiting or canceled), and every step is closed with evidence or a waiver; it then shows the
-dependents it frees and waits for your yes. A gray card in the validated column is listed with one
-line: review it, or ask for the green dot. Archive never turns a card green.
+yellow, waiting or canceled), and every step is closed. A step with no evidence is drift, not a stop:
+the gate lists it and continues only on `archive anyway`, and the retro's `Drift:` line names it. It
+then shows the dependents it frees and waits for your yes. A gray card in the validated column is
+listed with one line: review it, or ask for the green dot. Archive never turns a card green.
 
 ```
 ## retry-safe-upload — shipped 2026-11-07
