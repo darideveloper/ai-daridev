@@ -143,7 +143,7 @@ Subtask description (pair appends the evidence, story and check-plan preserve it
 <p><b>{YYYY-MM-DD HH:MM:SS UTC}</b></p>
 <ul>
   <li><b>screenshot</b><br/><img src="/web/image/{id}" alt="evidence" style="max-width:100%"/></li>
-  <li><b>curl</b><pre><code>{command and response, escaped}</code></pre></li>
+  <li><b>code</b><pre><code>{curl, diff or output, escaped}</code></pre></li>
   <li><b>file</b> <a href="/web/content/{id}?download=true">{name}</a></li>
 </ul>
 ```
@@ -152,8 +152,8 @@ Subtask description (pair appends the evidence, story and check-plan preserve it
   legacy names without the suffix still match), `description` = the detail, `parent_id`,
   `sequence = index × 10`, `state=01_in_progress`, `display_in_project=False`, never `project_id`
   or `stage_id`.
-- Evidence: one dated `<ul>` per attempt with labels `screenshot`, `curl`, `output`, `diff`, `file`
-  or `waiver`; never overwrite an attempt; a step without one is not `1_done`.
+- Evidence: one dated `<ul>` per attempt with labels `screenshot`, `code`, `file` or `waiver`; never
+  overwrite an attempt; a step without one is not `1_done`.
 - Step states: `01_in_progress` open · `1_done` done · `02_changes_requested` rejected ·
   `1_canceled` dropped. Only open steps can be dropped; validated steps are never cancelled.
 - The card closes at `03_approved` (green) and archive marks it `1_done`; no skill sets `1_canceled`

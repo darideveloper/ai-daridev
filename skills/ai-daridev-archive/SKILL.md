@@ -24,11 +24,13 @@ Close work that is already finished. The card and the files are the record; neve
    change with no spec entry. Stop and list what is wrong when the stage is not `odoo_stage_done`
    (no key → ask once which column means validated, use it for the session), the state is
    `02_changes_requested`, `04_waiting_normal` or `1_canceled`, or a child is not
-   `1_done`/`1_canceled`. Read each `1_done` child's description and `attachment_ids`: a valid
-   attempt has an artifact `<li>` or a `waiver` with reason, who and date; `screenshot`/`file` ids
-   must resolve. A child with neither stops the archive and is listed; a `1_canceled` child
-   (dropped) needs no evidence. Accept `03_approved` (green) and `01_in_progress` (gray) as
-   validated; a `1_done` card in `odoo_stage_done` skips the write and only logs.
+   `1_done`/`1_canceled`. Read the latest dated attempt in each `1_done` child's description and its
+   `attachment_ids`: `screenshot`/`file` ids must resolve to an `ir.attachment` with
+   `res_model=project.task`, `res_id=<child>`, a non-empty `mimetype` and `file_size > 0`; a `code`
+   `<li>` needs a non-empty `<pre><code>`; a `waiver` needs the reason, who and date. A child with
+   neither stops the archive and is listed; a `1_canceled` child (dropped) needs no evidence. Accept
+   `03_approved` (green) and `01_in_progress` (gray) as validated; a `1_done` card in
+   `odoo_stage_done` skips the write and only logs.
 2. **Show the gate.** List the exact writes (`state=1_done`, `date_end` only if empty), the
    dependents this frees and the ones still blocked by another card, and the reminder to run it only
    after the commit is on the main branch. Wait for my yes.

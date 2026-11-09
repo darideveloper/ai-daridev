@@ -69,28 +69,34 @@ process screenshots plus the file; code-only → diff or command output; infra �
 screenshot. Ambiguous → ask once.
 
 For a page, use `playwright-cli resize 1600 1000` then `playwright-cli screenshot`; run `convert` to
-≤500 KB when it is available. Redact tokens, cookies, passwords and keys; mask emails, names and IDs
-unless the step is about them; prefer a test account. Captures live in
-`/tmp/opencode/evidence/<slug>/<sanitized-step>/` and are deleted after the re-read; never in the repo.
+≤500 KB when it is available, otherwise ask me for a smaller screenshot. Redact tokens, cookies,
+passwords and keys; mask emails, names and IDs unless the step is about them; prefer a test account.
+Captures live in `/tmp/opencode/evidence/<slug>/<sanitized-step>/` and are deleted after the re-read;
+never in the repo.
 
 Upload each artifact to `ir.attachment` (`name`, base64 `datas`, `res_model=project.task`,
 `res_id=<subtask>`, `mimetype`), then append the block below to the subtask description, keeping the
-detail above it:
+detail above it. Inline output ≤40 lines / 4 KB; longer output is attached as a `.txt` with the
+`file` label. Files ≤2 MB; a larger file is attached by me.
 
 ```html
 <h3>Evidence</h3>
 <p><b>{YYYY-MM-DD HH:MM:SS UTC}</b></p>
 <ul>
   <li><b>screenshot</b><br/><img src="/web/image/{id}" alt="evidence" style="max-width:100%"/></li>
-  <li><b>curl</b><pre><code>{command and response, escaped}</code></pre></li>
+  <li><b>code</b><pre><code>{curl, diff or output, escaped}</code></pre></li>
   <li><b>file</b> <a href="/web/content/{id}?download=true">{name}</a></li>
 </ul>
 ```
 
-Labels are `screenshot`, `curl`, `output`, `diff`, `file` and `waiver`; escape `<`, `>`, `&`. One
-dated entry per attempt; never overwrite. No artifact → ask for a waiver and record
-`<li><b>waiver</b> — {reason} — {who}, {UTC}</li>`. Re-read the subtask, then flip `1_done`. Without
-Odoo, print the evidence and where to paste it.
+Labels are `screenshot`, `code`, `file` and `waiver`; escape `<`, `>`, `&`. One dated entry per
+attempt; never overwrite. No artifact → ask for a waiver and record
+`<li><b>waiver</b> — {reason} — {who}, {UTC}</li>`.
+
+Re-read the subtask and its `attachment_ids`: the new id must be there and the description must
+contain `Evidence`. Then flip `1_done`. If the upload succeeds but the description update fails,
+report the attachment id and stop; the step stays open. On retry create a new attachment, leave the
+orphan, never delete it. Without Odoo, print the evidence and where to paste it.
 
 ### Stop immediately
 

@@ -20,10 +20,11 @@ decide. One card per run unless I ask for a batch.
    state what you could not verify.
 4. **Verdict table:** every criterion (pass / fail / manual) and every step (pass / fail / not
    reached), one evidence line each. A step passes only when every test covering it is green and its
-   evidence is valid. Read the child description and `attachment_ids`: a valid attempt has an artifact
-   `<li>` or a `waiver` with reason, who and date; `screenshot`/`file` ids must resolve;
-   `curl`/`output`/`diff` need a non-empty `<pre><code>`. A `1_done` step with no valid attempt is a
-   fail, even when the test passed.
+   evidence is valid. Read the latest dated attempt in the child description and the **child's**
+   `attachment_ids`: `screenshot`/`file` ids must resolve to an `ir.attachment` with
+   `res_model=project.task`, `res_id=<subtask>`, a non-empty `mimetype` and `file_size > 0`; a `code`
+   `<li>` needs a non-empty `<pre><code>`; a `waiver` needs the reason, who and date. A `1_done` step
+   with no valid attempt is a fail, even when the test passed.
 5. **Propose the writes**, then one gate:
    - Approved → print two of **my** actions, the column move (`<current> → <odoo_stage_done>`) and
      the dot to the validated gray, so the card lands validated and not archived; list any step that

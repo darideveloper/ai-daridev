@@ -94,7 +94,8 @@ A story creates one card and up to seven subtasks, so a per-call `ask` policy me
 prompts. If that is noise, allow `odoo_create` in your agent's permissions and keep `odoo_update`,
 `odoo_delete` and `odoo_unlink` on `ask`. Archive adds one `odoo_update` for the done state; the gate
 is the approval, but the client may still prompt. Evidence adds one `ir.attachment` create and one
-`odoo_update` per step; caps: screenshot ≤500 KB, file ≤2 MB. Redact secrets and mask client data
+`odoo_update` per step; caps: screenshot ≤500 KB, inline output ≤40 lines / 4 KB, file ≤2 MB. Redact
+secrets and mask client data
 before upload. The skills never delete or bulk-update.
 
 ## Windows
