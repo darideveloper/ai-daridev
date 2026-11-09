@@ -17,8 +17,8 @@ You drive, I navigate. One story per session, one step at a time, and you stop a
   its `state=1_done` and its stage is not the Cancelled stage; anything else blocks. Print
   `Blocked by #<id> "<name>" — <stage> · <state>.` and stop before proposing a mode or a test list.
   Then say what unblocks it: in `odoo_stage_done` → archive it; in the Cancelled stage → re-plan; in
-  another later stage → move it back or mark it done; earlier → finish it, then archive it. A
-  `1_canceled` blocker also says the dependency needs re-planning. A blocker in another project, or
+  another later stage → propose moving it back or finishing it; earlier → finish it, then archive it.
+  A `1_canceled` blocker also says the dependency needs re-planning. A blocker in another project, or
   one that is a hidden subtask, stops and reports (a subtask as its parent card). No Odoo → say
   dependencies cannot be verified and continue.
 - Checklist = the card's subtasks by `sequence`; fall back to `<h2>Checklist</h2>` in the description.
@@ -142,9 +142,14 @@ only with tests green and never mixed with new functionality.
 
 1. List every step that is not `1_done` and ask: flip it, leave the card open, or drop it
    (`1_canceled` + `(dropped)`, never deleted). Every closed step already carries its evidence; the
-   close only summarises it.
-2. Card (Odoo): `state = 03_approved`, `date_end = <UTC now, YYYY-MM-DD HH:MM:SS>`. Do not touch
-   `stage_id` or `user_ids`. Never mark the card done or cancelled.
+   close only summarises it. If a step stays open, print the close block but keep the card gray and
+   skip the move.
+2. Card (Odoo): `state = 03_approved` and `date_end = <UTC now, YYYY-MM-DD HH:MM:SS>`, plus
+   `stage_id = odoo_stage_done` when I say yes to the move — all in the same `odoo_update`. The gate
+   lists the move with the default "no": the card can stay in its column for review, or land green in
+   the validated column for archive. Never move it from a later stage, the Cancelled stage or an
+   archived (`1_done`) card. Never mark the card done or cancelled. Write `user_ids` only if I name
+   an assignee in this turn.
 3. `docs/ai-daridev/spec.md`: if the behavior changed, add or replace **one sentence** in the right
    domain section (`## <domain>`), creating the file with `# <project> spec` if needed. Show the line
    in the close block.
@@ -167,11 +172,20 @@ line) and write only the files.
 - **Config.** Read `odoo_project`, `odoo_stage_done` and `card_tag` from the block. No
   `odoo_project` → Odoo is off. Resolve the project, the tags and the stages by exact name; 0 or 2+
   matches → stop and list the real ones. Backlog stage = lowest `sequence`. Default tag `backend`.
-- **Never move a card** between stages, never set a card `1_done`/`1_canceled`, never assign.
-  Agents write: the description (story), subtask states, subtask evidence (pair),
+- **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
+  the phase gate lists it and I say yes, or when the column and the state already disagree and I
+  approve the repair. Show the exact write in the gate; never move silently.
+- **A move is one write.** `stage_id`, `state` and `date_end` in the same `odoo_update`:
+  → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
+  backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
+  (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
+- **Assignees need a name.** `user_ids` only when I name the person; resolve the exact `res.users`
+  name or login, 0 or 2+ matches → stop and list.
+- **Agents write:** the description (story), subtask states, subtask evidence (pair),
   `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review). Never write
   `depend_on_ids`; only backlog and story add links, and nothing removes one.
-- **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
+- **One approval gate per phase.** Structure, a move and the close ask once; state changes are
+  reported, not asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.
 - **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to
   reverse or a shared/ops contract. Everything else stays in the conversation.

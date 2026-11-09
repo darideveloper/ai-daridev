@@ -1,7 +1,7 @@
 # Workflow
 
-Five phases, one story at a time. Each phase ends waiting for your approval, and the agent never
-moves a card between stages.
+Five phases, one story at a time. Each phase ends waiting for your approval. A card changes column
+only when you ask or approve it, and always in one write that keeps the column and the state in sync.
 
 ## The rules that apply everywhere
 
@@ -10,13 +10,24 @@ moves a card between stages.
   No block → the skill asks once (create it here, use the git root, or chat-only).
 - **Odoo is optional.** Without an `odoo_project` key there are no cards: stories live in the
   conversation and only the three files are written.
-- **The board is yours.** No skill writes `stage_id` or assigns anyone. Archive is the only skill
-  that sets a **card** `1_done`, after its gate; no skill sets `1_canceled` on a visible card (you
-  can, to abandon, and dependents stay blocked). The agent writes the description (story), subtask
-  states, `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review) and
+- **Moves and assignees are proposed, not assumed.** Move a card only when you ask in this turn,
+  when the phase gate lists it and you say yes, or when the column and the state already disagree
+  and you approve the repair. Show the exact write in the gate; never move silently.
+- **A move is one write.** `stage_id`, `state` and `date_end` go in the same `odoo_update`:
+  → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
+  backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
+  (you confirm first; dependents stay blocked). Never move a subtask or an archived (`1_done`)
+  card, and never into `odoo_stage_done` unless every step is `1_done`/`1_canceled` and it turns
+  green in the same write.
+- **Assignees need a name.** Write `user_ids` only when you name the person; resolve the exact
+  `res.users` name or login, 0 or 2+ matches → stop and list. Cards are created unassigned.
+- **Who writes what.** Archive is the only skill that sets a **card** `1_done`, after its gate; no
+  skill sets `1_canceled` on a visible card unless you ask or approve it, and dependents stay
+  blocked. The agent writes the description (story), subtask states,
+  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review) and
   `state=1_done` (archive, on the card).
-- **One gate per phase.** Structure changes and archive's done write ask once; the other state
-  changes are reported.
+- **One gate per phase.** Structure changes, a column move and archive's done write ask once; the
+  other state changes are reported.
 - **Evidence.** Every `1_done` step carries an artifact or a waiver on its subtask: a screenshot, a
   curl and its response, a diff or a file. Pair captures it; review and archive refuse a step
   without it.
@@ -34,9 +45,9 @@ moves a card between stages.
 
 Each story delivers value on its own and cuts through every layer. No technical stories, no
 estimates. The first one is the walking skeleton. On approval the cards are created in the backlog
-stage, unassigned, one tag each, no subtasks. A backward `Requires: #N` is written as a real Odoo
-**Blocked By** link (`depend_on_ids`) in the create call itself, and a second pass covers forward
-references; the clause never stays in the name or description.
+stage, unassigned unless you name someone, one tag each, no subtasks. A backward `Requires: #N` is
+written as a real Odoo **Blocked By** link (`depend_on_ids`) in the create call itself, and a second
+pass covers forward references; the clause never stays in the name or description.
 
 ## 2. Story
 
@@ -79,9 +90,11 @@ Each step leaves an `Evidence` block on its subtask: a screenshot via `playwrigh
 response in a code block, or the file attached. Redact secrets and mask client data. No artifact → a
 waiver, never a silent done.
 
-At close: open steps are listed and decided, every closed step already carries its evidence, the card
-gets `state=03_approved` + `date_end`, one sentence is added or replaced in `spec.md` when behavior
-changed, and the agent prints the commit message for **you** to run. It never commits.
+At close: open steps are listed and decided (a step left open keeps the card gray), every closed step
+already carries its evidence, the card gets `state=03_approved` + `date_end`, and one sentence is
+added or replaced in `spec.md` when behavior changed. The same gate offers the column move to
+`odoo_stage_done` as one write with the green dot, default no, so a self-reviewed card can land
+validated for archive. The agent prints the commit message for **you** to run. It never commits.
 
 ## 4. Review
 
@@ -92,19 +105,22 @@ pass/fail/manual and each step pass/fail/not reached, with one evidence line.
 Each completed step must carry an artifact or a waiver; a `1_done` step without one fails, even when
 the test passed.
 
-- **Approved** → it proposes the column move and the validated gray dot as *your* actions, and lists
-  any step still open. It never writes `stage_id`.
+- **Approved** → one write turns the card green (`03_approved` + `date_end`) and moves it to
+  `odoo_stage_done`, so it lands validated and not archived. A step that is not
+  `1_done`/`1_canceled` blocks the green dot. The move is part of the gate: you can drop it and
+  move the card yourself.
 - **Changes requested** → the failing steps and the card go to `02_changes_requested`, and the
   `<h2>Review (ai-daridev)</h2>` section is replaced with the dated findings. If the card is in
-  `odoo_stage_done`, it proposes moving it back to Sprint in Progress as *your* action. Missing work
-  becomes new steps, in the same gate.
+  `odoo_stage_done`, the same write moves it back to the active stage; from a later stage, stop and
+  report. Missing work becomes new steps, in the same gate.
 
 ## 5. Archive
 
 `/ai-daridev-archive <slug>` marks the card done and appends its retro to `log.md`. The gate stops
-unless the card is in `odoo_stage_done`, is green, gray or already done (not yellow, waiting or
-canceled), and every step is closed with evidence or a waiver; it then shows the dependents it frees
-and waits for your yes.
+unless the card is in `odoo_stage_done`, is **green** (`03_approved`) or already done (not gray,
+yellow, waiting or canceled), and every step is closed with evidence or a waiver; it then shows the
+dependents it frees and waits for your yes. A gray card in the validated column is listed with one
+line: review it, or ask for the green dot. Archive never turns a card green.
 
 ```
 ## retry-safe-upload — shipped 2026-11-07
@@ -156,8 +172,9 @@ Subtask description (pair appends the evidence, story and check-plan preserve it
   overwrite an attempt; a step without one is not `1_done`.
 - Step states: `01_in_progress` open · `1_done` done · `02_changes_requested` rejected ·
   `1_canceled` dropped. Only open steps can be dropped; validated steps are never cancelled.
-- The card closes at `03_approved` (green) and archive marks it `1_done`; no skill sets `1_canceled`
-  on a visible card. The column moves are yours.
+- The card closes at `03_approved` (green), archive marks it `1_done`, and the column move to
+  `odoo_stage_done` is one write with the green dot — proposed in the gate, never silent. No skill
+  sets `1_canceled` on a visible card without your say-so.
 
 ## The three files
 

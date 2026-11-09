@@ -156,5 +156,5 @@ A second run with no changes produces zero writes.
 
 - Root: nearest `AGENTS.md` with `<!-- ai-daridev:start -->`. Only needed in workflow mode.
 - Config: `odoo_project`, `odoo_stage_done`, `card_tag`; project by exact name, 0 or 2+ → stop.
-- Never move a card between stages, never mark it done or cancelled, never assign.
+- Never move a card between stages, never mark it done or cancelled, never write `user_ids`.
 - Odoo unavailable → stay standalone and say so in one line.

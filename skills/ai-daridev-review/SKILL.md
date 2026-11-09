@@ -1,6 +1,6 @@
 ---
 name: ai-daridev-review
-description: Reviews someone else's card against its acceptance criteria and checklist, proposes the writes, and applies them after one gate. Never moves a card.
+description: Reviews someone else's card against its acceptance criteria and checklist, applies the verdict after one gate, and moves the card between stages only with my approval.
 disable-model-invocation: true
 ---
 
@@ -26,16 +26,17 @@ decide. One card per run unless I ask for a batch.
    `<li>` needs a non-empty `<pre><code>`; a `waiver` needs the reason, who and date. A `1_done` step
    with no valid attempt is a fail, even when the test passed.
 5. **Propose the writes**, then one gate:
-   - Approved → print two of **my** actions, the column move (`<current> → <odoo_stage_done>`) and
-     the dot to the validated gray, so the card lands validated and not archived; list any step that
-     is not `1_done`. Never write `stage_id`.
+   - Approved → one `odoo_update` sets `state=03_approved` + `date_end` (the green dot) and moves
+     the card `<current> → <odoo_stage_done>`, so it lands validated and not archived. A step that is
+     not `1_done`/`1_canceled` blocks the green dot: list it instead of approving. The move is a
+     normal part of the gate — if I say "don't move", write the green dot alone.
    - Changes requested → the failing steps and the card to `state=02_changes_requested`, plus the
-     review block. If the card is in `odoo_stage_done`, propose moving it back to Sprint in Progress
-     as **my** action; from a later stage, stop and report. If work is missing, propose new steps
-     (name, detail) and create them as hidden subtasks like `/ai-daridev-story` does, in the same
-     gate.
-6. **Apply** after the gate: new steps → states (one `odoo_update` with all the ids) → the review
-   section. Re-read `write_date` first; if it changed, show the difference and re-apply.
+     review block. If the card is in `odoo_stage_done`, the same write moves it back to the active
+     stage; from a later stage, stop and report. If work is missing, propose new steps (name,
+     detail) and create them as hidden subtasks like `/ai-daridev-story` does, in the same gate.
+6. **Apply** after the gate: the card write (one `odoo_update`: `state` + `date_end` + `stage_id`)
+   → new steps → their states (one `odoo_update` with all the ids) → the review section. Re-read
+   `write_date` first; if it changed, show the difference and re-apply.
 7. Print the verdict and the checklist with the review states.
 
 ## Review block
@@ -53,8 +54,9 @@ touch anything else in the description.
 
 ## Rules
 
-- **Never move a card**, never write `stage_id`, never create cards, never mark work done or
-  cancelled. The column is mine.
+- **Move only through the gate.** The two moves in step 5 are the only `stage_id` writes, and each
+  lands in the same `odoo_update` as its `state`. Never move silently, never create cards, never mark
+  work done or cancelled.
 - The evidence check reads the attachment record and the description; it never fetches `/web/image`.
 - Re-review only the yellow steps; proposing to flip the fixed ones is part of the gate.
 - No plan mirror, no `Plan:` line.
@@ -67,10 +69,19 @@ touch anything else in the description.
 - **Config.** Read `odoo_project`, `odoo_stage_done` and `card_tag` from the block. No
   `odoo_project` → Odoo is off. Resolve the project, the tags and the stages by exact name; 0 or 2+
   matches → stop and list the real ones. Backlog stage = lowest `sequence`. Default tag `backend`.
-- **Never move a card** between stages, never set a card `1_done`/`1_canceled`, never assign.
-  Agents write: the description (story), subtask states, `state=03_approved` + `date_end` (close),
-  `state=02_changes_requested` (review).
-- **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
+- **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
+  the phase gate lists it and I say yes, or when the column and the state already disagree and I
+  approve the repair. Show the exact write in the gate; never move silently.
+- **A move is one write.** `stage_id`, `state` and `date_end` in the same `odoo_update`:
+  → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
+  backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
+  (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
+- **Assignees need a name.** `user_ids` only when I name the person; resolve the exact `res.users`
+  name or login, 0 or 2+ matches → stop and list.
+- **Agents write:** the description (story), subtask states, `state=03_approved` + `date_end`
+  (close), `state=02_changes_requested` (review).
+- **One approval gate per phase.** Structure and the card write ask once; the rest is reported, not
+  asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.
 - **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to
   reverse or a shared/ops contract. Everything else stays in the conversation.

@@ -20,13 +20,14 @@ The agent splits, proposes and writes code in small steps. You decide.
 |---|---|---|
 | `/ai-daridev-backlog` | Turns an idea into ≤10 vertical, one-line stories, creates the cards and links each `Requires: #N` as Blocked By. | Invent requirements, technical stories, estimates. |
 | `/ai-daridev-story` | Adds Given/When/Then criteria and a step checklist to **one** card, one hidden subtask per step. | Write code. |
-| `/ai-daridev-pair` | Drives: one test → red → minimum code → green, stops after every step and attaches evidence. Plan-and-execute for non-code work. | Commit, edit tests to pass, add what you didn't ask for, move columns, start a blocked card. |
-| `/ai-daridev-review` | Grades someone else's card against its criteria, steps and evidence, proposes the writes. | Move a card, invent a verdict, mark work done. |
-| `/ai-daridev-archive` | Gates on the evidence, marks the card done so Odoo frees its dependents, then appends the retro to `docs/ai-daridev/log.md`. | Move cards, cancel, create cards, invent a retro. |
+| `/ai-daridev-pair` | Drives: one test → red → minimum code → green, stops after every step and attaches evidence. Plan-and-execute for non-code work. | Commit, edit tests to pass, add what you didn't ask for, move a card without your yes, start a blocked card. |
+| `/ai-daridev-review` | Grades someone else's card against its criteria, steps and evidence, then writes the verdict and the move on approval. | Move a card without approval, invent a verdict, mark work done. |
+| `/ai-daridev-archive` | Gates on the validated column and the green dot, marks the card done so Odoo frees its dependents, then appends the retro to `docs/ai-daridev/log.md`. | Move cards, cancel, create cards, invent a retro, turn a card green. |
 | `/ai-daridev-check-plan` | Audits any plan in detail, fixes the gaps one question at a time and renders an ordered checklist. Outside the flow; with a named card it also updates the card checklist. | Invent requirements, write files, move cards. |
 
-Each phase ends waiting for your approval. The board is yours: the agent never moves a card between
-stages, never cancels and never assigns; archive is the only phase that marks a card done.
+Each phase ends waiting for your approval. Moves and assignees are proposed, never silent: a card
+changes column only when you ask or approve it, in the same write as its state, and archive is the
+only phase that marks a card done.
 
 ## What the agent writes
 
@@ -34,7 +35,8 @@ stages, never cancels and never assigns; archive is the only phase that marks a 
 the description, one hidden subtask per step (`display_in_project=False`), real **Blocked By** links
 for `Requires: #N`, a dated **Evidence** block on each completed subtask with screenshots, curl
 responses or files attached, `state=03_approved` + `date_end` when a story closes, and `state=1_done`
-at archive, which frees its dependents. Columns are never written.
+at archive, which frees its dependents. `stage_id` is written only when you ask or approve a move,
+always together with its state.
 
 **In the repo:** three files under `docs/ai-daridev/` at the repo root.
 
@@ -85,8 +87,8 @@ Declare the project in the repo's `AGENTS.md`:
 - `odoo_project` omitted → no cards, no board; stories live in the conversation and only the three
   files are written.
 - Backlog stage = the project's first stage by sequence. `odoo_stage_done` is the validated column:
-  review proposes the move there, and archive refuses to mark a card done outside it. Pair unblocks
-  on `1_done`, not on the column.
+  review moves an approved card there with the green dot, and archive refuses to close a card that is
+  not green in that column. Pair unblocks on `1_done`, not on the column.
 - Archived cards (`1_done`) are hidden by the default board filter; enable `Closed Tasks` to see
   them.
 - Evidence attachments use `ir.attachment` with read/create only; the agent's Odoo allowlist must

@@ -50,8 +50,9 @@ On approval, create the cards in one ordered batch, story 1 first. Slug = kebab-
   backlog stage (lowest `sequence`).
 - `sequence`: `max(sequence in project) + 10, +20, +30…`.
 - `tag_ids`: one tag — the repo's `card_tag` unless the work clearly belongs to another of the four.
-- `user_ids: [[6,0,[]]]` (Odoo assigns the creator by default). No `state`, no deadline unless I
-  gave one.
+- `user_ids: [[6,0,[]]]` (Odoo assigns the creator by default). If I name an assignee, resolve the
+  exact `res.users` name or login and set `user_ids: [[6,0,[<id>]]]`; 0 or 2+ matches → stop and
+  list. Never assign silently. No `state`, no deadline unless I gave one.
 - Description, exactly:
   `<h1>{title}</h1><p>{As a …, I want …, so that …}</p><p><em>ai-daridev: story/{slug}</em></p>`
   — the `Requires: #N` clause is not prose and never appears here.
@@ -79,9 +80,17 @@ is where a new card goes; `Requires: #N` stays in the list as text. Write no fil
 - **Config.** Read `odoo_project`, `odoo_stage_done` and `card_tag` from the block. No
   `odoo_project` → Odoo is off. Resolve the project, the tags and the stages by exact name; 0 or 2+
   matches → stop and list the real ones. Backlog stage = lowest `sequence`. Default tag `backend`.
-- **Never move a card** between stages, never set a card `1_done`/`1_canceled`, never assign.
-  Agents write: the description (story), subtask states, `state=03_approved` + `date_end` (close),
-  `state=02_changes_requested` (review).
+- **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
+  the phase gate lists it and I say yes, or when the column and the state already disagree and I
+  approve the repair. Show the exact write in the gate; never move silently.
+- **A move is one write.** `stage_id`, `state` and `date_end` in the same `odoo_update`:
+  → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
+  backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
+  (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
+- **Assignees need a name.** `user_ids` only when I name the person; resolve the exact `res.users`
+  name or login, 0 or 2+ matches → stop and list.
+- **Agents write:** the description (story), subtask states, `state=03_approved` + `date_end`
+  (close), `state=02_changes_requested` (review).
 - **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.
 - **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to
