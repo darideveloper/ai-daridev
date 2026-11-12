@@ -78,7 +78,10 @@ Register it:
 
 - **OpenCode** — `~/.config/opencode/opencode.json`, under `mcp.servers`:
   `"odoo": { "type": "local", "command": ["<path>/mcp.sh"], "disabled": false }`.
-  Inside Code Mode the tools are `tools.odoo.odoo_create`, `tools.odoo.odoo_search_read`…
+  Inside Code Mode the reference server's tools are `tools.odoo.odoo_search_read` (search —
+  there is no `odoo_search`), `tools.odoo.odoo_search_count`, `tools.odoo.odoo_get_fields`,
+  `tools.odoo.odoo_create`, `tools.odoo.odoo_update` and `tools.odoo.odoo_delete`. Servers name
+  these differently, so verify before the first call.
 - **Claude Code** — `claude mcp add --scope user odoo -- <path>/mcp.sh`.
 - **Codex** — `~/.codex/config.toml`: `[mcp_servers.odoo]` with `command = "<path>/mcp.sh"`.
 - **Gemini, Continue, Windsurf, Kiro, Devin** — register the same command in their MCP settings.
@@ -91,8 +94,8 @@ attachments) so pair can attach evidence.
 ## Permissions
 
 A story creates one card and up to seven subtasks, so a per-call `ask` policy means up to eight
-prompts. If that is noise, allow `odoo_create` in your agent's permissions and keep `odoo_update`,
-`odoo_delete` and `odoo_unlink` on `ask`. Archive adds one `odoo_update` for the done state; the gate
+prompts. If that is noise, allow `odoo_create` in your agent's permissions and keep `odoo_update`
+and `odoo_delete` on `ask`. Archive adds one `odoo_update` for the done state; the gate
 is the approval, but the client may still prompt. Evidence adds one `ir.attachment` create and one
 `odoo_update` per step; caps: screenshot ≤500 KB, inline output ≤40 lines / 4 KB, file ≤2 MB. Redact
 secrets and mask client data
