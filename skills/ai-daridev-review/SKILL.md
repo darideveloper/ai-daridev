@@ -48,7 +48,7 @@ touch anything else in the description.
 <h2>Review (ai-daridev)</h2>
 <p><b><date></b> — changes requested</p>
 <ul>
-  <li><b>p3 · <step name></b>: <what is wrong></li>
+  <li><b>p3 "<step>"</b>: <what is wrong></li>
 </ul>
 ```
 

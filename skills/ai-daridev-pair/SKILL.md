@@ -36,7 +36,7 @@ You drive, I navigate. One story per session, one step at a time, and you stop a
 ## 3. Test list
 
 From the criteria, propose **the test list: names only**. Say where each runs and which step it
-covers: `test name — where — covers p3`. Mark criteria that cannot be tested (visual ones) as
+covers: `test name — where — covers p3 "<step>"`. Mark criteria that cannot be tested (visual ones) as
 **manual verification**. Prefer the highest practical level. Wait for my approval; the list is the
 spec. It lives in this conversation only — if the session resumes, propose it again.
 
@@ -53,7 +53,7 @@ capture the evidence, attach it to the subtask and verify it before flipping. Th
 ```
 ✅ Passes "<test>". <one line> (<file:line>)
 Evidence: <artifact> · <attachment id or inline>
-Plan: p3 → done (agent) · 4/9 done · next p4
+Plan: p3 "<step>" → done (agent) · 4/9 done · next p4 "<step>"
 Decided: <judgment call, if any>
 Anything to change, or continue with "<next test>"?
 ```
@@ -153,8 +153,8 @@ only with tests green and never mixed with new functionality.
 3. `docs/ai-daridev/spec.md`: if the behavior changed, add or replace **one sentence** in the right
    domain section (`## <domain>`), creating the file with `# <project> spec` if needed. Show the line
    in the close block.
-4. Print what shipped, the decisions saved, the spec line, the card id and state, the step summary,
-   and the commit message I should use. **Never commit.**
+4. Print what shipped, the decisions saved, the spec line, the card `#<id> "<name>"` and state, the
+   step summary, and the commit message I should use. **Never commit.**
 
 Never write the card description; it belongs to `/ai-daridev-story` and `/ai-daridev-review`. The
 subtask description is your evidence surface: append the `Evidence` block, never rewrite the detail.
@@ -181,6 +181,8 @@ line) and write only the files.
   (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
 - **Assignees need a name.** `user_ids` only when I name the person; resolve the exact `res.users`
   name or login, 0 or 2+ matches → stop and list.
+- **Never print a bare id.** A step is `p4 "<step>"`, a card is `#14842 "<name>"`; a test-list
+  mapping is `covers p4 "<step>"`. Tables keep a name column instead of quoted names.
 - **Agents write:** the description (story), subtask states, subtask evidence (pair),
   `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review). Never write
   `depend_on_ids`; only backlog and story add links, and nothing removes one.

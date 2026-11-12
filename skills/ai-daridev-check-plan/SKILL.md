@@ -103,8 +103,9 @@ _5 steps · 3 agent · 2 you · <N>/<N> requirements traced · <N> auto-fixes ·
 ```
 
 Rules: ≤6 change rows (more means the plan was too vague — say so); one action per step, ≤40 words,
-verb first, owner on every line; no group headings; no numbering as a reference in prose (use the
-step's name); commands in a fenced block; **never fence the whole plan**. `show audit` or
+verb first, owner on every line; no group headings; commands in a fenced block; **never fence the
+whole plan**. **Never print a bare id.** A step is `p4 "<step>"`, a card is `#14842 "<name>"`; a
+test-list mapping is `covers p4 "<step>"`. `show audit` or
 `full report` expands the per-issue detail from this conversation without re-auditing.
 
 ## 7. Workflow: update the card (only when a card is named)

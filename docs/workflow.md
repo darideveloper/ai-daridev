@@ -77,14 +77,17 @@ Before anything else it reads the card's blockers. Only `1_done`, outside the Ca
 frees a dependent; anything else is a hard stop: no override, no test list. A canceled blocker keeps
 blocking and needs re-planning.
 
-1. **Test list first**, names only: `retry keeps one record — tests/test_upload.py — covers p1`.
+1. **Test list first**, names only: `retry keeps one record — tests/test_upload.py — covers p1 "<step>"`.
    Manual criteria are marked as such. One approval; the list lives in the conversation.
 2. **One step per stop**: write the test, show it red, write the minimum code, show it green,
-   capture and attach the evidence, flip that subtask to `1_done`, print `Plan 4/9 · next p5`.
+   capture and attach the evidence, flip that subtask to `1_done`, print `Plan 4/9 · next p5 "<step>"`.
 3. **Stop immediately** on an unplanned design decision, an unrequested addition, a test that would
    have to change, two failed attempts, or a step over ~50 lines / 3 files.
 4. **Non-code** (n8n, server, infra): read-only investigation, numbered plan, one approval, execute
    one step at a time showing command, output, state and rollback. Destructive steps ask again.
+
+**Never print a bare id.** A step is `p4 "<step>"`, a card is `#14842 "<name>"`; a test-list mapping
+is `covers p4 "<step>"`.
 
 Each step leaves an `Evidence` block on its subtask: a screenshot via `playwright-cli`, the curl and
 response in a code block, or the file attached. Redact secrets and mask client data. No artifact → a
