@@ -20,7 +20,8 @@ Refine one story right before building it. You propose, I decide. No code.
 4. **Checklist** — as many steps as the story needs: verb-first, ≤80 chars, one verifiable action
    each. Add a detail sub-bullet (file, command, rollback) only when you already read the code. Mark
    every step `[agent]` or `[you]`; a `[you]` step is one I must do myself. A step already done on
-   the card is `- [x]`, not `- [ ]`.
+   the card is `- [x]`, not `- [ ]`. A command block in a detail is indented to that bullet's
+   content column (4 spaces under `  - `), never at column 0 — a column-0 fence closes the list.
 5. **Wait for my approval.**
 
 ## Rules
@@ -35,7 +36,7 @@ Refine one story right before building it. You propose, I decide. No code.
 
 ## Output
 
-```markdown
+````markdown
 ## Story
 As a <actor>, I want <action>, so that <benefit>.
 
@@ -48,6 +49,9 @@ As a <actor>, I want <action>, so that <benefit>.
 ## Checklist
 - [ ] p1 <step> — [agent]
   - <detail, only if you read the code>
+    ```
+    <command block, indented to this bullet's content column>
+    ```
 - [ ] p2 <step> — [you]
 
 ## Out of scope
@@ -55,7 +59,7 @@ As a <actor>, I want <action>, so that <benefit>.
 
 ## Suggestions (your call)
 - <optional>
-```
+````
 
 ## The card
 

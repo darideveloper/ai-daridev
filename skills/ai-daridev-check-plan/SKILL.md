@@ -71,7 +71,7 @@ step 4. Print only the footer count; show the mapping only if a requirement is u
 
 Always return the full plan, even when no question was asked. This is the shape; omit empty sections.
 
-```markdown
+````markdown
 ## Plan: <title>
 _standalone · no card_        <!-- or: _card #14842 · checklist will update_ -->
 
@@ -91,6 +91,9 @@ _<one note line per reorder or contradiction>_
 ### Checklist
 - [ ] p1 <one action, imperative verb first> — [agent]
   - <detail: files, patterns, command>
+    ```
+    <command block, indented to this bullet's content column>
+    ```
 - [ ] p2 <one action> — [you]
 
 ### Open decision
@@ -100,15 +103,17 @@ _<one note line per reorder or contradiction>_
 - <risk and its guard>
 
 _5 steps · 3 agent · 2 you · <N>/<N> requirements traced · <N> auto-fixes · <N> answers_
-```
+````
 
 Rules: ≤6 change rows (more means the plan was too vague — say so); one action per step, ≤40 words,
 verb first, owner on every line; every step starts with `- [ ]` (`- [x]` when it is already
 `1_done`), never a bare `- pN` — the card's `<ol>` is the write format, not the render format; no
-group headings; commands in a fenced block; **never fence the whole plan**. **Never print a bare
-id.** A step is `p4 "<step>"`, a card is `#14842 "<name>"`; a test-list mapping is
-`covers p4 "<step>"`. `show audit` or `full report` expands the per-issue detail from this
-conversation without re-auditing.
+group headings; commands in a fenced block indented to that bullet's content column (4 spaces under
+`  - `, 2 spaces directly under the step), never at column 0 — a column-0 fence closes the list and
+flattens every step after it;
+**never fence the whole plan**. **Never print a bare id.** A step is `p4 "<step>"`, a card is
+`#14842 "<name>"`; a test-list mapping is `covers p4 "<step>"`. `show audit` or `full report`
+expands the per-issue detail from this conversation without re-auditing.
 
 ## 7. Workflow: update the card (only when a card is named)
 
