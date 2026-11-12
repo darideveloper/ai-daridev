@@ -103,10 +103,12 @@ _5 steps · 3 agent · 2 you · <N>/<N> requirements traced · <N> auto-fixes ·
 ```
 
 Rules: ≤6 change rows (more means the plan was too vague — say so); one action per step, ≤40 words,
-verb first, owner on every line; no group headings; commands in a fenced block; **never fence the
-whole plan**. **Never print a bare id.** A step is `p4 "<step>"`, a card is `#14842 "<name>"`; a
-test-list mapping is `covers p4 "<step>"`. `show audit` or
-`full report` expands the per-issue detail from this conversation without re-auditing.
+verb first, owner on every line; every step starts with `- [ ]` (`- [x]` when it is already
+`1_done`), never a bare `- pN` — the card's `<ol>` is the write format, not the render format; no
+group headings; commands in a fenced block; **never fence the whole plan**. **Never print a bare
+id.** A step is `p4 "<step>"`, a card is `#14842 "<name>"`; a test-list mapping is
+`covers p4 "<step>"`. `show audit` or `full report` expands the per-issue detail from this
+conversation without re-auditing.
 
 ## 7. Workflow: update the card (only when a card is named)
 
@@ -121,7 +123,7 @@ Two gates. Never write before Gate 2.
 
 Re-read the card's `write_date` first; if it changed since step 1, re-read, re-diff and show the new
 writes. If nothing differs, say "the card already matches" and write nothing. The rendered checklist
-is exactly what gets written: same `pN` order, same owners, no regrouping.
+is exactly what gets written: same `pN` order, same owners, same marks.
 
 Apply in this order, then read one created subtask back:
 

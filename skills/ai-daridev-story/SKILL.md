@@ -19,7 +19,8 @@ Refine one story right before building it. You propose, I decide. No code.
 3. **Acceptance criteria** — one or more, Given/When/Then, user-visible only, never implementation.
 4. **Checklist** — as many steps as the story needs: verb-first, ≤80 chars, one verifiable action
    each. Add a detail sub-bullet (file, command, rollback) only when you already read the code. Mark
-   every step `[agent]` or `[you]`; a `[you]` step is one I must do myself.
+   every step `[agent]` or `[you]`; a `[you]` step is one I must do myself. A step already done on
+   the card is `- [x]`, not `- [ ]`.
 5. **Wait for my approval.**
 
 ## Rules
@@ -45,9 +46,9 @@ As a <actor>, I want <action>, so that <benefit>.
 - [ ] Given …, when …, then ….
 
 ## Checklist
-- p1 <step> — [agent]
+- [ ] p1 <step> — [agent]
   - <detail, only if you read the code>
-- p2 <step> — [you]
+- [ ] p2 <step> — [you]
 
 ## Out of scope
 - <what this story leaves out>

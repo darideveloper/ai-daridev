@@ -59,10 +59,10 @@ the related decisions, then proposes:
 - [ ] Given a 500 from storage, when I retry, then exactly one record exists.
 
 ## Checklist
-- p1 Reproduce a retry twice — [agent]
+- [ ] p1 Reproduce a retry twice — [agent]
   - tests/test_upload.py; run `pytest -k retry`
-- p2 Make the write idempotent — [agent]
-- p3 Run the staging check — [you]
+- [ ] p2 Make the write idempotent — [agent]
+- [ ] p3 Run the staging check — [you]
 ```
 
 As many criteria and steps as the story needs; no count cap. One gate, then the card description is
