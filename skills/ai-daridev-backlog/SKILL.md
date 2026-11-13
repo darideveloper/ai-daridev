@@ -89,8 +89,8 @@ is where a new card goes; `Requires: #N` stays in the list as text. Write no fil
   (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
 - **Assignees need a name.** `user_ids` only when I name the person; resolve the exact `res.users`
   name or login, 0 or 2+ matches → stop and list.
-- **Agents write:** the description (story), subtask states, `state=03_approved` + `date_end`
-  (close), `state=02_changes_requested` (review).
+- **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
+  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review).
 - **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.
 - **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to

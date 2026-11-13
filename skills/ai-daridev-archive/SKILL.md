@@ -26,19 +26,21 @@ Close work that is already finished. The card and the files are the record; neve
    (no key → ask once which column means validated, use it for the session), the state is not
    `03_approved` or `1_done`, or a child is not `1_done`/`1_canceled`. A gray card (`01_in_progress`)
    in the validated column gets one line: review it, or ask me for the green dot — archive never
-   turns a card green. Read the latest dated attempt in each `1_done` child's description and its
-   `attachment_ids`: `screenshot`/`file` ids must resolve to an `ir.attachment` with
-   `res_model=project.task`, `res_id=<child>`, a non-empty `mimetype` and `file_size > 0`; a `code`
-   `<li>` needs a non-empty `<pre><code>`; a `waiver` needs the reason, who and date. A child with
-   neither is drift, not a stop: list it for the gate and archive continues on my yes. A `1_canceled`
-   child (dropped) needs no evidence. A `1_done` card in `odoo_stage_done` skips the write and only
-   logs.
+   turns a card green. Read each `1_done` step's entry in the card's `<h2>Evidence (ai-daridev)</h2>`
+   — match `pN "<step>"` — and resolve every `<img src="/web/image/{id}">` id to an `ir.attachment`
+   with `res_model=project.task`, `res_id=<card>`, `mimetype=image/*` when labelled a screenshot, and
+   `file_size > 0`; a `code` line needs non-empty text; a `waiver` needs the reason, who and date. A
+   card with no tail at all (legacy) falls back to the child description and the child's
+   `attachment_ids`. A step with neither is drift, not a stop: list it for the gate and archive
+   continues on my yes. A `1_canceled` child (dropped) needs no evidence. A `1_done` card in
+   `odoo_stage_done` skips the write and only logs.
 2. **Show the gate.** List the exact writes (`state=1_done`, `date_end` only if empty), the
    dependents this frees and the ones still blocked by another card, and the reminder to run it only
-   after the commit is on the main branch. With drift, add one line per unproven `1_done` child:
-   what it needs (screenshot, code, file or waiver) and the two routes — record it first, or cancel it
-   by hand if it never happened; archive does neither. When the card was self-closed and never
-   reviewed, recommend `/ai-daridev-review` before archiving. Wait for my yes; with drift only
+   after the commit is on the main branch. With drift, add one line per unproven `1_done` step:
+   what it needs (an embedded screenshot, a code line or a waiver) and the two routes — record it
+   first, or cancel it by hand if it never happened; archive does neither. When the card was
+   self-closed and never reviewed, recommend `/ai-daridev-review` before archiving. Wait for my yes;
+   with drift only
    `archive anyway` counts, and that yes is the waiver for the retro.
 3. **Apply.** Set `state=1_done` (and `date_end` if empty), re-read, and confirm; if it fails, stop
    before the log.
@@ -51,7 +53,7 @@ Decisions: <dated, each with its Why>
 Follow-ups: <or "none">
 Plan: <done>/<total> steps · dropped <n> · open 0
 Card: task <id> · state 1_done · end <date_end or date_last_stage_update>
-Drift: <decision and spec drift, then "no evidence on <ids>", or "none">
+Drift: <decision and spec drift, then "no evidence on p4", or "none">
 ```
 
 5. **Append** the block to `docs/ai-daridev/log.md` unless the slug is already there. Create the file
@@ -64,8 +66,8 @@ Drift: <decision and spec drift, then "no evidence on <ids>", or "none">
 - Archive never writes `stage_id`: the card is already green in `odoo_stage_done`. Never set
   `1_canceled`. Archive is the only skill that writes a **card** `1_done`, and only after the gate.
 - **Evidence is mandatory in pair and review, advisory here.** Archive never refuses a `1_done` step
-  for a missing artifact and never fixes it — descriptions, waivers and drops belong to pair and
-  review; it only names the step in the gate and in the retro.
+  for a missing entry and never fixes it — the card's `Evidence` tail, waivers and drops belong to
+  pair and review; it only names the step in the gate and in the retro.
 - Read `docs/ai-daridev/spec.md` and `decisions.md` first; the retro quotes them, it does not
   reinvent them.
 
@@ -86,8 +88,9 @@ Drift: <decision and spec drift, then "no evidence on <ids>", or "none">
   (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
 - **Assignees need a name.** `user_ids` only when I name the person; resolve the exact `res.users`
   name or login, 0 or 2+ matches → stop and list.
-- **Agents write:** archive writes `state=1_done` and `date_end` (only when empty); the description,
-  subtask states, `state=03_approved` and `state=02_changes_requested` belong to the other skills.
+- **Agents write:** archive writes `state=1_done` and `date_end` (only when empty); the description
+  and its `Evidence` tail, subtask states, `state=03_approved` and `state=02_changes_requested`
+  belong to the other skills.
 - **One approval gate per phase.** The done write and the log are one gate; nothing else asks.
 - **Odoo unavailable** → print the close checklist (`1_done`, the date, the dependents it would
   free) and write only the files; I set done by hand.

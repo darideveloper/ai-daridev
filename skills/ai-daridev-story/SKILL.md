@@ -74,8 +74,11 @@ writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of the card 
   `<h1>{the card's CURRENT name, read it first}</h1>`, `<p>{goal}</p>`,
   `<h2>Acceptance criteria</h2>`, `<h2>Checklist</h2>` (step name, its `[agent]`/`[you]` owner
   and optional detail, **no status**), any existing `<h2>Review (ai-daridev)</h2>` section copied
-  **verbatim**, and finally
-  `<p><em>ai-daridev: story/{slug}</em></p>`.
+  **verbatim**, `<p><em>ai-daridev: story/{slug}</em></p>`, and finally the `Evidence` tail when the
+  description has one.
+- **The Evidence tail is not yours.** Everything from `<h2>Evidence (ai-daridev)</h2>` to the end of
+  the description is copied byte-for-byte, after the slug line. No heading → nothing to copy. Never
+  regenerate, reorder, trim or move it.
 - Re-read the description right before writing. If `write_date` changed since your first read, show
   what changed and ask once.
 - **Subtasks: one per step.** `name` = `<step> — [agent|you]`, `description` = `<p>{detail}</p>`
@@ -83,13 +86,14 @@ writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of the card 
   `user_ids=[]` unless I name an assignee for that step (resolve the exact `res.users` name or
   login), `display_in_project=False`. Never write `project_id` or `stage_id`. Read one back: if
   `display_in_project` is not false, stop and report.
-- Match existing children by exact name, ignoring a trailing ` — [agent]`/`— [you]` on legacy
-  cards: update the ones that changed (rewriting the name in the new form; for `description`, keep
-  everything from `<h3>Evidence</h3>` onward byte-for-byte and replace only the detail above it),
-  create the missing ones, never delete. List extras and leave them alone; a rename asks once.
+- Match existing children by exact name, ignoring a trailing ` — [agent]`/`— [you]`: update the ones
+  that changed (rewriting the name in the new form), create the missing ones, never delete. On a
+  legacy child, keep everything from a `<h3>Evidence</h3>` onward byte-for-byte and replace only the
+  detail above it. List extras and leave them alone; a rename asks once.
 - No file writes.
 
-Without Odoo: print the description HTML, the step list with owners, and where to paste them.
+Without Odoo: print the description HTML with the `Evidence` heading at the end, the step list with
+owners, and where to paste them.
 
 ## Always
 
@@ -108,8 +112,8 @@ Without Odoo: print the description HTML, the step list with owners, and where t
   (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
 - **Assignees need a name.** `user_ids` only when I name the person; resolve the exact `res.users`
   name or login, 0 or 2+ matches → stop and list.
-- **Agents write:** the description (story), subtask states, `state=03_approved` + `date_end`
-  (close), `state=02_changes_requested` (review).
+- **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
+  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review).
 - **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.
 - **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to

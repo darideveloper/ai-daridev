@@ -1,6 +1,6 @@
 ---
 name: ai-daridev-pair
-description: Pairs on one refined story. The agent drives in small test-driven steps (one test, minimum code, green) or plan-and-execute for non-code work, stops after every step, attaches evidence to each subtask, and never commits.
+description: Pairs on one refined story. The agent drives in small test-driven steps (one test, minimum code, green) or plan-and-execute for non-code work, stops after every step, embeds a final-UI screenshot per step in the card's Evidence section, and never commits.
 disable-model-invocation: true
 ---
 
@@ -48,55 +48,62 @@ spec. It lives in this conversation only — if the session resumes, propose it 
 4. Run it; show that it passes (green).
 
 One step per stop. "Do N" means N full cycles, never "N tests and then the code". After green,
-capture the evidence, attach it to the subtask and verify it before flipping. Then send:
+embed the evidence in the card's `Evidence` section and verify it from the card before flipping.
+Then send:
 
 ```
 ✅ Passes "<test>". <one line> (<file:line>)
-Evidence: <artifact> · <attachment id or inline>
+Evidence: p3 entry in #<card> "<name>" · /web/image/{id} · <KB>
 Plan: p3 "<step>" → done (agent) · 4/9 done · next p4 "<step>"
 Decided: <judgment call, if any>
 Anything to change, or continue with "<next test>"?
 ```
 
-Flip the step to `1_done` only when every test covering it is green **and** the evidence is attached
-and verified. A `[you]` step flips only when I say so and its artifact or waiver is recorded. If it is
-unclear which step a test completes, ask.
+Flip the step to `1_done` only when every test covering it is green **and** its entry is in the card's
+`Evidence` section and verified. A `[you]` step flips only when I say so and its entry or waiver is
+recorded. If it is unclear which step a test completes, ask.
 
 ### Evidence
 
-Infer the artifact from the step: UI/page/metric → screenshot; API → curl and response; export →
-process screenshots plus the file; code-only → diff or command output; infra → command output plus a
-screenshot. Ambiguous → ask once.
+One surface: the main card description. Every step's proof is a screenshot embedded in
+`<h2>Evidence (ai-daridev)</h2>` at the end of that description. A file in the attachment list is not
+evidence, and a subtask description is never written again.
 
-For a page, use `playwright-cli resize 1600 1000` then `playwright-cli screenshot`; run `convert` to
-≤500 KB when it is available, otherwise ask me for a smaller screenshot. Redact tokens, cookies,
-passwords and keys; mask emails, names and IDs unless the step is about them; prefer a test account.
+Default artifact: a screenshot of the shipped surface, taken on the prod host after the deploy, with
+`playwright-cli resize 1600 1000` then `playwright-cli screenshot`. Code, a diff or a curl is the
+exception — only when the step's proof is invisible in a browser — and it is one `<code>` line, never
+a `.txt` link as the only proof. A step that cannot be captured on prod because nothing is deployed
+yet is captioned `local — not deployed`; that does not block the flip. Redact tokens, cookies,
+passwords and keys; mask emails, names and ids unless the step is about them; prefer a test account.
 Captures live in `/tmp/opencode/evidence/<slug>/<sanitized-step>/` and are deleted after the re-read;
 never in the repo.
 
-Upload each artifact to `ir.attachment` (`name`, base64 `datas`, `res_model=project.task`,
-`res_id=<subtask>`, `mimetype`), then append the block below to the subtask description, keeping the
-detail above it. Inline output ≤40 lines / 4 KB; longer output is attached as a `.txt` with the
-`file` label. Files ≤2 MB; a larger file is attached by me.
+Convert to ≤500 KB with `convert` when it is available; ask me only when it is not. Upload each image
+to `ir.attachment` (`name`, base64 `datas`, `res_model=project.task`, `res_id=<main card>`,
+`mimetype`), then read the card's `description` and `write_date`, and write it back with one entry
+appended — never regenerate it, and never touch the text above the heading. The `<h2>` goes in only
+when the card has none; otherwise append from the `<h3>` down. If `write_date` changed between the
+read and the write, re-read and append to the new text.
 
 ```html
-<h3>Evidence</h3>
-<p><b>{YYYY-MM-DD HH:MM:SS UTC}</b></p>
-<ul>
-  <li><b>screenshot</b><br/><img src="/web/image/{id}" alt="evidence" style="max-width:100%"/></li>
-  <li><b>code</b><pre><code>{curl, diff or output, escaped}</code></pre></li>
-  <li><b>file</b> <a href="/web/content/{id}?download=true">{name}</a></li>
-</ul>
+<h2>Evidence (ai-daridev)</h2>                <!-- add it, at the very end, only when it is missing -->
+<h3>{YYYY-MM-DD HH:MM UTC} · p4 "{step}" · [agent]</h3>
+<p><img src="/web/image/{id}" alt="p4 {step} — final UI" style="max-width:100%"/></p>
+<p>{one line: what the screenshot proves}</p>
 ```
 
-Labels are `screenshot`, `code`, `file` and `waiver`; escape `<`, `>`, `&`. One dated entry per
-attempt; never overwrite. No artifact → ask for a waiver and record
-`<li><b>waiver</b> — {reason} — {who}, {UTC}</li>`.
+The `<h3>` is the join to the subtask: `pN "<step>"` is the same vocabulary as the plan line and the
+review verdict. One entry per attempt, chronological; a later attempt appends, it never replaces.
+Extra images repeat the `<p><img/>` line. A `[you]` step gets its entry when I hand you the capture,
+labelled `[you]`. Escape `<`, `>` and `&`.
 
-Re-read the subtask and its `attachment_ids`: the new id must be there and the description must
-contain `Evidence`. Then flip `1_done`. If the upload succeeds but the description update fails,
-report the attachment id and stop; the step stays open. On retry create a new attachment, leave the
-orphan, never delete it. Without Odoo, print the evidence and where to paste it.
+Verify from the card before flipping: the description contains `/web/image/{id}` **and** the
+attachment row is `project.task` on this card, `image/*`, `file_size > 0`. A heading, or an id in
+`attachment_ids`, is not proof. If the upload or the embed failed, or the id is missing from the
+description, print `EVIDENCE FAILED: <what>` and stop — the step stays open. No attachment-only
+evidence, and no waiver unless I grant one in this turn: record
+`<p><b>waiver</b> — {reason} — {who}, {UTC}</p>` inside the entry. On retry create a new attachment,
+leave the orphan, never delete it. Without Odoo, print the entry and where it goes.
 
 ### Stop immediately
 
@@ -132,18 +139,20 @@ only with tests green and never mixed with new functionality.
 3. One approval of the whole list.
 4. Execute `[agent]` steps one at a time. After each: the exact command, its output, the resulting
    state (diff, `systemctl status`, `docker ps`, curl) and a one-line rollback. Stop if anything
-   differs from the plan.
-5. Flip the step only when the state shown proves it and its evidence is attached; `[you]` steps flip
-   when I say so, with their artifact or waiver recorded.
+   differs from the plan. The command and its state stay in the conversation; the card gets a
+   screenshot — the terminal output when the proof is a command, the UI when the step changed
+   something visible (§4 Evidence, same contract).
+5. Flip the step only when the state shown proves it and its entry is in the card's `Evidence`
+   section and verified; `[you]` steps flip when I say so, with their entry or waiver recorded.
 6. Destructive steps (`rm`, `drop`, restart, delete, migration) ask again on their own.
 7. Then §7.
 
 ## 7. Close (only when the work is done and I say yes)
 
 1. List every step that is not `1_done` and ask: flip it, leave the card open, or drop it
-   (`1_canceled` + `(dropped)`, never deleted). Every closed step already carries its evidence; the
-   close only summarises it. If a step stays open, print the close block but keep the card gray and
-   skip the move.
+   (`1_canceled` + `(dropped)`, never deleted). Every closed step already has its entry in the card's
+   `Evidence` section; the close only summarises it. If a step stays open, print the close block but
+   keep the card gray and skip the move.
 2. Card (Odoo): `state = 03_approved` and `date_end = <UTC now, YYYY-MM-DD HH:MM:SS>`, plus
    `stage_id = odoo_stage_done` when I say yes to the move — all in the same `odoo_update`. The gate
    lists the move with the default "no": the card can stay in its column for review, or land green in
@@ -156,10 +165,12 @@ only with tests green and never mixed with new functionality.
 4. Print what shipped, the decisions saved, the spec line, the card `#<id> "<name>"` and state, the
    step summary, and the commit message I should use. **Never commit.**
 
-Never write the card description; it belongs to `/ai-daridev-story` and `/ai-daridev-review`. The
-subtask description is your evidence surface: append the `Evidence` block, never rewrite the detail.
+Never write the description above the `Evidence` heading; it belongs to `/ai-daridev-story` and
+`/ai-daridev-review`. You own the `<h2>Evidence (ai-daridev)</h2>` tail at the very end of the card
+description: append one entry per attempt, never rewrite it, never move it, and never repeat the step
+detail there.
 
-Without Odoo: print the close checklist (state, date, steps to flip, the evidence blocks, the spec
+Without Odoo: print the close checklist (state, date, steps to flip, the `Evidence` tail, the spec
 line) and write only the files.
 
 ## Always
@@ -183,7 +194,7 @@ line) and write only the files.
   name or login, 0 or 2+ matches → stop and list.
 - **Never print a bare id.** A step is `p4 "<step>"`, a card is `#14842 "<name>"`; a test-list
   mapping is `covers p4 "<step>"`. Tables keep a name column instead of quoted names.
-- **Agents write:** the description (story), subtask states, subtask evidence (pair),
+- **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
   `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review). Never write
   `depend_on_ids`; only backlog and story add links, and nothing removes one.
 - **One approval gate per phase.** Structure, a move and the close ask once; state changes are

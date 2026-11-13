@@ -1,5 +1,8 @@
 # Subtask evidence — design
 
+> **Superseded 2026-11-13:** evidence now lives in the card description tail. See
+> `skills/ai-daridev-pair/SKILL.md` §4 and `docs/workflow.md`.
+
 Date: 2026-11-08
 Status: approved
 Scope: the `ai-daridev` skills repo. No Odoo schema changes.

@@ -13,18 +13,21 @@ decide. One card per run unless I ask for a batch.
 
 1. **Load the card** by id or name. No argument → list the active-stage cards (not the backlog
    stage, not `odoo_stage_done`), limit 20, and ask which one. Without Odoo, ask me to paste it.
-2. **Read it:** name, description sections, `state`, children, `write_date`, `attachment_ids`. No
+2. **Read it:** name, description sections (including the `Evidence` tail), `state`, children,
+   `write_date`, `attachment_ids`. No
    acceptance criteria in the description → say so and ask me what "correct" means; never invent a
    verdict.
 3. **Evidence only when the card does not settle it.** Ask for a diff, PR, screenshot or paste, and
    state what you could not verify.
 4. **Verdict table:** every criterion (pass / fail / manual) and every step (pass / fail / not
    reached), one evidence line each. A step passes only when every test covering it is green and its
-   evidence is valid. Read the latest dated attempt in the child description and the **child's**
-   `attachment_ids`: `screenshot`/`file` ids must resolve to an `ir.attachment` with
-   `res_model=project.task`, `res_id=<subtask>`, a non-empty `mimetype` and `file_size > 0`; a `code`
-   `<li>` needs a non-empty `<pre><code>`; a `waiver` needs the reason, who and date. A `1_done` step
-   with no valid attempt is a fail, even when the test passed.
+   evidence is valid. Read the step's latest entry in the card's `<h2>Evidence (ai-daridev)</h2>` —
+   match `pN "<step>"` — and resolve every `<img src="/web/image/{id}">` id to an `ir.attachment` with
+   `res_model=project.task`, `res_id=<this card>`, `mimetype=image/*` when it is labelled a
+   screenshot, and `file_size > 0`; a `code` line needs non-empty text; a `waiver` needs the reason,
+   who and date. A `1_done` step with no entry in the tail is a fail, even when the test passed. A
+   card with no tail at all (legacy) falls back to the latest dated attempt in the child description
+   and the child's `attachment_ids` with `res_id=<subtask>`.
 5. **Propose the writes**, then one gate:
    - Approved → one `odoo_update` sets `state=03_approved` + `date_end` (the green dot) and moves
      the card `<current> → <odoo_stage_done>`, so it lands validated and not archived. A step that is
@@ -42,7 +45,9 @@ decide. One card per run unless I ask for a batch.
 ## Review block
 
 Owned by this skill. Replace the whole `<h2>Review (ai-daridev)</h2>` section; never append, never
-touch anything else in the description.
+touch anything else in the description. It lives above the slug line — replace it in place, or insert
+it immediately before `<p><em>ai-daridev: story/{slug}</em></p>`; never inside or after the `Evidence`
+tail.
 
 ```html
 <h2>Review (ai-daridev)</h2>
@@ -78,8 +83,9 @@ touch anything else in the description.
   (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
 - **Assignees need a name.** `user_ids` only when I name the person; resolve the exact `res.users`
   name or login, 0 or 2+ matches → stop and list.
-- **Agents write:** the description (story), subtask states, `state=03_approved` + `date_end`
-  (close), `state=02_changes_requested` (review).
+- **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
+  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review). Review never writes
+  the `Evidence` tail.
 - **One approval gate per phase.** Structure and the card write ask once; the rest is reported, not
   asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.

@@ -89,15 +89,18 @@ Register it:
 Verify by calling a read tool in a **new session**, not by listing servers.
 
 The agent's Odoo allowlist must include `ir.attachment` (read/create only, scoped to `project.task`
-attachments) so pair can attach evidence.
+attachments) so pair can embed evidence. Attachments are created on the **card**, never a subtask, and
+referenced from its description with `/web/image/<id>`.
 
 ## Permissions
 
 A story creates one card and up to seven subtasks, so a per-call `ask` policy means up to eight
 prompts. If that is noise, allow `odoo_create` in your agent's permissions and keep `odoo_update`
 and `odoo_delete` on `ask`. Archive adds one `odoo_update` for the done state; the gate
-is the approval, but the client may still prompt. Evidence adds one `ir.attachment` create and one
-`odoo_update` per step; caps: screenshot ≤500 KB, inline output ≤40 lines / 4 KB, file ≤2 MB. Redact
+is the approval, but the client may still prompt. Evidence adds three writes per step — the
+`ir.attachment` create, one `odoo_update` on the **card** description and one on the subtask state —
+so with `odoo_update` on `ask` plan for three prompts per step; allowing `odoo_update` is safe because
+the per-phase gate is already the approval. Cap: screenshot ≤500 KB. Redact
 secrets and mask client data
 before upload. The skills never delete or bulk-update.
 

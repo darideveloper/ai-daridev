@@ -132,20 +132,20 @@ is exactly what gets written: same `pN` order, same owners, same marks.
 
 Apply in this order, then read one created subtask back:
 
-1. Replace **only** `<h2>Checklist</h2>`. Keep the title, goal, criteria, review block and the
-   `ai-daridev: story/<slug>` line byte-for-byte. No Checklist → replace `<h2>Plan</h2>` if it
-   exists, otherwise insert before the review heading, else before the key line. Delete any old
-   `Plan:` id line.
+1. Replace **only** `<h2>Checklist</h2>`. Keep the title, goal, criteria, review block, the
+   `ai-daridev: story/<slug>` line and the whole `<h2>Evidence (ai-daridev)</h2>` tail byte-for-byte.
+   No Checklist → replace `<h2>Plan</h2>` if it exists, otherwise insert before the review heading,
+   else before the key line. Delete any old `Plan:` id line.
 2. Create a hidden subtask for every missing step: `name` = `<step> — [agent|you]`,
    `description` = `<p>{detail}</p>`, `parent_id`, `sequence` = index × 10, `state=01_in_progress`,
    `user_ids=[]`, `display_in_project=False`. Never `project_id`, never `stage_id`.
-3. Rename changed steps (update `name`; for `description`, keep everything from `<h3>Evidence</h3>`
+3. Rename changed steps (update `name`; on legacy cards, keep everything from a `<h3>Evidence</h3>`
    onward byte-for-byte and replace only the detail above it). Match names ignoring a trailing
    ` — [agent]`/`— [you]`: a legacy step without the suffix matches and is rewritten in the new
    form. Exactly one step removed and one added → ask "rename or replace?"; never guess.
 4. Drop a removed step with `state=1_canceled` and ` (dropped)` appended to the name; the
-   description, including evidence, is untouched. **Never drop a `1_done` step**: it stays in the
-   checklist, marked done.
+   description, including any legacy Evidence block, is untouched. **Never drop a `1_done` step**: it
+   stays in the checklist, marked done.
 5. Update `sequence` only for the steps whose index changed.
 6. Read one created subtask back: `display_in_project` must be false, else stop and report.
 
@@ -156,7 +156,7 @@ A second run with no changes produces zero writes.
 - Create a card. No card exists → render the plan and end with "run `/ai-daridev-story`".
 - Delete a subtask, touch a `1_done` state, or re-open a dropped step.
 - Touch the card `state`, `stage_id`, tags or assignees.
-- Regenerate the description outside the checklist section.
+- Regenerate anything outside the checklist section; the `Evidence` tail stays byte-for-byte.
 - Write files. `spec.md` and `decisions.md` belong to `/ai-daridev-pair`.
 - Invent a requirement, a step or an acceptance criterion.
 
