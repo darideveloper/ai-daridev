@@ -12,13 +12,13 @@ decide. One card per run unless I ask for a batch.
 ## Steps
 
 1. **Load the card** by id or name. No argument → list the active-stage cards (not the backlog
-   stage, not `odoo_stage_done`), limit 20, and ask which one. Without Odoo, ask me to paste it.
+   stage, not `odoo_stage_done`), limit 20, and ask which one. Odoo off, ask me to paste it.
 2. **Read it:** name, description sections (including the `Evidence` tail), `state`, children,
    `write_date`, `attachment_ids`. No
    acceptance criteria in the description → say so and ask me what "correct" means; never invent a
    verdict.
-3. **Evidence only when the card does not settle it.** Ask for a diff, PR, screenshot or paste, and
-   state what you could not verify.
+3. **Evidence only when the card does not settle it.** Ask me for a diff, PR, screenshot or paste, and
+   state what you could not verify. Never capture it yourself.
 4. **Verdict table:** every criterion (pass / fail / manual) and every step (pass / fail / not
    reached), one evidence line each. A step passes only when every test covering it is green and its
    evidence is valid. Read the step's latest entry in the card's `<h2>Evidence (ai-daridev)</h2>` —
@@ -69,6 +69,9 @@ tail.
 
 ## Rules
 
+- **Never captures.** Review reads evidence; it never drives the browser, never takes a screenshot,
+  never uploads, and never writes the `Evidence` tail. A `1_done` step with no valid entry is a fail;
+  the fix is `/ai-daridev-pair` recording it, not review filling it in.
 - **Move only through the gate.** The two moves in step 5 are the only `stage_id` writes, and each
   lands in the same `odoo_update` as its `state`. Never move silently, never create cards, never mark
   work done or cancelled.
@@ -81,42 +84,16 @@ tail.
 - **Root.** Walk up from the current directory to the nearest `AGENTS.md` that holds
   `<!-- ai-daridev:start -->`. That directory is the root: read and write `docs/ai-daridev/` there
   and write nothing outside it. No block → ask once: create it here, use the git root, or chat-only.
-- **Config.** Read `odoo_project`, `odoo_stage_done`, `card_tag`, `card_tag_extra`,
-  `odoo_assignee_uid` and `odoo_assignee_manual_uid` from the block. No `odoo_project` → Odoo is off.
-  Resolve the project and the tags by exact name; 0 or 2+ matches → stop and list the real ones.
-  Resolve the stages **inside that project** (`project.task.type` whose `project_ids` contains it);
-  a stage name that also exists in other projects is not a match and must not stop the run.
-  Backlog stage = lowest `sequence`. Default tag `backend`.
-- **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
-  the phase gate lists it and I say yes, or when the column and the state already disagree and I
-  approve the repair. Show the exact write in the gate; never move silently. The assignee reconcile
-  is the one exception: it only mirrors the checklist owner, so it rides the card write and is
-  reported.
-- **A move is one write.** `stage_id`, `state` and `date_end` in the same `odoo_update`:
-  → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
-  backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
-  (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
-- **Two users, one card.** The card always carries the agent user — `odoo_assignee_uid` when the
-  block declares it, else the MCP connection uid (`odoo_connection_info` → `uid`) — and carries
-  `odoo_assignee_manual_uid` only while the **next open step** is `[you]`. Next open = the lowest
-  `sequence` child whose state is not `1_done`/`1_canceled`; `02_changes_requested` is open, for its
-  own owner. A legacy card with no children takes the owner from its `<h2>Checklist</h2>` line; a
-  card with neither is left alone. Creates send the full set; updates diff with
-  `[[4, uid]]`/`[[3, uid]]`, never `[[6,0,[…]]]`, and add the agent when it is missing. Derived from
-  the checklist, so it is reported, not asked. No manual uid → no handoff: ask once and
-  offer to add `odoo_assignee_manual_uid` to the block, then one line in the output. A person I
-  name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
-- **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
-  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review) and the derived
-  `user_ids` diff (every phase). Review never writes the `Evidence` tail, and never writes or offers
-  `docs/ai-daridev/log.md`: the retro belongs to `/ai-daridev-archive`.
+- **Mode.** The first line reports it. A card in the invocation means on; `--odoo`/`--no-odoo` or my
+  words beat that; bare review lists cards, so it is on, and off needs a pasted card.
+- **Odoo contract.** On → read `../ai-daridev-odoo/SKILL.md` and follow it for every Odoo rule:
+  config, project and stages, moves, assignees, who writes what and the evidence upload. Never restate
+  those rules here.
 - **One approval gate per phase.** Structure and the card write ask once; the rest is reported, not
   asked.
-- **Odoo unavailable** → print the handout and continue; the files are still written.
 - **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to
   reverse or a shared/ops contract. Everything else stays in the conversation.
 - **Fold-in.** If `docs/ai-daridev/` is missing and `docs/decisions/*.md` or `openspec/` exists, ask
   once to fold them into `decisions.md` and `spec.md`; the originals stay as frozen history.
 - **Never commit.** Never write secrets or client data into the three files.
-- **Cards** are found by `<p><em>ai-daridev: story/<slug></em></p>`; the legacy
-  `engram: story/<slug>` is accepted on read.
+- Never write or offer `docs/ai-daridev/log.md`: the retro belongs to `/ai-daridev-archive`.

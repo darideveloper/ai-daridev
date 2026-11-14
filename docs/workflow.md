@@ -9,8 +9,14 @@ one write that keeps the column and the state in sync.
 - **Root.** The repo root is the nearest `AGENTS.md` holding `<!-- ai-daridev:start -->`, walking up
   from the current directory. `docs/ai-daridev/` is always relative to it; nothing is written above.
   No block → the skill asks once (create it here, use the git root, or chat-only).
-- **Odoo is optional.** Without an `odoo_project` key there are no cards: stories live in the
-  conversation and only the three files are written.
+- **Odoo is per session.** The block supplies the project, never the switch: `--odoo`/`--no-odoo` or
+  your words decide, a card reference decides, and `backlog`/`story` ask once (`Odoo this session?
+  [y/N]`, default no). `pair` with no card is chat-only without asking; `campaign` is always on. Every
+  phase prints `Odoo: on · <project>` or `Odoo: off · chat-only` as its first line. Odoo off → no
+  cards: stories live in the conversation and only the three files are written.
+- **Size decides how much you run.** A small change is `/ai-daridev-pair` alone on a pasted one-liner
+  — criteria, one plan gate, red → green, the spec line — then `/ai-daridev-archive` for the log. The
+  full chain is for work that must be split into steps or handed to a second agent across sessions.
 - **Moves and assignees are proposed, not assumed.** Move a card only when you ask in this turn,
   when the phase gate lists it and you say yes, or when the column and the state already disagree
   and you approve the repair. Show the exact write in the gate; never move silently. Story's gate is
@@ -49,8 +55,9 @@ one write that keeps the column and the state in sync.
   other state changes are reported.
 - **Evidence.** Every `1_done` step has an entry in the card's `Evidence` section: a screenshot by
   default, one code line only when the proof is invisible in a browser, a waiver when there is
-  nothing to show. Pair writes it and review refuses a step without it; archive names it as drift and
-  archives anyway on your word. A file in the attachment list is not evidence.
+  nothing to show. Pair captures it, stores it under `docs/ai-daridev/evidence/` first, and review
+  refuses a step without it — and never captures one itself. Archive names it as drift and archives
+  anyway on your word. A file in the attachment list is not evidence.
 - **Decisions only when they last.** Project-wide, hard to reverse or a shared/ops contract goes to
   `decisions.md`; everything else stays in the conversation.
 
@@ -251,10 +258,10 @@ run stops after three card-level parks in a row. It never waives evidence, never
 card, never cancels one and never runs a destructive non-code step. Resume from the journal unless you
 pass `fresh`; `--dry-run` prints the whole plan and writes nothing.
 
-## Without Odoo
+## With Odoo off
 
 Every phase still works. Backlog and story print the card, the subtask list and the `Evidence`
 heading to paste; pair loads the story from what you pasted, keeps the checklist in the conversation
-and prints each evidence entry to paste; review takes the card as text; archive requires a slug or a
-pasted story. Only the three files are written, and the printed close checklist tells you what to
-update by hand.
+and saves each capture under `docs/ai-daridev/evidence/`; review takes the card as text and never
+captures; archive takes a slug or the story and appends the retro with `Card: none (chat-only)`. Only
+the three files are written, and the printed close checklist tells you what to update by hand.

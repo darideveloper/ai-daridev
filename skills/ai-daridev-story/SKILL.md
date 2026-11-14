@@ -1,12 +1,17 @@
 ---
 name: ai-daridev-story
-description: Refines ONE user story into acceptance criteria and a step checklist on its Odoo card, with one hidden subtask per step, and moves it to the sprint column. Writes no code; implementation is /ai-daridev-pair's job.
+description: Refines ONE user story into acceptance criteria and a step checklist on its card when the session is on Odoo, with one hidden subtask per step, and moves it to the sprint column. Writes no code; implementation is /ai-daridev-pair's job.
 disable-model-invocation: true
 ---
 
 # Story
 
 Refine one story right before building it. You propose, I decide. No code.
+
+**Mode first.** This phase can open the session. When the turn does not already say it (`--odoo`,
+`--no-odoo`, or my words) and the session has not answered yet, ask once: `Odoo this session? [y/N]` —
+default no. Keep it for the session and report it in the first line, `Odoo: on · <project>` or
+`Odoo: off · chat-only`. A card named in the invocation answers it: on.
 
 ## Steps
 
@@ -63,9 +68,10 @@ As a <actor>, I want <action>, so that <benefit>.
 
 ## The card
 
-Write only after the checklist is approved. One gate: show the card, its checklist, its assignees, the
-column move and the exact writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of the
-card you found.
+Odoo off → skip this section: print the description, the step list and where to paste them, and write
+nothing. On Odoo, write only after the checklist is approved. One gate: show the card, its checklist,
+its assignees, the column move and the exact writes. Slug = kebab-case of the title, ≤40 chars; reuse
+the slug of the card you found.
 
 - **Move to the sprint column: default, in the gate.** Resolve the single stage inside the project
   whose name matches `sprint backlog` (case-insensitive); 0 or 2+ → ask once which stage and use that
@@ -92,7 +98,7 @@ card you found.
   what changed and ask once.
 - **Assignees, one write with the description.** `user_ids: [[6,0,[<agent>]]]`, plus
   `odoo_assignee_manual_uid` in the same array when the first step is `[you]`; a create sends the
-  same full set. Both uids resolve per the Always rule. Derived from the checklist, so it is shown in
+  same full set. Both uids resolve per the Odoo contract. Derived from the checklist, so it is shown in
   the gate rather than asked again.
 - **Subtasks: one per step.** `name` = `<step> — [agent|you]`, `description` = `<p>{detail}</p>`
   (no key prefix), `parent_id`, `sequence` = index × 10, `state=01_in_progress`,
@@ -107,48 +113,23 @@ card you found.
   detail above it. List extras and leave them alone; a rename asks once.
 - No file writes.
 
-Without Odoo: print the description HTML with the `Evidence` heading at the end, the step list with
-owners, and where to paste them.
+Odoo off: print the description HTML with the `Evidence` heading at the end, the step list with
+owners, and where to paste them. No card is created and nothing moves.
 
 ## Always
 
 - **Root.** Walk up from the current directory to the nearest `AGENTS.md` that holds
   `<!-- ai-daridev:start -->`. That directory is the root: read and write `docs/ai-daridev/` there
   and write nothing outside it. No block → ask once: create it here, use the git root, or chat-only.
-- **Config.** Read `odoo_project`, `odoo_stage_done`, `card_tag`, `card_tag_extra`,
-  `odoo_assignee_uid` and `odoo_assignee_manual_uid` from the block. No `odoo_project` → Odoo is off.
-  Resolve the project and the tags by exact name; 0 or 2+ matches → stop and list the real ones.
-  Resolve the stages **inside that project** (`project.task.type` whose `project_ids` contains it);
-  a stage name that also exists in other projects is not a match and must not stop the run.
-  Backlog stage = lowest `sequence`. Sprint column = the stage whose name matches `sprint backlog`
-  (case-insensitive). Default tag `backend`.
-- **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
-  the phase gate lists it and I say yes, or when the column and the state already disagree and I
-  approve the repair. Show the exact write in the gate; never move silently. Story's gate is the
-  exception: approving the checklist approves the move to the sprint column, in the same write.
-- **A move is one write.** `stage_id`, `state` and `date_end` in the same `odoo_update`:
-  → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
-  backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
-  (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
-- **Two users, one card.** The card always carries the agent user — `odoo_assignee_uid` when the
-  block declares it, else the MCP connection uid (`odoo_connection_info` → `uid`) — and carries
-  `odoo_assignee_manual_uid` only while the **next open step** is `[you]`. Next open = the lowest
-  `sequence` child whose state is not `1_done`/`1_canceled`; `02_changes_requested` is open, for its
-  own owner. A legacy card with no children takes the owner from its `<h2>Checklist</h2>` line; a
-  card with neither is left alone. Creates send the full set; updates diff with
-  `[[4, uid]]`/`[[3, uid]]`, never `[[6,0,[…]]]`, and add the agent when it is missing. Derived from
-  the checklist, so it is reported, not asked. No manual uid → no handoff: ask once and
-  offer to add `odoo_assignee_manual_uid` to the block, then one line in the output. A person I
-  name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
-- **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
-  `stage_id` → the sprint column (story), `state=03_approved` + `date_end` (close),
-  `state=02_changes_requested` (review) and the derived `user_ids` diff (every phase).
+- **Mode.** Cards only when this session is on Odoo, and the first line says which. Resolve it once
+  and keep it: an explicit `--odoo`/`--no-odoo` or my words beat everything; a named card means on;
+  this skill can open the session, so with no signal it asks once (default no).
+- **Odoo contract.** On → read `../ai-daridev-odoo/SKILL.md` and follow it for every Odoo rule:
+  config, project and stages, moves, assignees, who writes what and the evidence upload. Off → print
+  what it would write and write no card. Never restate those rules here.
 - **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
-- **Odoo unavailable** → print the handout and continue; the files are still written.
 - **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to
   reverse or a shared/ops contract. Everything else stays in the conversation.
 - **Fold-in.** If `docs/ai-daridev/` is missing and `docs/decisions/*.md` or `openspec/` exists, ask
   once to fold them into `decisions.md` and `spec.md`; the originals stay as frozen history.
 - **Never commit.** Never write secrets or client data into the three files.
-- **Cards** are found by `<p><em>ai-daridev: story/<slug></em></p>`; the legacy
-  `engram: story/<slug>` is accepted on read.

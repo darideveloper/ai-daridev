@@ -1,12 +1,16 @@
 ---
 name: ai-daridev-backlog
-description: Turns an idea into a short backlog of vertical one-line user stories and creates the Odoo cards. No acceptance criteria, no plan; that is /ai-daridev-story's job.
+description: Turns an idea into a short backlog of vertical one-line user stories and creates the cards when the session is on Odoo. No acceptance criteria, no plan; that is /ai-daridev-story's job.
 disable-model-invocation: true
 ---
 
 # Backlog
 
 Split what I tell you into vertical user stories. I bring the requirements; you order and slice them.
+
+**Mode first.** This phase opens the session, so when the turn does not already say it (`--odoo`,
+`--no-odoo`, or my words), ask once: `Odoo this session? [y/N]` — default no. Keep the answer for the
+session and report it in the first line, `Odoo: on · <project>` or `Odoo: off · chat-only`.
 
 ## Conversation
 
@@ -40,10 +44,11 @@ Expensive decisions: <the ones that apply, or "none">
 2. As a <actor>, I want <action>, so that <benefit>. Requires: #1
 ```
 
-## Cards (Odoo only)
+## Cards (Odoo on)
 
-On approval, create the cards in one ordered batch, story 1 first. Slug = kebab-case of the title,
-≤40 chars; skip a story whose card already carries `ai-daridev: story/<slug>` (or the legacy
+Odoo off → skip this section: print the block and the descriptions to paste, and write no cards. On
+Odoo, on approval, create the cards in one ordered batch, story 1 first. Slug = kebab-case of the
+title, ≤40 chars; skip a story whose card already carries `ai-daridev: story/<slug>` (or the legacy
 `engram: story/<slug>`).
 
 - `name`: the story title, with any `Requires: #N` removed. `project_id`: resolved. `stage_id`: the
@@ -73,7 +78,7 @@ On approval, create the cards in one ordered batch, story 1 first. Slug = kebab-
   block above already shows the `#N` positions. If I deny an approval mid-batch, stop and list what
   already exists so a re-run resumes without duplicates.
 
-Without Odoo: print the same block, the description to paste, and a reminder that the first column
+Odoo off: print the same block, the description to paste, and a reminder that the first column
 is where a new card goes; `Requires: #N` stays in the list as text. Write no files.
 
 ## Always
@@ -81,37 +86,15 @@ is where a new card goes; `Requires: #N` stays in the list as text. Write no fil
 - **Root.** Walk up from the current directory to the nearest `AGENTS.md` that holds
   `<!-- ai-daridev:start -->`. That directory is the root: read and write `docs/ai-daridev/` there
   and write nothing outside it. No block → ask once: create it here, use the git root, or chat-only.
-- **Config.** Read `odoo_project`, `odoo_stage_done`, `card_tag`, `card_tag_extra`,
-  `odoo_assignee_uid` and `odoo_assignee_manual_uid` from the block. No `odoo_project` → Odoo is off.
-  Resolve the project and the tags by exact name; 0 or 2+ matches → stop and list the real ones.
-  Resolve the stages **inside that project** (`project.task.type` whose `project_ids` contains it);
-  a stage name that also exists in other projects is not a match and must not stop the run.
-  Backlog stage = lowest `sequence`. Default tag `backend`.
-- **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
-  the phase gate lists it and I say yes, or when the column and the state already disagree and I
-  approve the repair. Show the exact write in the gate; never move silently.
-- **A move is one write.** `stage_id`, `state` and `date_end` in the same `odoo_update`:
-  → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
-  backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
-  (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
-- **Two users, one card.** The card always carries the agent user — `odoo_assignee_uid` when the
-  block declares it, else the MCP connection uid (`odoo_connection_info` → `uid`) — and carries
-  `odoo_assignee_manual_uid` only while the **next open step** is `[you]`. Next open = the lowest
-  `sequence` child whose state is not `1_done`/`1_canceled`; `02_changes_requested` is open, for its
-  own owner. A legacy card with no children takes the owner from its `<h2>Checklist</h2>` line; a
-  card with neither is left alone. Creates send the full set; updates diff with
-  `[[4, uid]]`/`[[3, uid]]`, never `[[6,0,[…]]]`, and add the agent when it is missing. Derived from
-  the checklist, so it is reported, not asked. No manual uid → no handoff: ask once and
-  offer to add `odoo_assignee_manual_uid` to the block, then one line in the output. A person I
-  name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
-- **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
-  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review).
+- **Mode.** Cards only when this session is on Odoo, and the first line says which. Resolve it once
+  and keep it: an explicit `--odoo`/`--no-odoo` or my words beat everything; a card reference means
+  on; this skill opens the session, so with no signal it asks once (default no).
+- **Odoo contract.** On → read `../ai-daridev-odoo/SKILL.md` and follow it for every Odoo rule:
+  config, project and stages, moves, assignees, who writes what and the evidence upload. Off → print
+  what it would write and write no card. Never restate those rules here.
 - **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
-- **Odoo unavailable** → print the handout and continue; the files are still written.
 - **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to
   reverse or a shared/ops contract. Everything else stays in the conversation.
 - **Fold-in.** If `docs/ai-daridev/` is missing and `docs/decisions/*.md` or `openspec/` exists, ask
   once to fold them into `decisions.md` and `spec.md`; the originals stay as frozen history.
 - **Never commit.** Never write secrets or client data into the three files.
-- **Cards** are found by `<p><em>ai-daridev: story/<slug></em></p>`; the legacy
-  `engram: story/<slug>` is accepted on read.

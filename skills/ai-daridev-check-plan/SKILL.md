@@ -168,11 +168,10 @@ A second run with no changes produces zero writes.
 ## Context
 
 - Root: nearest `AGENTS.md` with `<!-- ai-daridev:start -->`. Only needed in workflow mode.
-- Config: `odoo_project`, `odoo_stage_done`, `card_tag`, `card_tag_extra`, `odoo_assignee_uid`,
-  `odoo_assignee_manual_uid`; project by exact name, 0 or 2+ → stop. Stages are resolved inside the
-  project; a name shared with other projects is not a match. The agent uid is the block key when
-  declared, else the MCP connection uid (`odoo_connection_info` → `uid`); no manual uid → no
-  handoff, one line.
+- Mode: a card named in the invocation means Odoo is on; standalone never touches it. On → read
+  `../ai-daridev-odoo/SKILL.md` and follow it for every Odoo rule (config, project, stages, moves,
+  assignees). Off → render the plan and write nothing. Report the mode in the first line of workflow
+  mode.
 - Never move a card between stages, never mark it done or cancelled; the only `user_ids` write is the
   derived diff above.
 - Odoo unavailable → stay standalone and say so in one line.

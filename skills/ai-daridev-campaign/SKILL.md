@@ -22,7 +22,7 @@ is printed once and then it runs.
 
 - **Default selection** = every card in the in-progress column of `odoo_project`, paged with
   `limit`/`offset`; never an unbounded query. The project, the column and the tags come from the repo
-  block exactly as the other skills resolve them (0 or 2+ matches → ask once, never guess).
+  block exactly as the Odoo contract resolves them (0 or 2+ matches → stop and list).
 - Exclude archived (`1_done`) cards, hidden subtasks (`display_in_project=False`), the backlog stage
   and `odoo_stage_done`.
 - **Threshold:** a card whose next open step is `[you]` is a handoff, not unfinished automation —
@@ -91,8 +91,9 @@ step means; §5 is the only place this skill departs from them.
    ~400s. **Exhausted → park that card only** and continue with the next one; never halt the run.
 4. **Evidence refresh:** for every `1_done` step whose entry is a `local — not deployed` screenshot,
    capture the same surface on prod with `playwright-cli` — every capture under
-   `flock /tmp/opencode/playwright.lock` — and append a **new** entry for that step, keyed
-   `pN "<step>"`. Code lines and waivers are left alone. Never rewrite, never replace.
+   `flock /tmp/opencode/playwright.lock` — store the file under `docs/ai-daridev/evidence/` as pair
+   does, and append a **new** entry for that step, keyed `pN "<step>"`. Code lines and waivers are left
+   alone. Never rewrite, never replace.
 5. **Review:** a fresh subagent with no memory of the implementation reviews the card
    (`/ai-daridev-review`). Approved → it writes green + the move to `odoo_stage_done` in its own gate.
    Changes requested → **revert first**: `git -C <main> revert <sha>`, push, deploy wait, reset the
@@ -117,7 +118,7 @@ step means; §5 is the only place this skill departs from them.
 | all | moves only when I ask in this turn | the invocation is the turn |
 
 Everything else — evidence shape, assignees, step states, one write per move, no bare ids, the root and
-the config — is unchanged and owned by the six programs.
+the flow — is unchanged and owned by the six phase skills and the Odoo contract.
 
 ## 6. Rules
 
@@ -154,8 +155,12 @@ Next: flip the [you] steps above; archive <n> cards to unblock <list>.
 
 ## Always
 
-- **Root and config** follow the six single-card skills: the nearest `AGENTS.md` with the block, exact
-  project and tag names, stages resolved inside the project, `odoo_assignee_uid`/`odoo_assignee_manual_uid`.
+- **Root.** Walk up from the current directory to the nearest `AGENTS.md` that holds
+  `<!-- ai-daridev:start -->`; that directory is the root and `docs/ai-daridev/` is relative to it.
+- **Mode.** Always on: a campaign is defined by the board. No `odoo_project` → stop in one line.
+- **Odoo contract.** Read `../ai-daridev-odoo/SKILL.md` and follow it for every Odoo rule: config,
+  project and stages, moves, assignees, who writes what and the evidence upload. Never restate those
+  rules here.
 - **Odoo unavailable** → print the plan and every write it would make, and stop; a campaign cannot run
   blind.
 - **Never print a bare id.** A step is `p4 "<step>"`, a card is `#14842 "<name>"`.

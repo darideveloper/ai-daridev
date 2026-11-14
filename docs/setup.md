@@ -1,6 +1,7 @@
 # Setup
 
-Requirements: `bash` and `git`. Python, Node and Engram are not needed. Odoo is optional.
+Requirements: `bash` and `git`. Python, Node and Engram are not needed. Odoo is optional and chosen
+per session.
 `playwright-cli` is used for browser evidence; ImageMagick `convert` is optional for the screenshot
 cap.
 
@@ -32,7 +33,8 @@ A `git pull` is enough after the first install: skills and commands are symlinks
 
 ## Repo block
 
-Add the block to the `AGENTS.md` of the repo (or subproject) that uses the workflow:
+Add the block to the `AGENTS.md` of the repo (or subproject) that uses the workflow. It supplies the
+project and its parameters; whether a session writes cards is decided per session, never by the key.
 
 ```md
 <!-- ai-daridev:start -->
@@ -48,6 +50,11 @@ Add the block to the `AGENTS.md` of the repo (or subproject) that uses the workf
   that URL, four times. A 200 means the deploy is up; `deploy_expect` optionally names a commit
   marker the response must contain. No `deploy_url` → the campaign requests the app root instead.
   The key is read only by `/ai-daridev-campaign`; the other skills ignore it.
+- **The switch is per session, not the block.** `--odoo`/`--no-odoo` or your words decide it, a card
+  reference decides it, and `backlog`/`story` ask once (`Odoo this session? [y/N]`, default no).
+  `pair` with no card is chat-only and does not ask; `campaign` is always on. Each phase prints
+  `Odoo: on · acme-app` or `Odoo: off · chat-only` first, so the mode is visible. Two sessions in the
+  same repo can differ.
 - The block is also the anchor: the nearest one wins. `n8n-automations/ourlivesapp` inherits
   `n8n-automations`, unless `ourlivesapp/AGENTS.md` declares its own block — then it gets its own
   `docs/ai-daridev/` and its own Odoo project.
@@ -137,7 +144,8 @@ dependencies.
 2. Clone the project. Its `AGENTS.md` block is committed, so nothing to configure.
 3. No Engram, no uid file, no preflight. Open the agent in the repo and use a command.
 
-Without Odoo credentials the skills print the manual checklist and still write the three files.
+Without Odoo credentials the skills print the manual checklist and still write the three files;
+captures land in `docs/ai-daridev/evidence/` instead of an attachment.
 
 ## First run in an existing repo
 
@@ -152,6 +160,8 @@ skill that writes asks once: fold the old decisions and specs into `decisions.md
 | `/ai-daridev-pair` missing in OpenCode | run `./scripts/install.sh`; commands live in `~/.config/opencode/commands` |
 | Two entries for the same command in Claude Code | you have both a skill and `~/.claude/commands/<name>.md`; delete the command file |
 | The agent says the Odoo project has 0 or 2 matches | make `odoo_project` match exactly one project |
-| No cards are created | the repo block has no `odoo_project`, or the Odoo MCP is not registered |
+| No cards are created | the session is on Odoo off — say `--odoo`, or answer yes to the ask; or the block has no `odoo_project`, or the MCP is not registered |
+| Evidence is not on the card | the session was chat-only, or the upload failed (`EVIDENCE FAILED`); the file is under `docs/ai-daridev/evidence/` |
+| `docs/ai-daridev/evidence/` shows in `git status` | commit its `.gitignore` (`*` and `!.gitignore`); the images themselves stay untracked |
 | A refined card stays in Backlog | the project has no stage matching `Sprint Backlog`, or the card was not in the backlog stage |
 | Files land in the wrong repo | a parent `AGENTS.md` has the block; add one where you want the root |

@@ -18,11 +18,11 @@ The agent splits, proposes and writes code in small steps. You decide.
 
 | Command | Does | Never does |
 |---|---|---|
-| `/ai-daridev-backlog` | Turns an idea into ≤10 vertical, one-line stories, creates the cards and links each `Requires: #N` as Blocked By. | Invent requirements, technical stories, estimates. |
+| `/ai-daridev-backlog` | Turns an idea into ≤10 vertical, one-line stories, creates the cards when Odoo is on and links each `Requires: #N` as Blocked By. | Invent requirements, technical stories, estimates. |
 | `/ai-daridev-story` | Adds Given/When/Then criteria and a step checklist to **one** card, one hidden subtask per step, and moves it to the sprint column. | Write code. |
-| `/ai-daridev-pair` | Drives: one test → red → minimum code → green, stops after every step and embeds a screenshot of the shipped UI per step in the card description. Plan-and-execute for non-code work. | Commit, edit tests to pass, add what you didn't ask for, move a card without your yes (starting the pair is the yes), start a blocked card. |
+| `/ai-daridev-pair` | Drives: one test → red → minimum code → green, stops after every step and captures a screenshot of the shipped UI per step into the card or the local evidence folder. Plan-and-execute for non-code work. | Commit, edit tests to pass, add what you didn't ask for, move a card without your yes (starting the pair is the yes), start a blocked card. |
 | `/ai-daridev-review` | Grades someone else's card against its criteria, steps and evidence, then writes the verdict and the move on approval. | Move a card without approval, invent a verdict, mark work done. |
-| `/ai-daridev-archive` | Gates on the validated column and the green dot, marks the card done so Odoo frees its dependents, then appends the retro to `docs/ai-daridev/log.md`. | Move cards, cancel, create cards, invent a retro, turn a card green. |
+| `/ai-daridev-archive` | With Odoo on, gates on the validated column and the green dot, marks the card done so Odoo frees its dependents, then appends the retro to `docs/ai-daridev/log.md`; with Odoo off the retro comes from the session. | Move cards, cancel, create cards, invent a retro, turn a card green. |
 | `/ai-daridev-check-plan` | Audits any plan in detail, fixes the gaps one question at a time and renders an ordered checklist. Outside the flow; with a named card it also updates the card checklist, its subtasks and the derived assignees. | Invent requirements, write files, move cards. |
 | `/ai-daridev-campaign` | Runs the whole flow over a batch, unattended: one worktree per card, pair → integrate → deploy → review → archive, one gate at the start, parks what needs you. Outside the flow. | Waive evidence, archive a drifted card, cancel a card, run destructive non-code steps. |
 
@@ -34,9 +34,14 @@ checklist is approved, and in progress when the pair starts. Assignees are deriv
 checklist — the card follows whose step is next — so they are written with the step and reported,
 not asked.
 
+**Size decides how much you run.** A small change is `/ai-daridev-pair` alone on a pasted one-liner:
+criteria, one plan gate, red → green, the spec line, then `/ai-daridev-archive` for the log. The full
+chain is for work that must be split into steps or handed to a second agent across sessions.
+
 ## What the agent writes
 
-**In Odoo (optional):** one card per story — backlog cards at `backlog`, refined cards in the sprint
+**In Odoo (only when the session is on):** one card per story — backlog cards at `backlog`, refined
+cards in the sprint
 column, criteria and checklist in the description, one hidden subtask per step
 (`display_in_project=False`) with its `[agent]`/`[you]` assignee, real **Blocked By** links for
 `Requires: #N`, one dated **Evidence** section at the end of the card description — one entry per
@@ -57,6 +62,10 @@ assignees follow the checklist: agent user always, plus you while the next open 
 The repo root is the nearest `AGENTS.md` that holds an `ai-daridev:start` block, so a subfolder can
 inherit the suite's memory or declare its own. Files are created on first write. Nothing is written
 above that root. They are committed with your code, by you.
+
+Evidence is not one of the three: captures live in `docs/ai-daridev/evidence/<date>-<slug>/`, kept
+locally behind a `.gitignore` (`*` and `!.gitignore`), uploaded to the card only when Odoo is on. A
+skill never commits, and review never captures — it reads what pair recorded.
 
 ## Install
 
@@ -80,9 +89,9 @@ nothing else and never edits MCP or JSON config.
 
 A `git pull` updates everything: skills and commands are symlinks.
 
-## Odoo is optional
+## Odoo is per session
 
-Declare the project in the repo's `AGENTS.md`:
+Declare the project in the repo's `AGENTS.md`. The block supplies the parameters, never the switch:
 
 ```md
 <!-- ai-daridev:start -->
@@ -93,8 +102,13 @@ Declare the project in the repo's `AGENTS.md`:
 <!-- ai-daridev:end -->
 ```
 
-- `odoo_project` omitted → no cards, no board; stories live in the conversation and only the three
-  files are written.
+- **Cards only when the session is on.** `--odoo` / `--no-odoo`, or saying it, decides the session; a
+  card reference decides it too. `backlog` and `story` open a session and ask once,
+  `Odoo this session? [y/N]`, default no. `pair` with no card is chat-only and does not ask.
+  `campaign` is always on. Every phase prints `Odoo: on · acme-app` or `Odoo: off · chat-only` as its
+  first line, so the mode is never a guess.
+- Odoo off → no cards, no board: stories live in the conversation and only the three files are
+  written. Odoo on → the card, subtasks, evidence and blocking links described above.
 - Backlog stage = the project's first stage by sequence. `odoo_stage_done` is the validated column:
   review moves an approved card there with the green dot, and archive refuses to close a card that is
   not green in that column. Pair unblocks on `1_done`, not on the column. `odoo_stage_done` resolves
@@ -103,7 +117,8 @@ Declare the project in the repo's `AGENTS.md`:
   them.
 - Evidence attachments use `ir.attachment` with read/create only; the agent's Odoo allowlist must
   include it. They are created on the **card** (`res_id` = the card, never a subtask) and embedded in
-  the description with `/web/image/<id>`. Browser screenshots come from `playwright-cli`.
+  the description with `/web/image/<id>`. Browser screenshots come from `playwright-cli`, and the
+  same file is kept under `docs/ai-daridev/evidence/` either way.
 - Tags are `frontend`, `backend`, `infrastructure`, `script`, `workflow`; `card_tag` is the repo
   default. When the block declares `card_tag_extra`, every card carries that tag too.
 - **Two users, one card.** The card carries the agent user — the MCP connection user, or

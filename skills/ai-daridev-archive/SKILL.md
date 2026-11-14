@@ -1,6 +1,6 @@
 ---
 name: ai-daridev-archive
-description: Closes a finished story or sprint. Gates on the validated column and the green dot, marks the card done (`1_done`) so Odoo frees its dependents, and appends the retro to docs/ai-daridev/log.md. Never moves cards, never turns one green.
+description: Closes a finished story or sprint. With Odoo on it gates on the validated column and the green dot, marks the card done (`1_done`) so Odoo frees its dependents, and appends the retro to docs/ai-daridev/log.md; with Odoo off it appends the retro from the session. Never moves cards, never turns one green.
 disable-model-invocation: true
 ---
 
@@ -10,19 +10,23 @@ Close work that is already finished. The card and the files are the record; neve
 
 ## Inputs
 
-- `/ai-daridev-archive <slug>` → that story. It must be in `odoo_stage_done` and green
+- `/ai-daridev-archive <slug>` → that story. On Odoo it must be in `odoo_stage_done` and green
   (`03_approved`); the gate stops if it is not.
 - Bare → green cards in `odoo_stage_done` that are not yet in `docs/ai-daridev/log.md`; ask one,
   all, or cancel. "All" means every green card; a gray card is listed with the reason and skipped.
   Never assume "all". No `odoo_stage_done` → bare mode needs a slug or a pasted story; with a slug,
-  the gate asks once for the validated column. No Odoo → require a slug or a pasted story.
+  the gate asks once for the validated column.
+- **Odoo off** → a slug or the story pasted in this turn is enough. There is no card and no column to
+  gate, so the retro is built from the session and step 2 collapses to showing the block.
 
 ## Steps
 
-1. **Load and gate.** Read the card (`name`, `stage_id`, `state`, children, `depend_on_ids`,
-   `dependent_ids`, `date_end`, `write_date`), `docs/ai-daridev/spec.md` and `decisions.md`. Also
+1. **Load and gate.** On Odoo, read the card (`name`, `stage_id`, `state`, children, `depend_on_ids`,
+   `dependent_ids`, `date_end`, `write_date`); off, there is no card and the story comes from this
+   session. Read `docs/ai-daridev/spec.md` and `decisions.md` either way. Also
    flag, without fixing: a decision that contradicts the description (quote both) and a behavior
-   change with no spec entry. Stop and list what is wrong when the stage is not `odoo_stage_done`
+   change with no spec entry. On Odoo, stop and list what is wrong when the stage is not
+   `odoo_stage_done`
    (no key → ask once which column means validated, use it for the session), the state is not
    `03_approved` or `1_done`, or a child is not `1_done`/`1_canceled`. A gray card (`01_in_progress`)
    in the validated column gets one line: review it, or ask me for the green dot — archive never
@@ -41,9 +45,10 @@ Close work that is already finished. The card and the files are the record; neve
    first, or cancel it by hand if it never happened; archive does neither. When the card was
    self-closed and never reviewed, recommend `/ai-daridev-review` before archiving. Wait for my yes;
    with drift only
-   `archive anyway` counts, and that yes is the waiver for the retro.
-3. **Apply.** Set `state=1_done` (and `date_end` if empty), re-read, and confirm; if it fails, stop
-   before the log.
+   `archive anyway` counts, and that yes is the waiver for the retro. With no card, show the retro
+   block and skip the writes — there is nothing to gate.
+3. **Apply.** On Odoo, set `state=1_done` (and `date_end` if empty), re-read, and confirm; if it fails,
+   stop before the log. With no card, skip to the retro.
 4. **Print the retro**:
 
 ```
@@ -53,6 +58,7 @@ Decisions: <dated, each with its Why>
 Follow-ups: <or "none">
 Plan: <done>/<total> steps · dropped <n> · open 0
 Card: task <id> · state 1_done · end <date_end or date_last_stage_update>
+Card: none (chat-only)          <!-- Odoo off: replaces the line above -->
 Drift: <decision and spec drift, then "no evidence on p4", or "none">
 ```
 
@@ -69,6 +75,8 @@ Drift: <decision and spec drift, then "no evidence on p4", or "none">
 - **Evidence is mandatory in pair and review, advisory here.** Archive never refuses a `1_done` step
   for a missing entry and never fixes it — the card's `Evidence` tail, waivers and drops belong to
   pair and review; it only names the step in the gate and in the retro.
+- **A cardless run gates nothing.** Odoo off → no stage, no evidence check, no dependents: the retro
+  is the record and `log.md` is the only write.
 - Read `docs/ai-daridev/spec.md` and `decisions.md` first; the retro quotes them, it does not
   reinvent them.
 
@@ -77,38 +85,15 @@ Drift: <decision and spec drift, then "no evidence on p4", or "none">
 - **Root.** Walk up from the current directory to the nearest `AGENTS.md` that holds
   `<!-- ai-daridev:start -->`. That directory is the root: read and write `docs/ai-daridev/` there
   and write nothing outside it. No block → ask once: create it here, use the git root, or chat-only.
-- **Config.** Read `odoo_project`, `odoo_stage_done`, `card_tag`, `card_tag_extra`,
-  `odoo_assignee_uid` and `odoo_assignee_manual_uid` from the block. No `odoo_project` → Odoo is off.
-  Resolve the project and the tags by exact name; 0 or 2+ matches → stop and list the real ones.
-  Resolve the stages **inside that project** (`project.task.type` whose `project_ids` contains it);
-  a stage name that also exists in other projects is not a match and must not stop the run.
-  Backlog stage = lowest `sequence`. Default tag `backend`.
-- **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
-  the phase gate lists it and I say yes, or when the column and the state already disagree and I
-  approve the repair. Show the exact write in the gate; never move silently.
-- **A move is one write.** `stage_id`, `state` and `date_end` in the same `odoo_update`:
-  → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
-  backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
-  (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
-- **Two users, one card.** The card always carries the agent user — `odoo_assignee_uid` when the
-  block declares it, else the MCP connection uid (`odoo_connection_info` → `uid`) — and carries
-  `odoo_assignee_manual_uid` only while the **next open step** is `[you]`. Next open = the lowest
-  `sequence` child whose state is not `1_done`/`1_canceled`; `02_changes_requested` is open, for its
-  own owner. A legacy card with no children takes the owner from its `<h2>Checklist</h2>` line; a
-  card with neither is left alone. Creates send the full set; updates diff with
-  `[[4, uid]]`/`[[3, uid]]`, never `[[6,0,[…]]]`, and add the agent when it is missing. Derived from
-  the checklist, so it is reported, not asked. Archive writes no assignee. A person I
-  name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
-- **Agents write:** archive writes `state=1_done` and `date_end` (only when empty); the description
-  and its `Evidence` tail, subtask states, `state=03_approved` and `state=02_changes_requested`
-  belong to the other skills.
+- **Mode.** Cards only when this session is on Odoo, and the first line says which. A card in the
+  invocation means on; `--odoo`/`--no-odoo` or my words beat that; bare archive lists cards, so it is
+  on, and off needs a slug or a pasted story.
+- **Odoo contract.** On → read `../ai-daridev-odoo/SKILL.md` and follow it for every Odoo rule:
+  config, project and stages, moves, assignees, who writes what and the evidence upload. Never restate
+  those rules here.
 - **One approval gate per phase.** The done write and the log are one gate; nothing else asks.
-- **Odoo unavailable** → print the close checklist (`1_done`, the date, the dependents it would
-  free) and write only the files; I set done by hand.
 - **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to
   reverse or a shared/ops contract. Everything else stays in the conversation.
 - **Fold-in.** If `docs/ai-daridev/` is missing and `docs/decisions/*.md` or `openspec/` exists, ask
   once to fold them into `decisions.md` and `spec.md`; the originals stay as frozen history.
 - **Never commit.** Never write secrets or client data into the three files.
-- **Cards** are found by `<p><em>ai-daridev: story/<slug></em></p>`; the legacy
-  `engram: story/<slug>` is accepted on read.

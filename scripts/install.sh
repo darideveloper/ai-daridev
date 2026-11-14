@@ -144,7 +144,7 @@ for f in "${INSTRUCTIONS[@]}"; do migrate_block "$f"; done
 
 # 5. MCP
 say ""
-say "Odoo is optional. To enable cards, register the MCP in the agent you use:"
+say "Odoo is optional and chosen per session (--odoo / --no-odoo). To use it, register the MCP:"
 say "  OpenCode  ~/.config/opencode/opencode.json, under mcp.servers:"
 say '    "odoo": { "type": "local", "command": ["<path>/mcp.sh"], "disabled": false }'
 say "  Claude    claude mcp add --scope user odoo -- <path>/mcp.sh"
