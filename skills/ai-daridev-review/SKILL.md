@@ -30,9 +30,10 @@ decide. One card per run unless I ask for a batch.
    and the child's `attachment_ids` with `res_id=<subtask>`.
 5. **Propose the writes**, then one gate:
    - Approved → one `odoo_update` sets `state=03_approved` + `date_end` (the green dot) and moves
-     the card `<current> → <odoo_stage_done>`, so it lands validated and not archived. A step that is
-     not `1_done`/`1_canceled` blocks the green dot: list it instead of approving. The move is a
-     normal part of the gate — if I say "don't move", write the green dot alone.
+     the card `<current> → <odoo_stage_done>`, so it lands validated; archiving is a separate step I
+     run later. A step that is not `1_done`/`1_canceled` blocks the green dot: list it instead of
+     approving. The move is a normal part of the gate — if I say "don't move", write the green dot
+     alone.
    - Changes requested → the failing steps and the card to `state=02_changes_requested`, plus the
      review block. If the card is in `odoo_stage_done`, the same write moves it back to the
      in-progress column — the single stage inside the project whose name matches `in progress`
@@ -48,7 +49,8 @@ decide. One card per run unless I ask for a batch.
    not there yet → the card write (one `odoo_update`: `state` + `date_end` + `stage_id` +
    the assignee diff) → the other new steps → their states (one `odoo_update` with all the ids) →
    the review section. Re-read `write_date` first; if it changed, show the difference and re-apply.
-7. Print the verdict and the checklist with the review states.
+7. Print the verdict and the checklist with the review states. Stop here: archiving is my next move,
+   not yours, so never prompt for it or write `docs/ai-daridev/log.md`.
 
 ## Review block
 
@@ -106,7 +108,8 @@ tail.
   name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
 - **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
   `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review) and the derived
-  `user_ids` diff (every phase). Review never writes the `Evidence` tail.
+  `user_ids` diff (every phase). Review never writes the `Evidence` tail, and never writes or offers
+  `docs/ai-daridev/log.md`: the retro belongs to `/ai-daridev-archive`.
 - **One approval gate per phase.** Structure and the card write ask once; the rest is reported, not
   asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.

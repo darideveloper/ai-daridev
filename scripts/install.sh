@@ -26,7 +26,7 @@ Work is tracked with the `ai-daridev` skills, invoked manually: backlog → stor
 archive. The repo root is the nearest `AGENTS.md` holding an `ai-daridev:start` block; read it
 before writing. Move an Odoo card between stages, or assign it, only when I ask or approve it
 (starting pair on a card counts as asking), and always in the same write as its state. Only
-`/ai-daridev-archive` may set a card `1_done`; hidden
+`/ai-daridev-archive` may set a card `1_done` or write `docs/ai-daridev/log.md`; hidden
 checklist steps use `1_done` when a step passes. Never set `1_canceled` unless I ask or approve (the
 hidden dropped-step marker is the exception).
 Repo memory lives in `docs/ai-daridev/` and is committed by a human.

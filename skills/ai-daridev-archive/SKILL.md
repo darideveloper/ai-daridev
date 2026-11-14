@@ -64,7 +64,8 @@ Drift: <decision and spec drift, then "no evidence on p4", or "none">
 ## Rules
 
 - Archive never writes `stage_id`: the card is already green in `odoo_stage_done`. Never set
-  `1_canceled`. Archive is the only skill that writes a **card** `1_done`, and only after the gate.
+  `1_canceled`. Archive is the only skill that writes a **card** `1_done` or `log.md`, and only
+  after the gate.
 - **Evidence is mandatory in pair and review, advisory here.** Archive never refuses a `1_done` step
   for a missing entry and never fixes it — the card's `Evidence` tail, waivers and drops belong to
   pair and review; it only names the step in the gate and in the retro.

@@ -18,6 +18,7 @@ You drive, I navigate. One story per session, one step at a time, and you stop a
   `Blocked by #<id> "<name>" — <stage> · <state>.` and stop before proposing a mode or a test list.
   Then say what unblocks it: in `odoo_stage_done` → archive it; in the Cancelled stage → re-plan; in
   another later stage → propose moving it back or finishing it; earlier → finish it, then archive it.
+  That guidance is about the blocker, never the card you are pairing.
   A `1_canceled` blocker also says the dependency needs re-planning. A blocker in another project, or
   one that is a hidden subtask, stops and reports (a subtask as its parent card). No Odoo → say
   dependencies cannot be verified and continue.
@@ -176,8 +177,10 @@ decide. Refactor only with tests green and never mixed with new functionality.
 3. `docs/ai-daridev/spec.md`: if the behavior changed, add or replace **one sentence** in the right
    domain section (`## <domain>`), creating the file with `# <project> spec` if needed. Show the line
    in the close block.
-4. Print what shipped, the decisions saved, the spec line, the card `#<id> "<name>"` and state, the
-   step summary, and the commit message I should use. **Never commit.**
+4. Print the handoff summary: what shipped, the decisions saved, the spec line, the card
+   `#<id> "<name>"` and state, the step summary, and the commit message I should use. It is
+   conversation-only — never copy it into `docs/ai-daridev/log.md`; `/ai-daridev-archive` writes the
+   retro. **Never commit.**
 
 Never write the description above the `Evidence` heading; it belongs to `/ai-daridev-story` and
 `/ai-daridev-review`. You own the `<h2>Evidence (ai-daridev)</h2>` tail at the very end of the card
@@ -224,7 +227,8 @@ line) and write only the files.
 - **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
   `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review) and the derived
   `user_ids` diff (every phase). Never write `depend_on_ids`; only backlog and story add links, and
-  nothing removes one.
+  nothing removes one. Never write or offer `docs/ai-daridev/log.md`: the retro belongs to
+  `/ai-daridev-archive`.
 - **One approval gate per phase.** Structure, a move and the close ask once; state changes are
   reported, not asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.
