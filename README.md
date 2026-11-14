@@ -19,7 +19,7 @@ The agent splits, proposes and writes code in small steps. You decide.
 | Command | Does | Never does |
 |---|---|---|
 | `/ai-daridev-backlog` | Turns an idea into ≤10 vertical, one-line stories, creates the cards and links each `Requires: #N` as Blocked By. | Invent requirements, technical stories, estimates. |
-| `/ai-daridev-story` | Adds Given/When/Then criteria and a step checklist to **one** card, one hidden subtask per step. | Write code. |
+| `/ai-daridev-story` | Adds Given/When/Then criteria and a step checklist to **one** card, one hidden subtask per step, and moves it to the sprint column. | Write code. |
 | `/ai-daridev-pair` | Drives: one test → red → minimum code → green, stops after every step and embeds a screenshot of the shipped UI per step in the card description. Plan-and-execute for non-code work. | Commit, edit tests to pass, add what you didn't ask for, move a card without your yes (starting the pair is the yes), start a blocked card. |
 | `/ai-daridev-review` | Grades someone else's card against its criteria, steps and evidence, then writes the verdict and the move on approval. | Move a card without approval, invent a verdict, mark work done. |
 | `/ai-daridev-archive` | Gates on the validated column and the green dot, marks the card done so Odoo frees its dependents, then appends the retro to `docs/ai-daridev/log.md`. | Move cards, cancel, create cards, invent a retro, turn a card green. |
@@ -27,22 +27,24 @@ The agent splits, proposes and writes code in small steps. You decide.
 | `/ai-daridev-campaign` | Runs the whole flow over a batch, unattended: one worktree per card, pair → integrate → deploy → review → archive, one gate at the start, parks what needs you. Outside the flow. | Waive evidence, archive a drifted card, cancel a card, run destructive non-code steps. |
 
 Each phase ends waiting for your approval — except a campaign, which takes its one approval at the
-start and then runs. Moves are proposed, never silent: a card changes column
-only when you ask or approve it, in the same write as its state, and archive is the only phase that
-marks a card done. Assignees are derived from the checklist — the card follows whose step is next —
-so they are written with the step and reported, not asked.
+start and then runs. Moves are proposed, never silent: a card changes column only when you ask or
+approve it, in the same write as its state, and archive is the only phase that marks a card done. A
+story's gate and the start of a pair are that ask: the card lands in the sprint column when its
+checklist is approved, and in progress when the pair starts. Assignees are derived from the
+checklist — the card follows whose step is next — so they are written with the step and reported,
+not asked.
 
 ## What the agent writes
 
-**In Odoo (optional):** one card per story — backlog cards at `backlog`, criteria and checklist in
-the description, one hidden subtask per step (`display_in_project=False`) with its
-`[agent]`/`[you]` assignee, real **Blocked By** links for `Requires: #N`, one dated **Evidence**
-section at the end of the card description — one entry per step, keyed `pN "<step>"`, with the final
-UI screenshot inline and on prod — `state=03_approved` + `date_end` when a story closes, and
-`state=1_done` at archive, which frees its dependents. `stage_id` is written only when you ask or
-approve a move (starting pair on a card counts as asking, and it lands in the in-progress column),
-always together with its state. The card's assignees follow the checklist: agent
-user always, plus you while the next open step is yours.
+**In Odoo (optional):** one card per story — backlog cards at `backlog`, refined cards in the sprint
+column, criteria and checklist in the description, one hidden subtask per step
+(`display_in_project=False`) with its `[agent]`/`[you]` assignee, real **Blocked By** links for
+`Requires: #N`, one dated **Evidence** section at the end of the card description — one entry per
+step, keyed `pN "<step>"`, with the final UI screenshot inline and on prod — `state=03_approved` +
+`date_end` when a story closes, and `state=1_done` at archive, which frees its dependents. `stage_id`
+is written only when you ask or approve a move (approving the story checklist lands it in the sprint
+column, starting pair in the in-progress column), always together with its state. The card's
+assignees follow the checklist: agent user always, plus you while the next open step is yours.
 
 **In the repo:** three files under `docs/ai-daridev/` at the repo root.
 

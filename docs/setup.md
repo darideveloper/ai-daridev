@@ -65,6 +65,10 @@ Add the block to the `AGENTS.md` of the repo (or subproject) that uses the workf
   column. It must match exactly one stage **inside the project**; a stage name shared with other
   projects is not ambiguous. Archived cards (`1_done`) are hidden by the default board filter;
   enable `Closed Tasks` to see them.
+- The **sprint column** needs no key: it is the stage whose name matches `Sprint Backlog`
+  (case-insensitive). Approving a story's checklist moves the card there from the backlog stage only,
+  and only while the card is open (`01_in_progress`); without that stage the skill asks once which
+  column to use and otherwise leaves the card where it is.
 - Existing 3.x blocks work unchanged; unknown keys are ignored.
 
 ## Odoo MCP
@@ -149,4 +153,5 @@ skill that writes asks once: fold the old decisions and specs into `decisions.md
 | Two entries for the same command in Claude Code | you have both a skill and `~/.claude/commands/<name>.md`; delete the command file |
 | The agent says the Odoo project has 0 or 2 matches | make `odoo_project` match exactly one project |
 | No cards are created | the repo block has no `odoo_project`, or the Odoo MCP is not registered |
+| A refined card stays in Backlog | the project has no stage matching `Sprint Backlog`, or the card was not in the backlog stage |
 | Files land in the wrong repo | a parent `AGENTS.md` has the block; add one where you want the root |

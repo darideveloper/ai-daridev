@@ -1,7 +1,8 @@
 # Workflow
 
 Five phases, one story at a time. Each phase ends waiting for your approval. A card changes column
-only when you ask or approve it, and always in one write that keeps the column and the state in sync.
+only when you ask or approve it — a story's gate and the start of a pair are that ask — and always in
+one write that keeps the column and the state in sync.
 
 ## The rules that apply everywhere
 
@@ -12,11 +13,16 @@ only when you ask or approve it, and always in one write that keeps the column a
   conversation and only the three files are written.
 - **Moves and assignees are proposed, not assumed.** Move a card only when you ask in this turn,
   when the phase gate lists it and you say yes, or when the column and the state already disagree
-  and you approve the repair. Show the exact write in the gate; never move silently. Pair's start is
-  the exception: invoking `/ai-daridev-pair` on a card is the ask, and the card goes to the
-  in-progress column in one announced write. That column is the single stage inside the project whose
+  and you approve the repair. Show the exact write in the gate; never move silently. Story's gate is
+  one exception: approving the checklist approves the move to the sprint column, in one announced
+  write. That column is the single stage inside the project whose name matches `sprint backlog`
+  (case-insensitive); 0 or 2+ matches → ask once, never guess. The move is allowed only from the
+  backlog stage, on an open card (`state=01_in_progress`): a card already in the sprint column, in a
+  later stage or in any other state stays put and the skill reports "refined in place".
+  Pair's start is the other exception: invoking `/ai-daridev-pair` on a card is the ask, and the card
+  goes to the in-progress column. That column is the single stage inside the project whose
   name matches `in progress` (case-insensitive); 0 or 2+ matches → ask once, never guess. The
-  assignee reconcile is the other exception: it only mirrors the checklist owner, so it rides the
+  assignee reconcile is the last one: it only mirrors the checklist owner, so it rides the
   step's own write and is reported.
 - **A move is one write.** `stage_id`, `state` and `date_end` go in the same `odoo_update`:
   → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
@@ -37,8 +43,8 @@ only when you ask or approve it, and always in one write that keeps the column a
 - **Who writes what.** Archive is the only skill that sets a **card** `1_done`, after its gate; no
   skill sets `1_canceled` on a visible card unless you ask or approve it, and dependents stay
   blocked. The agent writes the description (story), its `Evidence` tail (pair), subtask states,
-  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review) and
-  `state=1_done` (archive, on the card).
+  `stage_id` → the sprint column (story), `state=03_approved` + `date_end` (close),
+  `state=02_changes_requested` (review) and `state=1_done` (archive, on the card).
 - **One gate per phase.** Structure changes, a column move and archive's done write ask once; the
   other state changes are reported.
 - **Evidence.** Every `1_done` step has an entry in the card's `Evidence` section: a screenshot by
@@ -82,7 +88,9 @@ the related decisions, then proposes:
 
 As many criteria and steps as the story needs; no count cap. One gate, then the card description is
 regenerated (`<h2>Acceptance criteria</h2>`, `<h2>Checklist</h2>`, no status) and one hidden subtask
-per step is created, each carrying its `[agent]`/`[you]` owner. The card gets the agent user, plus
+per step is created, each carrying its `[agent]`/`[you]` owner. In the same write the card moves to
+the sprint column (`stage_id`, `state=01_in_progress`), from the backlog stage only, on an open card:
+a card already refined or further along is left in place. The card gets the agent user, plus
 you when the first step is `[you]`. Anything from `<h2>Evidence (ai-daridev)</h2>` to the end is
 copied byte-for-byte. Existing children are matched by name, updated, never deleted.
 
@@ -193,8 +201,9 @@ Subtask description (story and check-plan own the detail; pair never writes it):
 
 - Subtasks: `name` = `<step> — [agent|you]` (the owner lives here, so it survives a restart;
   legacy names without the suffix still match), `description` = the detail, `parent_id`,
-  `sequence = index × 10`, `state=01_in_progress`, `display_in_project=False`, never `project_id`
-  or `stage_id`. The subtask carries its owner's uid from creation; the card is the turn signal.
+  `sequence = index × 10`, `state=01_in_progress`, `display_in_project=False`, never the subtask's
+  `project_id` or `stage_id`. The subtask carries its owner's uid from creation; the card is the turn
+  signal.
 - Assignees: the card always carries the agent user, and you while the next open step is `[you]`;
   the write rides the step's own update, diff-style (`[[4, uid]]` / `[[3, uid]]`), never `[[6,0,…]]`.
 - Evidence: one dated entry per attempt, keyed `pN "<step>"`, on the card; never overwrite an

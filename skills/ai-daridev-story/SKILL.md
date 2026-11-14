@@ -1,6 +1,6 @@
 ---
 name: ai-daridev-story
-description: Refines ONE user story into acceptance criteria and a step checklist on its Odoo card, with one hidden subtask per step. Writes no code; implementation is /ai-daridev-pair's job.
+description: Refines ONE user story into acceptance criteria and a step checklist on its Odoo card, with one hidden subtask per step, and moves it to the sprint column. Writes no code; implementation is /ai-daridev-pair's job.
 disable-model-invocation: true
 ---
 
@@ -63,11 +63,20 @@ As a <actor>, I want <action>, so that <benefit>.
 
 ## The card
 
-Write only after the checklist is approved. One gate: show the card, its checklist, its assignees and
-the exact writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of the card you found.
+Write only after the checklist is approved. One gate: show the card, its checklist, its assignees, the
+column move and the exact writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of the
+card you found.
 
+- **Move to the sprint column: default, in the gate.** Resolve the single stage inside the project
+  whose name matches `sprint backlog` (case-insensitive); 0 or 2+ → ask once which stage and use that
+  answer for the run. In the same `odoo_update` as the description: `stage_id=<stage>,
+  state=01_in_progress`, no `date_end`. Move only from the backlog stage, on an open card
+  (`state=01_in_progress`): already in the sprint column → skip and report; any other stage, or any
+  other state → leave it and report "refined in place". Say "keep it in Backlog" in the turn to opt
+  out. No stage resolved → the card stays put, reported in one line.
 - Find the card by `ai-daridev: story/<slug>` (or legacy `engram: story/<slug>`). Not found → ask
-  "create it in the backlog stage?" and create it with `/ai-daridev-backlog`'s card rules.
+  "create it in the sprint column?" and create it with `/ai-daridev-backlog`'s card rules, except
+  `stage_id` = that stage and `state=01_in_progress`: the create is the move.
 - A blocker is one of the exact writes: `odoo_update` with `depend_on_ids: [[4, <id>]]`, in the same
   gate. Never regenerate the description to carry it.
 - **Regenerate the description** (never append), escaping `<`, `>` and `&`, in this order:
@@ -90,7 +99,7 @@ the exact writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of
   `user_ids: [[6,0,[<id>]]]` — the agent user for a `[agent]` step and the
   `odoo_assignee_manual_uid` for a `[you]` step; no manual uid → omit it on the `[you]` steps. If I
   name an assignee for a step, resolve the exact `res.users` name or login and use that id instead.
-  `display_in_project=False`. Never write `project_id` or `stage_id`. Read one back: if
+  `display_in_project=False`. Never write the subtask's `project_id` or `stage_id`. Read one back: if
   `display_in_project` is not false, stop and report.
 - Match existing children by exact name, ignoring a trailing ` — [agent]`/`— [you]`: update the ones
   that changed (rewriting the name in the new form), create the missing ones, never delete. On a
@@ -111,10 +120,12 @@ owners, and where to paste them.
   Resolve the project and the tags by exact name; 0 or 2+ matches → stop and list the real ones.
   Resolve the stages **inside that project** (`project.task.type` whose `project_ids` contains it);
   a stage name that also exists in other projects is not a match and must not stop the run.
-  Backlog stage = lowest `sequence`. Default tag `backend`.
+  Backlog stage = lowest `sequence`. Sprint column = the stage whose name matches `sprint backlog`
+  (case-insensitive). Default tag `backend`.
 - **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
   the phase gate lists it and I say yes, or when the column and the state already disagree and I
-  approve the repair. Show the exact write in the gate; never move silently.
+  approve the repair. Show the exact write in the gate; never move silently. Story's gate is the
+  exception: approving the checklist approves the move to the sprint column, in the same write.
 - **A move is one write.** `stage_id`, `state` and `date_end` in the same `odoo_update`:
   → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
   backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
@@ -130,8 +141,8 @@ owners, and where to paste them.
   offer to add `odoo_assignee_manual_uid` to the block, then one line in the output. A person I
   name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
 - **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
-  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review) and the derived
-  `user_ids` diff (every phase).
+  `stage_id` → the sprint column (story), `state=03_approved` + `date_end` (close),
+  `state=02_changes_requested` (review) and the derived `user_ids` diff (every phase).
 - **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.
 - **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to
