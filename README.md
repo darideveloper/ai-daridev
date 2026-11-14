@@ -23,21 +23,23 @@ The agent splits, proposes and writes code in small steps. You decide.
 | `/ai-daridev-pair` | Drives: one test → red → minimum code → green, stops after every step and embeds a screenshot of the shipped UI per step in the card description. Plan-and-execute for non-code work. | Commit, edit tests to pass, add what you didn't ask for, move a card without your yes, start a blocked card. |
 | `/ai-daridev-review` | Grades someone else's card against its criteria, steps and evidence, then writes the verdict and the move on approval. | Move a card without approval, invent a verdict, mark work done. |
 | `/ai-daridev-archive` | Gates on the validated column and the green dot, marks the card done so Odoo frees its dependents, then appends the retro to `docs/ai-daridev/log.md`. | Move cards, cancel, create cards, invent a retro, turn a card green. |
-| `/ai-daridev-check-plan` | Audits any plan in detail, fixes the gaps one question at a time and renders an ordered checklist. Outside the flow; with a named card it also updates the card checklist. | Invent requirements, write files, move cards. |
+| `/ai-daridev-check-plan` | Audits any plan in detail, fixes the gaps one question at a time and renders an ordered checklist. Outside the flow; with a named card it also updates the card checklist, its subtasks and the derived assignees. | Invent requirements, write files, move cards. |
 
-Each phase ends waiting for your approval. Moves and assignees are proposed, never silent: a card
-changes column only when you ask or approve it, in the same write as its state, and archive is the
-only phase that marks a card done.
+Each phase ends waiting for your approval. Moves are proposed, never silent: a card changes column
+only when you ask or approve it, in the same write as its state, and archive is the only phase that
+marks a card done. Assignees are derived from the checklist — the card follows whose step is next —
+so they are written with the step and reported, not asked.
 
 ## What the agent writes
 
 **In Odoo (optional):** one card per story — backlog cards at `backlog`, criteria and checklist in
-the description, one hidden subtask per step (`display_in_project=False`), real **Blocked By** links
-for `Requires: #N`, one dated **Evidence** section at the end of the card description — one entry per
-step, keyed `pN "<step>"`, with the final UI screenshot inline and on prod — `state=03_approved` +
-`date_end` when a story closes, and `state=1_done`
-at archive, which frees its dependents. `stage_id` is written only when you ask or approve a move,
-always together with its state.
+the description, one hidden subtask per step (`display_in_project=False`) with its
+`[agent]`/`[you]` assignee, real **Blocked By** links for `Requires: #N`, one dated **Evidence**
+section at the end of the card description — one entry per step, keyed `pN "<step>"`, with the final
+UI screenshot inline and on prod — `state=03_approved` + `date_end` when a story closes, and
+`state=1_done` at archive, which frees its dependents. `stage_id` is written only when you ask or
+approve a move, always together with its state. The card's assignees follow the checklist: agent
+user always, plus you while the next open step is yours.
 
 **In the repo:** three files under `docs/ai-daridev/` at the repo root.
 
@@ -82,6 +84,7 @@ Declare the project in the repo's `AGENTS.md`:
 - odoo_project: acme-app
 - odoo_stage_done: Sprint Complete
 - card_tag: backend
+- odoo_assignee_manual_uid: 2
 <!-- ai-daridev:end -->
 ```
 
@@ -98,8 +101,12 @@ Declare the project in the repo's `AGENTS.md`:
   the description with `/web/image/<id>`. Browser screenshots come from `playwright-cli`.
 - Tags are `frontend`, `backend`, `infrastructure`, `script`, `workflow`; `card_tag` is the repo
   default. When the block declares `card_tag_extra`, every card carries that tag too.
-- `odoo_assignee_uid` assigns every new card and every `[agent]` step to that Odoo user;
-  `odoo_assignee_manual_uid` assigns `[you]` steps. With no key, Odoo assigns the creator.
+- **Two users, one card.** The card carries the agent user — the MCP connection user, or
+  `odoo_assignee_uid` when the block pins a different account — and carries
+  `odoo_assignee_manual_uid` (you) only while the next open step is a `[you]` step. `[you]`
+  subtasks are assigned to you from creation; the card is the signal that it is your turn. It is a
+  derived write, diff-style (`[[4, uid]]` / `[[3, uid]]`), so it never wipes a person you added by
+  hand. No manual uid → no handoff, and the first skill that needs one asks for the key.
 - Existing blocks from 3.x keep working: unknown keys are ignored.
 
 ## Upgrading from 3.x

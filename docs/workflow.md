@@ -12,15 +12,23 @@ only when you ask or approve it, and always in one write that keeps the column a
   conversation and only the three files are written.
 - **Moves and assignees are proposed, not assumed.** Move a card only when you ask in this turn,
   when the phase gate lists it and you say yes, or when the column and the state already disagree
-  and you approve the repair. Show the exact write in the gate; never move silently.
+  and you approve the repair. Show the exact write in the gate; never move silently. The assignee
+  reconcile is the one exception: it only mirrors the checklist owner, so it rides the step's own
+  write and is reported.
 - **A move is one write.** `stage_id`, `state` and `date_end` go in the same `odoo_update`:
   → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
   backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
   (you confirm first; dependents stay blocked). Never move a subtask or an archived (`1_done`)
   card, and never into `odoo_stage_done` unless every step is `1_done`/`1_canceled` and it turns
   green in the same write.
-- **Assignees come from the block.** `odoo_assignee_uid` assigns new cards and `[agent]` steps;
-  `odoo_assignee_manual_uid` assigns `[you]` steps. With no key, Odoo assigns the creator. Writing
+- **Two users, one card.** The card always carries the agent user — `odoo_assignee_uid` when the
+  block declares it, else the MCP connection user — and carries `odoo_assignee_manual_uid` (you)
+  only while the **next open step** is `[you]`. Next open = the lowest `sequence` child whose state
+  is not `1_done`/`1_canceled`; `02_changes_requested` is open, for its own owner. A legacy card with
+  no children takes the owner from its `<h2>Checklist</h2>` line; a card with neither is left alone.
+  Creates send the full set `[[6,0,[…]]]`; updates diff with `[[4, uid]]`/`[[3, uid]]`, never
+  `[[6,0,[…]]]`, and add the agent when it is missing. Both uids ride the step's own update,
+  reported, not asked. No manual uid → no handoff; the skill asks once and offers to add the key. Writing
   `user_ids` for a person you name still resolves the exact `res.users` name or login, 0 or 2+
   matches → stop and list.
 - **Who writes what.** Archive is the only skill that sets a **card** `1_done`, after its gate; no
@@ -48,7 +56,7 @@ only when you ask or approve it, and always in one write that keeps the column a
 
 Each story delivers value on its own and cuts through every layer. No technical stories, no
 estimates. The first one is the walking skeleton. On approval the cards are created in the backlog
-stage, assigned to `odoo_assignee_uid` (or the creator), one primary tag plus `card_tag_extra`, no
+stage, assigned to the agent user, one primary tag plus `card_tag_extra`, no
 subtasks. A backward `Requires: #N` is written as a real Odoo **Blocked By** link (`depend_on_ids`)
 in the create call itself, and a second pass covers forward references; the clause never stays in
 the name or description.
@@ -71,8 +79,9 @@ the related decisions, then proposes:
 
 As many criteria and steps as the story needs; no count cap. One gate, then the card description is
 regenerated (`<h2>Acceptance criteria</h2>`, `<h2>Checklist</h2>`, no status) and one hidden subtask
-per step is created. Anything from `<h2>Evidence (ai-daridev)</h2>` to the end is copied
-byte-for-byte. Existing children are matched by name, updated, never deleted.
+per step is created, each carrying its `[agent]`/`[you]` owner. The card gets the agent user, plus
+you when the first step is `[you]`. Anything from `<h2>Evidence (ai-daridev)</h2>` to the end is
+copied byte-for-byte. Existing children are matched by name, updated, never deleted.
 
 ## 3. Pair
 
@@ -85,7 +94,8 @@ blocking and needs re-planning.
 1. **Test list first**, names only: `retry keeps one record — tests/test_upload.py — covers p1 "<step>"`.
    Manual criteria are marked as such. One approval; the list lives in the conversation.
 2. **One step per stop**: write the test, show it red, write the minimum code, show it green,
-   embed the evidence in the card, flip that subtask to `1_done`, print `Plan 4/9 · next p5 "<step>"`.
+   embed the evidence in the card, reconcile the card's assignees for the new next open step, flip
+   that subtask to `1_done`, print `Plan 4/9 · next p5 "<step>" ([you])` and who the card is on.
 3. **Stop immediately** on an unplanned design decision, an unrequested addition, a test that would
    have to change, two failed attempts, or a step over ~50 lines / 3 files.
 4. **Non-code** (n8n, server, infra): read-only investigation, numbered plan, one approval, execute
@@ -125,7 +135,8 @@ the slug line, outside the tail.
 - **Changes requested** → the failing steps and the card go to `02_changes_requested`, and the
   `<h2>Review (ai-daridev)</h2>` section is replaced with the dated findings. If the card is in
   `odoo_stage_done`, the same write moves it back to the active stage; from a later stage, stop and
-  report. Missing work becomes new steps, in the same gate.
+  report. Missing work becomes new steps, in the same gate, and so does a criterion you cannot
+  verify: it becomes a `[you]` step, which is what hands the card to you.
 
 ## 5. Archive
 
@@ -179,7 +190,9 @@ Subtask description (story and check-plan own the detail; pair never writes it):
 - Subtasks: `name` = `<step> — [agent|you]` (the owner lives here, so it survives a restart;
   legacy names without the suffix still match), `description` = the detail, `parent_id`,
   `sequence = index × 10`, `state=01_in_progress`, `display_in_project=False`, never `project_id`
-  or `stage_id`.
+  or `stage_id`. The subtask carries its owner's uid from creation; the card is the turn signal.
+- Assignees: the card always carries the agent user, and you while the next open step is `[you]`;
+  the write rides the step's own update, diff-style (`[[4, uid]]` / `[[3, uid]]`), never `[[6,0,…]]`.
 - Evidence: one dated entry per attempt, keyed `pN "<step>"`, on the card; never overwrite an
   attempt; a step without one is not `1_done`. A file in the attachment list is not evidence.
 - Step states: `01_in_progress` open · `1_done` done · `02_changes_requested` rejected ·
@@ -207,9 +220,9 @@ they are folded into these three files and the originals stay as frozen history.
 
 `/ai-daridev-check-plan` audits any plan in detail — pasted, from the conversation, or a card's
 current checklist — fixes the gaps, asks one question at a time and renders it as an ordered
-`p1..pN` checklist in the same format as a card. Standalone it writes nothing. If you name a card (`#14842`, a task URL,
-`--card`, `story/<slug>`), it also updates that card's `<h2>Checklist</h2>` and its subtasks after
-two gates (the plan, then the exact writes). It never creates a card, never deletes a subtask and
+`p1..pN` checklist in the same format as a card. Standalone it writes nothing. If you name a card
+(`#14842`, a task URL, `--card`, `story/<slug>`), it also updates that card's `<h2>Checklist</h2>`,
+its subtasks and the derived assignees after two gates (the plan, then the exact writes). It never creates a card, never deletes a subtask and
 never drops a `1_done` step.
 
 ## Without Odoo

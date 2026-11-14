@@ -39,6 +39,7 @@ Add the block to the `AGENTS.md` of the repo (or subproject) that uses the workf
 - odoo_project: acme-app
 - odoo_stage_done: Sprint Complete
 - card_tag: backend
+- odoo_assignee_manual_uid: 2
 <!-- ai-daridev:end -->
 ```
 
@@ -49,8 +50,11 @@ Add the block to the `AGENTS.md` of the repo (or subproject) that uses the workf
 - `odoo_project` must be the **exact** name in Odoo. Zero or two matches → the skill stops and lists
   the real ones.
 - `card_tag` is the primary tag; `card_tag_extra` adds a second one to every card.
-- `odoo_assignee_uid` assigns new cards and `[agent]` steps; `odoo_assignee_manual_uid` assigns
-  `[you]` steps. With no key, Odoo assigns the creator.
+- **Two users, one card.** The agent user is the MCP connection user; declare
+  `odoo_assignee_uid` only to pin a different account, because the connection uid is used otherwise.
+  `odoo_assignee_manual_uid` is **you**: the card carries that user only while the next open step is
+  a `[you]` step, and `[you]` subtasks are assigned to it from creation. No manual uid → no handoff:
+  the first skill that needs one asks once and offers to add the key.
 - `odoo_stage_done` is the validated column: review moves an approved card there with the green dot,
   and archive only closes cards already there and green. Pair unblocks on `1_done`, not on the
   column. It must match exactly one stage **inside the project**; a stage name shared with other

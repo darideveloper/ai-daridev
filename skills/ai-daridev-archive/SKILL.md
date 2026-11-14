@@ -89,9 +89,15 @@ Drift: <decision and spec drift, then "no evidence on p4", or "none">
   → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
   backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
   (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
-- **Assignees come from the block.** Cards and `[agent]` steps use `odoo_assignee_uid`; `[you]`
-  steps use `odoo_assignee_manual_uid`; with no key, Odoo assigns the creator. Writing `user_ids`
-  for a person I name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
+- **Two users, one card.** The card always carries the agent user — `odoo_assignee_uid` when the
+  block declares it, else the MCP connection uid (`odoo_connection_info` → `uid`) — and carries
+  `odoo_assignee_manual_uid` only while the **next open step** is `[you]`. Next open = the lowest
+  `sequence` child whose state is not `1_done`/`1_canceled`; `02_changes_requested` is open, for its
+  own owner. A legacy card with no children takes the owner from its `<h2>Checklist</h2>` line; a
+  card with neither is left alone. Creates send the full set; updates diff with
+  `[[4, uid]]`/`[[3, uid]]`, never `[[6,0,[…]]]`, and add the agent when it is missing. Derived from
+  the checklist, so it is reported, not asked. Archive writes no assignee. A person I
+  name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
 - **Agents write:** archive writes `state=1_done` and `date_end` (only when empty); the description
   and its `Evidence` tail, subtask states, `state=03_approved` and `state=02_changes_requested`
   belong to the other skills.

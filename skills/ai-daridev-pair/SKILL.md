@@ -54,7 +54,8 @@ Then send:
 ```
 ✅ Passes "<test>". <one line> (<file:line>)
 Evidence: p3 entry in #<card> "<name>" · /web/image/{id} · <KB>
-Plan: p3 "<step>" → done (agent) · 4/9 done · next p4 "<step>"
+Plan: p3 "<step>" → done (agent) · 4/9 done · next p4 "<step>" ([agent|you])
+Card: #<card> "<name>" · assignees agent + you | agent alone
 Decided: <judgment call, if any>
 Anything to change, or continue with "<next test>"?
 ```
@@ -80,10 +81,11 @@ never in the repo.
 
 Convert to ≤500 KB with `convert` when it is available; ask me only when it is not. Upload each image
 to `ir.attachment` (`name`, base64 `datas`, `res_model=project.task`, `res_id=<main card>`,
-`mimetype`), then read the card's `description` and `write_date`, and write it back with one entry
-appended — never regenerate it, and never touch the text above the heading. The `<h2>` goes in only
-when the card has none; otherwise append from the `<h3>` down. If `write_date` changed between the
-read and the write, re-read and append to the new text.
+`mimetype`), then read the card's `description`, `write_date` and `user_ids`, and write it back with
+one entry appended and the assignee set reconciled for the new next open step — never regenerate
+it, and never touch the text above the heading. The `<h2>` goes in only when the card has none;
+otherwise append from the `<h3>` down. If `write_date` changed between the read and the write,
+re-read and append to the new text.
 
 ```html
 <h2>Evidence (ai-daridev)</h2>                <!-- add it, at the very end, only when it is missing -->
@@ -128,9 +130,10 @@ Per-step choices stay in the conversation.
 
 ## 5. Check
 
-When the list is green: verify the manual criteria with me. Suggest that I run my agent's code
-review; do not review yourself. Suggest a refactor only when something repeats — I decide. Refactor
-only with tests green and never mixed with new functionality.
+When the list is green: verify the manual criteria with me. A manual criterion checked here does not
+move the card — I am already here; the handoff follows `[you]` steps only. Suggest that I run my
+agent's code review; do not review yourself. Suggest a refactor only when something repeats — I
+decide. Refactor only with tests green and never mixed with new functionality.
 
 ## 6. Non-code stories (n8n, server, infra, config)
 
@@ -157,8 +160,10 @@ only with tests green and never mixed with new functionality.
    `stage_id = odoo_stage_done` when I say yes to the move — all in the same `odoo_update`. The gate
    lists the move with the default "no": the card can stay in its column for review, or land green in
    the validated column for archive. Never move it from a later stage, the Cancelled stage or an
-   archived (`1_done`) card. Never mark the card done or cancelled. Write `user_ids` only if I name
-   an assignee in this turn.
+   archived (`1_done`) card. Never mark the card done or cancelled. Reconcile the card's assignees in
+   the close write from the next open step, exactly as every flip does — no open step left means the
+   card stays on the agent alone. Write `user_ids` for a person I name only when I name one in this
+   turn.
 3. `docs/ai-daridev/spec.md`: if the behavior changed, add or replace **one sentence** in the right
    domain section (`## <domain>`), creating the file with `# <project> spec` if needed. Show the line
    in the close block.
@@ -188,19 +193,29 @@ line) and write only the files.
   Backlog stage = lowest `sequence`. Default tag `backend`.
 - **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
   the phase gate lists it and I say yes, or when the column and the state already disagree and I
-  approve the repair. Show the exact write in the gate; never move silently.
+  approve the repair. Show the exact write in the gate; never move silently. The assignee reconcile
+  is the one exception: it only mirrors the checklist owner, so it rides the step's own write and is
+  reported.
 - **A move is one write.** `stage_id`, `state` and `date_end` in the same `odoo_update`:
   → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
   backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
   (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
-- **Assignees come from the block.** Cards and `[agent]` steps use `odoo_assignee_uid`; `[you]`
-  steps use `odoo_assignee_manual_uid`; with no key, Odoo assigns the creator. Writing `user_ids`
-  for a person I name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
+- **Two users, one card.** The card always carries the agent user — `odoo_assignee_uid` when the
+  block declares it, else the MCP connection uid (`odoo_connection_info` → `uid`) — and carries
+  `odoo_assignee_manual_uid` only while the **next open step** is `[you]`. Next open = the lowest
+  `sequence` child whose state is not `1_done`/`1_canceled`; `02_changes_requested` is open, for its
+  own owner. A legacy card with no children takes the owner from its `<h2>Checklist</h2>` line; a
+  card with neither is left alone. Creates send the full set; updates diff with
+  `[[4, uid]]`/`[[3, uid]]`, never `[[6,0,[…]]]`, and add the agent when it is missing. Derived from
+  the checklist, so it is reported, not asked. No manual uid → no handoff: ask once and
+  offer to add `odoo_assignee_manual_uid` to the block, then one line in the output. A person I
+  name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
 - **Never print a bare id.** A step is `p4 "<step>"`, a card is `#14842 "<name>"`; a test-list
   mapping is `covers p4 "<step>"`. Tables keep a name column instead of quoted names.
 - **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
-  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review). Never write
-  `depend_on_ids`; only backlog and story add links, and nothing removes one.
+  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review) and the derived
+  `user_ids` diff (every phase). Never write `depend_on_ids`; only backlog and story add links, and
+  nothing removes one.
 - **One approval gate per phase.** Structure, a move and the close ask once; state changes are
   reported, not asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.

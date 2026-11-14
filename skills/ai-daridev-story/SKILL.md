@@ -63,8 +63,8 @@ As a <actor>, I want <action>, so that <benefit>.
 
 ## The card
 
-Write only after the checklist is approved. One gate: show the card, its checklist and the exact
-writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of the card you found.
+Write only after the checklist is approved. One gate: show the card, its checklist, its assignees and
+the exact writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of the card you found.
 
 - Find the card by `ai-daridev: story/<slug>` (or legacy `engram: story/<slug>`). Not found → ask
   "create it in the backlog stage?" and create it with `/ai-daridev-backlog`'s card rules.
@@ -81,13 +81,17 @@ writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of the card 
   regenerate, reorder, trim or move it.
 - Re-read the description right before writing. If `write_date` changed since your first read, show
   what changed and ask once.
+- **Assignees, one write with the description.** `user_ids: [[6,0,[<agent>]]]`, plus
+  `odoo_assignee_manual_uid` in the same array when the first step is `[you]`; a create sends the
+  same full set. Both uids resolve per the Always rule. Derived from the checklist, so it is shown in
+  the gate rather than asked again.
 - **Subtasks: one per step.** `name` = `<step> — [agent|you]`, `description` = `<p>{detail}</p>`
   (no key prefix), `parent_id`, `sequence` = index × 10, `state=01_in_progress`,
-  `user_ids: [[6,0,[<id>]]]` — the `odoo_assignee_uid` for a `[agent]` step and the
-  `odoo_assignee_manual_uid` for a `[you]` step when the block declares them; with no key, omit
-  `user_ids`. If I name an assignee for a step, resolve the exact `res.users` name or login and use
-  that id instead. `display_in_project=False`. Never write `project_id` or `stage_id`. Read one back:
-  if `display_in_project` is not false, stop and report.
+  `user_ids: [[6,0,[<id>]]]` — the agent user for a `[agent]` step and the
+  `odoo_assignee_manual_uid` for a `[you]` step; no manual uid → omit it on the `[you]` steps. If I
+  name an assignee for a step, resolve the exact `res.users` name or login and use that id instead.
+  `display_in_project=False`. Never write `project_id` or `stage_id`. Read one back: if
+  `display_in_project` is not false, stop and report.
 - Match existing children by exact name, ignoring a trailing ` — [agent]`/`— [you]`: update the ones
   that changed (rewriting the name in the new form), create the missing ones, never delete. On a
   legacy child, keep everything from a `<h3>Evidence</h3>` onward byte-for-byte and replace only the
@@ -115,11 +119,19 @@ owners, and where to paste them.
   → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
   backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
   (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
-- **Assignees come from the block.** Cards and `[agent]` steps use `odoo_assignee_uid`; `[you]`
-  steps use `odoo_assignee_manual_uid`; with no key, Odoo assigns the creator. Writing `user_ids`
-  for a person I name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
+- **Two users, one card.** The card always carries the agent user — `odoo_assignee_uid` when the
+  block declares it, else the MCP connection uid (`odoo_connection_info` → `uid`) — and carries
+  `odoo_assignee_manual_uid` only while the **next open step** is `[you]`. Next open = the lowest
+  `sequence` child whose state is not `1_done`/`1_canceled`; `02_changes_requested` is open, for its
+  own owner. A legacy card with no children takes the owner from its `<h2>Checklist</h2>` line; a
+  card with neither is left alone. Creates send the full set; updates diff with
+  `[[4, uid]]`/`[[3, uid]]`, never `[[6,0,[…]]]`, and add the agent when it is missing. Derived from
+  the checklist, so it is reported, not asked. No manual uid → no handoff: ask once and
+  offer to add `odoo_assignee_manual_uid` to the block, then one line in the output. A person I
+  name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
 - **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
-  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review).
+  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review) and the derived
+  `user_ids` diff (every phase).
 - **One approval gate per phase.** Structure asks once; state changes are reported, not asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.
 - **Decisions** → one append to `docs/ai-daridev/decisions.md`, only when project-wide, hard to

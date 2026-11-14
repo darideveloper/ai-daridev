@@ -124,7 +124,8 @@ Two gates. Never write before Gate 2.
 **Gate 2 — the writes.** List exactly what will change on the card:
 
 - `checklist: <N> steps` (the `<h2>Checklist</h2>` section, replaced whole),
-- `+<N> subtasks`, `~<N> renamed`, `<N> dropped`, `sequence: pN…`.
+- `+<N> subtasks`, `~<N> renamed`, `<N> dropped`, `sequence: pN…`,
+- `assignees: <agent>` → `<agent + you>` (only when the diff changes something).
 
 Re-read the card's `write_date` first; if it changed since step 1, re-read, re-diff and show the new
 writes. If nothing differs, say "the card already matches" and write nothing. The rendered checklist
@@ -135,12 +136,14 @@ Apply in this order, then read one created subtask back:
 1. Replace **only** `<h2>Checklist</h2>`. Keep the title, goal, criteria, review block, the
    `ai-daridev: story/<slug>` line and the whole `<h2>Evidence (ai-daridev)</h2>` tail byte-for-byte.
    No Checklist → replace `<h2>Plan</h2>` if it exists, otherwise insert before the review heading,
-   else before the key line. Delete any old `Plan:` id line.
+   else before the key line. Delete any old `Plan:` id line. In the same `odoo_update`, reconcile the
+   card's assignees from the rendered checklist: `[[4, <manual>]]` when the first unchecked step is
+   `[you]`, `[[3, <manual>]]` when it is not, and `[[4, <agent>]]` when the agent is missing.
 2. Create a hidden subtask for every missing step: `name` = `<step> — [agent|you]`,
    `description` = `<p>{detail}</p>`, `parent_id`, `sequence` = index × 10, `state=01_in_progress`,
-   `user_ids: [[6,0,[<id>]]]` — the `odoo_assignee_uid` for a `[agent]` step and the
-   `odoo_assignee_manual_uid` for a `[you]` step when the block declares them; with no key, omit
-   `user_ids` —, `display_in_project=False`. Never `project_id`, never `stage_id`.
+   `user_ids: [[6,0,[<id>]]]` — the agent user for a `[agent]` step and the
+   `odoo_assignee_manual_uid` for a `[you]` step; no manual uid → omit it on the `[you]` steps —,
+   `display_in_project=False`. Never `project_id`, never `stage_id`.
 3. Rename changed steps (update `name`; on legacy cards, keep everything from a `<h3>Evidence</h3>`
    onward byte-for-byte and replace only the detail above it). Match names ignoring a trailing
    ` — [agent]`/`— [you]`: a legacy step without the suffix matches and is rewritten in the new
@@ -157,7 +160,7 @@ A second run with no changes produces zero writes.
 
 - Create a card. No card exists → render the plan and end with "run `/ai-daridev-story`".
 - Delete a subtask, touch a `1_done` state, or re-open a dropped step.
-- Touch the card `state`, `stage_id`, tags or assignees.
+- Touch the card `state`, `stage_id` or tags; the only `user_ids` write is the derived diff above.
 - Regenerate anything outside the checklist section; the `Evidence` tail stays byte-for-byte.
 - Write files. `spec.md` and `decisions.md` belong to `/ai-daridev-pair`.
 - Invent a requirement, a step or an acceptance criterion.
@@ -167,7 +170,9 @@ A second run with no changes produces zero writes.
 - Root: nearest `AGENTS.md` with `<!-- ai-daridev:start -->`. Only needed in workflow mode.
 - Config: `odoo_project`, `odoo_stage_done`, `card_tag`, `card_tag_extra`, `odoo_assignee_uid`,
   `odoo_assignee_manual_uid`; project by exact name, 0 or 2+ → stop. Stages are resolved inside the
-  project; a name shared with other projects is not a match.
-- Never move a card between stages, never mark it done or cancelled, never write the card's
-  `user_ids` (subtasks take their owner from the step).
+  project; a name shared with other projects is not a match. The agent uid is the block key when
+  declared, else the MCP connection uid (`odoo_connection_info` → `uid`); no manual uid → no
+  handoff, one line.
+- Never move a card between stages, never mark it done or cancelled; the only `user_ids` write is the
+  derived diff above.
 - Odoo unavailable → stay standalone and say so in one line.

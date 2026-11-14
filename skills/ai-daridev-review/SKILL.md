@@ -36,10 +36,16 @@ decide. One card per run unless I ask for a batch.
    - Changes requested → the failing steps and the card to `state=02_changes_requested`, plus the
      review block. If the card is in `odoo_stage_done`, the same write moves it back to the active
      stage; from a later stage, stop and report. If work is missing, propose new steps (name,
-     detail) and create them as hidden subtasks like `/ai-daridev-story` does, in the same gate.
-6. **Apply** after the gate: the card write (one `odoo_update`: `state` + `date_end` + `stage_id`)
-   → new steps → their states (one `odoo_update` with all the ids) → the review section. Re-read
-   `write_date` first; if it changed, show the difference and re-apply.
+     detail) and create them as hidden subtasks like `/ai-daridev-story` does, in the same gate. A
+     criterion you cannot verify becomes a `[you]` step with its detail, never a bare verdict: the
+     card is only handed over when a step stands behind it.
+   - Both branches reconcile the card's assignees from the next open step in the rendered
+     checklist, new steps included: `[[4, <manual>]]` or `[[3, <manual>]]`, plus `[[4, <agent>]]`
+     when it is missing.
+6. **Apply** after the gate: any new `[you]` step first, so the card never points at a step that is
+   not there yet → the card write (one `odoo_update`: `state` + `date_end` + `stage_id` +
+   the assignee diff) → the other new steps → their states (one `odoo_update` with all the ids) →
+   the review section. Re-read `write_date` first; if it changed, show the difference and re-apply.
 7. Print the verdict and the checklist with the review states.
 
 ## Review block
@@ -79,17 +85,26 @@ tail.
   Backlog stage = lowest `sequence`. Default tag `backend`.
 - **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
   the phase gate lists it and I say yes, or when the column and the state already disagree and I
-  approve the repair. Show the exact write in the gate; never move silently.
+  approve the repair. Show the exact write in the gate; never move silently. The assignee reconcile
+  is the one exception: it only mirrors the checklist owner, so it rides the card write and is
+  reported.
 - **A move is one write.** `stage_id`, `state` and `date_end` in the same `odoo_update`:
   → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
   backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
   (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
-- **Assignees come from the block.** Cards and `[agent]` steps use `odoo_assignee_uid`; `[you]`
-  steps use `odoo_assignee_manual_uid`; with no key, Odoo assigns the creator. Writing `user_ids`
-  for a person I name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
+- **Two users, one card.** The card always carries the agent user — `odoo_assignee_uid` when the
+  block declares it, else the MCP connection uid (`odoo_connection_info` → `uid`) — and carries
+  `odoo_assignee_manual_uid` only while the **next open step** is `[you]`. Next open = the lowest
+  `sequence` child whose state is not `1_done`/`1_canceled`; `02_changes_requested` is open, for its
+  own owner. A legacy card with no children takes the owner from its `<h2>Checklist</h2>` line; a
+  card with neither is left alone. Creates send the full set; updates diff with
+  `[[4, uid]]`/`[[3, uid]]`, never `[[6,0,[…]]]`, and add the agent when it is missing. Derived from
+  the checklist, so it is reported, not asked. No manual uid → no handoff: ask once and
+  offer to add `odoo_assignee_manual_uid` to the block, then one line in the output. A person I
+  name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
 - **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
-  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review). Review never writes
-  the `Evidence` tail.
+  `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review) and the derived
+  `user_ids` diff (every phase). Review never writes the `Evidence` tail.
 - **One approval gate per phase.** Structure and the card write ask once; the rest is reported, not
   asked.
 - **Odoo unavailable** → print the handout and continue; the files are still written.
