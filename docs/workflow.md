@@ -19,8 +19,10 @@ only when you ask or approve it, and always in one write that keeps the column a
   (you confirm first; dependents stay blocked). Never move a subtask or an archived (`1_done`)
   card, and never into `odoo_stage_done` unless every step is `1_done`/`1_canceled` and it turns
   green in the same write.
-- **Assignees need a name.** Write `user_ids` only when you name the person; resolve the exact
-  `res.users` name or login, 0 or 2+ matches → stop and list. Cards are created unassigned.
+- **Assignees come from the block.** `odoo_assignee_uid` assigns new cards and `[agent]` steps;
+  `odoo_assignee_manual_uid` assigns `[you]` steps. With no key, Odoo assigns the creator. Writing
+  `user_ids` for a person you name still resolves the exact `res.users` name or login, 0 or 2+
+  matches → stop and list.
 - **Who writes what.** Archive is the only skill that sets a **card** `1_done`, after its gate; no
   skill sets `1_canceled` on a visible card unless you ask or approve it, and dependents stay
   blocked. The agent writes the description (story), its `Evidence` tail (pair), subtask states,
@@ -46,9 +48,10 @@ only when you ask or approve it, and always in one write that keeps the column a
 
 Each story delivers value on its own and cuts through every layer. No technical stories, no
 estimates. The first one is the walking skeleton. On approval the cards are created in the backlog
-stage, unassigned unless you name someone, one tag each, no subtasks. A backward `Requires: #N` is
-written as a real Odoo **Blocked By** link (`depend_on_ids`) in the create call itself, and a second
-pass covers forward references; the clause never stays in the name or description.
+stage, assigned to `odoo_assignee_uid` (or the creator), one primary tag plus `card_tag_extra`, no
+subtasks. A backward `Requires: #N` is written as a real Odoo **Blocked By** link (`depend_on_ids`)
+in the create call itself, and a second pass covers forward references; the clause never stays in
+the name or description.
 
 ## 2. Story
 

@@ -49,9 +49,12 @@ On approval, create the cards in one ordered batch, story 1 first. Slug = kebab-
 - `name`: the story title, with any `Requires: #N` removed. `project_id`: resolved. `stage_id`: the
   backlog stage (lowest `sequence`).
 - `sequence`: `max(sequence in project) + 10, +20, +30…`.
-- `tag_ids`: one tag — the repo's `card_tag` unless the work clearly belongs to another of the four.
-- `user_ids: [[6,0,[]]]` (Odoo assigns the creator by default). If I name an assignee, resolve the
-  exact `res.users` name or login and set `user_ids: [[6,0,[<id>]]]`; 0 or 2+ matches → stop and
+- `tag_ids`: one primary tag — the repo's `card_tag` unless the work clearly belongs to another of
+  `frontend`, `backend`, `infrastructure`, `script` or `workflow`. When the block declares
+  `card_tag_extra`, add that tag too, so the card carries both.
+- `user_ids: [[6,0,[<odoo_assignee_uid>]]]` when the block declares it, so the card belongs to the
+  agent user; with no key, omit `user_ids` and let Odoo assign the creator. If I name an assignee,
+  resolve the exact `res.users` name or login and use that id instead; 0 or 2+ matches → stop and
   list. Never assign silently. No `state`, no deadline unless I gave one.
 - Description, exactly:
   `<h1>{title}</h1><p>{As a …, I want …, so that …}</p><p><em>ai-daridev: story/{slug}</em></p>`
@@ -77,9 +80,10 @@ is where a new card goes; `Requires: #N` stays in the list as text. Write no fil
 - **Root.** Walk up from the current directory to the nearest `AGENTS.md` that holds
   `<!-- ai-daridev:start -->`. That directory is the root: read and write `docs/ai-daridev/` there
   and write nothing outside it. No block → ask once: create it here, use the git root, or chat-only.
-- **Config.** Read `odoo_project`, `odoo_stage_done` and `card_tag` from the block. No
-  `odoo_project` → Odoo is off. Resolve the project, the tags and the stages by exact name; 0 or 2+
-  matches → stop and list the real ones. Backlog stage = lowest `sequence`. Default tag `backend`.
+- **Config.** Read `odoo_project`, `odoo_stage_done`, `card_tag`, `card_tag_extra`,
+  `odoo_assignee_uid` and `odoo_assignee_manual_uid` from the block. No `odoo_project` → Odoo is off.
+  Resolve the project, the tags and the stages by exact name; 0 or 2+ matches → stop and list the
+  real ones. Backlog stage = lowest `sequence`. Default tag `backend`.
 - **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
   the phase gate lists it and I say yes, or when the column and the state already disagree and I
   approve the repair. Show the exact write in the gate; never move silently.

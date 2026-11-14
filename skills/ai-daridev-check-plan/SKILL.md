@@ -138,7 +138,9 @@ Apply in this order, then read one created subtask back:
    else before the key line. Delete any old `Plan:` id line.
 2. Create a hidden subtask for every missing step: `name` = `<step> — [agent|you]`,
    `description` = `<p>{detail}</p>`, `parent_id`, `sequence` = index × 10, `state=01_in_progress`,
-   `user_ids=[]`, `display_in_project=False`. Never `project_id`, never `stage_id`.
+   `user_ids: [[6,0,[<id>]]]` — the `odoo_assignee_uid` for a `[agent]` step and the
+   `odoo_assignee_manual_uid` for a `[you]` step when the block declares them; with no key, omit
+   `user_ids` —, `display_in_project=False`. Never `project_id`, never `stage_id`.
 3. Rename changed steps (update `name`; on legacy cards, keep everything from a `<h3>Evidence</h3>`
    onward byte-for-byte and replace only the detail above it). Match names ignoring a trailing
    ` — [agent]`/`— [you]`: a legacy step without the suffix matches and is rewritten in the new
@@ -163,6 +165,8 @@ A second run with no changes produces zero writes.
 ## Context
 
 - Root: nearest `AGENTS.md` with `<!-- ai-daridev:start -->`. Only needed in workflow mode.
-- Config: `odoo_project`, `odoo_stage_done`, `card_tag`; project by exact name, 0 or 2+ → stop.
-- Never move a card between stages, never mark it done or cancelled, never write `user_ids`.
+- Config: `odoo_project`, `odoo_stage_done`, `card_tag`, `card_tag_extra`, `odoo_assignee_uid`,
+  `odoo_assignee_manual_uid`; project by exact name, 0 or 2+ → stop.
+- Never move a card between stages, never mark it done or cancelled, never write the card's
+  `user_ids` (subtasks take their owner from the step).
 - Odoo unavailable → stay standalone and say so in one line.

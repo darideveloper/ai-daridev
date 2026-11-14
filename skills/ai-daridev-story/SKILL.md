@@ -83,9 +83,11 @@ writes. Slug = kebab-case of the title, ≤40 chars; reuse the slug of the card 
   what changed and ask once.
 - **Subtasks: one per step.** `name` = `<step> — [agent|you]`, `description` = `<p>{detail}</p>`
   (no key prefix), `parent_id`, `sequence` = index × 10, `state=01_in_progress`,
-  `user_ids=[]` unless I name an assignee for that step (resolve the exact `res.users` name or
-  login), `display_in_project=False`. Never write `project_id` or `stage_id`. Read one back: if
-  `display_in_project` is not false, stop and report.
+  `user_ids: [[6,0,[<id>]]]` — the `odoo_assignee_uid` for a `[agent]` step and the
+  `odoo_assignee_manual_uid` for a `[you]` step when the block declares them; with no key, omit
+  `user_ids`. If I name an assignee for a step, resolve the exact `res.users` name or login and use
+  that id instead. `display_in_project=False`. Never write `project_id` or `stage_id`. Read one back:
+  if `display_in_project` is not false, stop and report.
 - Match existing children by exact name, ignoring a trailing ` — [agent]`/`— [you]`: update the ones
   that changed (rewriting the name in the new form), create the missing ones, never delete. On a
   legacy child, keep everything from a `<h3>Evidence</h3>` onward byte-for-byte and replace only the
@@ -100,9 +102,10 @@ owners, and where to paste them.
 - **Root.** Walk up from the current directory to the nearest `AGENTS.md` that holds
   `<!-- ai-daridev:start -->`. That directory is the root: read and write `docs/ai-daridev/` there
   and write nothing outside it. No block → ask once: create it here, use the git root, or chat-only.
-- **Config.** Read `odoo_project`, `odoo_stage_done` and `card_tag` from the block. No
-  `odoo_project` → Odoo is off. Resolve the project, the tags and the stages by exact name; 0 or 2+
-  matches → stop and list the real ones. Backlog stage = lowest `sequence`. Default tag `backend`.
+- **Config.** Read `odoo_project`, `odoo_stage_done`, `card_tag`, `card_tag_extra`,
+  `odoo_assignee_uid` and `odoo_assignee_manual_uid` from the block. No `odoo_project` → Odoo is off.
+  Resolve the project, the tags and the stages by exact name; 0 or 2+ matches → stop and list the
+  real ones. Backlog stage = lowest `sequence`. Default tag `backend`.
 - **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
   the phase gate lists it and I say yes, or when the column and the state already disagree and I
   approve the repair. Show the exact write in the gate; never move silently.

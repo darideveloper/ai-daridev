@@ -95,7 +95,10 @@ Declare the project in the repo's `AGENTS.md`:
 - Evidence attachments use `ir.attachment` with read/create only; the agent's Odoo allowlist must
   include it. They are created on the **card** (`res_id` = the card, never a subtask) and embedded in
   the description with `/web/image/<id>`. Browser screenshots come from `playwright-cli`.
-- Tags are `frontend`, `backend`, `script`, `workflow`; `card_tag` is the repo default.
+- Tags are `frontend`, `backend`, `infrastructure`, `script`, `workflow`; `card_tag` is the repo
+  default. When the block declares `card_tag_extra`, every card carries that tag too.
+- `odoo_assignee_uid` assigns every new card and every `[agent]` step to that Odoo user;
+  `odoo_assignee_manual_uid` assigns `[you]` steps. With no key, Odoo assigns the creator.
 - Existing blocks from 3.x keep working: unknown keys are ignored.
 
 ## Upgrading from 3.x
