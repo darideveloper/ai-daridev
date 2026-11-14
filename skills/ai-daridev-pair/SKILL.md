@@ -21,6 +21,15 @@ You drive, I navigate. One story per session, one step at a time, and you stop a
   A `1_canceled` blocker also says the dependency needs re-planning. A blocker in another project, or
   one that is a hidden subtask, stops and reports (a subtask as its parent card). No Odoo → say
   dependencies cannot be verified and continue.
+- **To in progress (Odoo).** Starting the pair is the ask for this one move, and it happens before
+  the mode. Resolve the in-progress column: the single stage inside the project whose name matches
+  `in progress` (case-insensitive). 0 or 2+ matches → ask once which stage and use that answer for
+  the session; never guess. Then one `odoo_update`: `stage_id=<stage>, state=01_in_progress`, no
+  `date_end`. Skip and report when the stage is already the target **and** `state=01_in_progress`,
+  or when the card is in `odoo_stage_done`, the Cancelled stage or `1_done`. A failed write is
+  reported and does not stop the session. Print
+  `Card #<id> "<name>" — <from> → <to> · 01_in_progress`. With no slug, this happens after I pick
+  the card.
 - Checklist = the card's subtasks by `sequence`; fall back to `<h2>Checklist</h2>` in the description.
   A subtask name ends with `— [agent]` or `— [you]`: that is the step's owner. A legacy subtask
   without the suffix takes its owner from the checklist line; if that is missing too, ask once and
@@ -193,9 +202,9 @@ line) and write only the files.
   Backlog stage = lowest `sequence`. Default tag `backend`.
 - **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
   the phase gate lists it and I say yes, or when the column and the state already disagree and I
-  approve the repair. Show the exact write in the gate; never move silently. The assignee reconcile
-  is the one exception: it only mirrors the checklist owner, so it rides the step's own write and is
-  reported.
+  approve the repair. Show the exact write in the gate; never move silently. The start move in §1 is
+  an exception: the invocation itself asks for it. The assignee reconcile is the other exception: it
+  only mirrors the checklist owner, so it rides the step's own write and is reported.
 - **A move is one write.** `stage_id`, `state` and `date_end` in the same `odoo_update`:
   → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
   backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`

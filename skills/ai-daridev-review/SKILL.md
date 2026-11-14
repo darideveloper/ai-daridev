@@ -34,8 +34,10 @@ decide. One card per run unless I ask for a batch.
      not `1_done`/`1_canceled` blocks the green dot: list it instead of approving. The move is a
      normal part of the gate — if I say "don't move", write the green dot alone.
    - Changes requested → the failing steps and the card to `state=02_changes_requested`, plus the
-     review block. If the card is in `odoo_stage_done`, the same write moves it back to the active
-     stage; from a later stage, stop and report. If work is missing, propose new steps (name,
+     review block. If the card is in `odoo_stage_done`, the same write moves it back to the
+     in-progress column — the single stage inside the project whose name matches `in progress`
+     (case-insensitive), asked once in the gate when 0 or 2+ match — or leaves the column alone when
+     I say so; from a later stage, stop and report. If work is missing, propose new steps (name,
      detail) and create them as hidden subtasks like `/ai-daridev-story` does, in the same gate. A
      criterion you cannot verify becomes a `[you]` step with its detail, never a bare verdict: the
      card is only handed over when a step stands behind it.

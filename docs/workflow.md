@@ -12,9 +12,12 @@ only when you ask or approve it, and always in one write that keeps the column a
   conversation and only the three files are written.
 - **Moves and assignees are proposed, not assumed.** Move a card only when you ask in this turn,
   when the phase gate lists it and you say yes, or when the column and the state already disagree
-  and you approve the repair. Show the exact write in the gate; never move silently. The assignee
-  reconcile is the one exception: it only mirrors the checklist owner, so it rides the step's own
-  write and is reported.
+  and you approve the repair. Show the exact write in the gate; never move silently. Pair's start is
+  the exception: invoking `/ai-daridev-pair` on a card is the ask, and the card goes to the
+  in-progress column in one announced write. That column is the single stage inside the project whose
+  name matches `in progress` (case-insensitive); 0 or 2+ matches → ask once, never guess. The
+  assignee reconcile is the other exception: it only mirrors the checklist owner, so it rides the
+  step's own write and is reported.
 - **A move is one write.** `stage_id`, `state` and `date_end` go in the same `odoo_update`:
   → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
   backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
@@ -85,7 +88,8 @@ copied byte-for-byte. Existing children are matched by name, updated, never dele
 
 ## 3. Pair
 
-`/ai-daridev-pair <slug>` loads the card and its checklist.
+`/ai-daridev-pair <slug>` loads the card and its checklist, and moves the card into the in-progress
+column before proposing a mode.
 
 Before anything else it reads the card's blockers. Only `1_done`, outside the Cancelled column,
 frees a dependent; anything else is a hard stop: no override, no test list. A canceled blocker keeps
@@ -134,7 +138,7 @@ the slug line, outside the tail.
   move the card yourself.
 - **Changes requested** → the failing steps and the card go to `02_changes_requested`, and the
   `<h2>Review (ai-daridev)</h2>` section is replaced with the dated findings. If the card is in
-  `odoo_stage_done`, the same write moves it back to the active stage; from a later stage, stop and
+  `odoo_stage_done`, the same write moves it back to the in-progress column; from a later stage, stop and
   report. Missing work becomes new steps, in the same gate, and so does a criterion you cannot
   verify: it becomes a `[you]` step, which is what hands the card to you.
 
