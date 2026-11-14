@@ -40,9 +40,14 @@ Add the block to the `AGENTS.md` of the repo (or subproject) that uses the workf
 - odoo_stage_done: Sprint Complete
 - card_tag: backend
 - odoo_assignee_manual_uid: 2
+- deploy_url: https://acme.example.com/health
 <!-- ai-daridev:end -->
 ```
 
+- `deploy_url` is the campaign's deploy signal: after pushing main, it waits 100s and then requests
+  that URL, four times. A 200 means the deploy is up; `deploy_expect` optionally names a commit
+  marker the response must contain. No `deploy_url` → the campaign requests the app root instead.
+  The key is read only by `/ai-daridev-campaign`; the other skills ignore it.
 - The block is also the anchor: the nearest one wins. `n8n-automations/ourlivesapp` inherits
   `n8n-automations`, unless `ourlivesapp/AGENTS.md` declares its own block — then it gets its own
   `docs/ai-daridev/` and its own Odoo project.
@@ -111,6 +116,10 @@ so with `odoo_update` on `ask` plan for three prompts per step; allowing `odoo_u
 the per-phase gate is already the approval. Cap: screenshot ≤500 KB. Redact
 secrets and mask client data
 before upload. The skills never delete or bulk-update.
+
+`/ai-daridev-campaign` cannot wait on a prompt, so it needs `odoo_create` and `odoo_update` on
+`allow`; keep `odoo_delete` and `odoo_execute` on `ask`, the campaign never uses them. That grant is
+global to the client, not scoped to a campaign session.
 
 ## Windows
 

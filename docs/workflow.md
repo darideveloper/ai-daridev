@@ -229,6 +229,19 @@ current checklist — fixes the gaps, asks one question at a time and renders it
 its subtasks and the derived assignees after two gates (the plan, then the exact writes). It never creates a card, never deletes a subtask and
 never drops a `1_done` step.
 
+`/ai-daridev-campaign` runs the five phases over a batch instead of a card. One invocation is one
+authorization: the gate lists the batch, the ready set, and every write it may make, and then it runs
+without stopping. One worktree per card (`<repo>-<slug>`), `--parallel 4` implementers, and exactly one
+closer that owns `fetch`/rebase/`ff-only`/push on main, so only one agent writes to main at a time. Per
+card: pair → rebase + suite → `ff-only` → push → 100s + deploy validation ×4 → prod evidence refresh →
+a fresh agent reviews → archive → `log.md` push → worktree cleanup, then the ready set is recomputed so
+archived blockers free their dependents in the same run. A card that cannot proceed is **parked**: one
+`[you]` step plus the assignee handoff, reported, never archived. A failed review reverts the card's
+commit before the fix. Limits: 10 cards, 45 minutes of implementation per card, three loops, and the
+run stops after three card-level parks in a row. It never waives evidence, never archives a drifted
+card, never cancels one and never runs a destructive non-code step. Resume from the journal unless you
+pass `fresh`; `--dry-run` prints the whole plan and writes nothing.
+
 ## Without Odoo
 
 Every phase still works. Backlog and story print the card, the subtask list and the `Evidence`

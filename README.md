@@ -24,8 +24,10 @@ The agent splits, proposes and writes code in small steps. You decide.
 | `/ai-daridev-review` | Grades someone else's card against its criteria, steps and evidence, then writes the verdict and the move on approval. | Move a card without approval, invent a verdict, mark work done. |
 | `/ai-daridev-archive` | Gates on the validated column and the green dot, marks the card done so Odoo frees its dependents, then appends the retro to `docs/ai-daridev/log.md`. | Move cards, cancel, create cards, invent a retro, turn a card green. |
 | `/ai-daridev-check-plan` | Audits any plan in detail, fixes the gaps one question at a time and renders an ordered checklist. Outside the flow; with a named card it also updates the card checklist, its subtasks and the derived assignees. | Invent requirements, write files, move cards. |
+| `/ai-daridev-campaign` | Runs the whole flow over a batch, unattended: one worktree per card, pair → integrate → deploy → review → archive, one gate at the start, parks what needs you. Outside the flow. | Waive evidence, archive a drifted card, cancel a card, run destructive non-code steps. |
 
-Each phase ends waiting for your approval. Moves are proposed, never silent: a card changes column
+Each phase ends waiting for your approval — except a campaign, which takes its one approval at the
+start and then runs. Moves are proposed, never silent: a card changes column
 only when you ask or approve it, in the same write as its state, and archive is the only phase that
 marks a card done. Assignees are derived from the checklist — the card follows whose step is next —
 so they are written with the step and reported, not asked.
@@ -63,7 +65,7 @@ cd ai-daridev
 ./scripts/install.sh --check
 ```
 
-`install.sh` symlinks the six skills into `~/.agents/skills` and every installed agent, links the
+`install.sh` symlinks every skill in `skills/` into `~/.agents/skills` and every installed agent, links the
 OpenCode commands, and replaces the old global instruction block (backup first). It installs
 nothing else and never edits MCP or JSON config.
 
