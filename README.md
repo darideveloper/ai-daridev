@@ -89,7 +89,8 @@ Declare the project in the repo's `AGENTS.md`:
   files are written.
 - Backlog stage = the project's first stage by sequence. `odoo_stage_done` is the validated column:
   review moves an approved card there with the green dot, and archive refuses to close a card that is
-  not green in that column. Pair unblocks on `1_done`, not on the column.
+  not green in that column. Pair unblocks on `1_done`, not on the column. `odoo_stage_done` resolves
+  inside that project's stages; a name shared with other projects is not a match.
 - Archived cards (`1_done`) are hidden by the default board filter; enable `Closed Tasks` to see
   them.
 - Evidence attachments use `ir.attachment` with read/create only; the agent's Odoo allowlist must

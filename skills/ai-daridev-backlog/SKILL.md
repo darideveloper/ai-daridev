@@ -55,7 +55,7 @@ On approval, create the cards in one ordered batch, story 1 first. Slug = kebab-
 - `user_ids: [[6,0,[<odoo_assignee_uid>]]]` when the block declares it, so the card belongs to the
   agent user; with no key, omit `user_ids` and let Odoo assign the creator. If I name an assignee,
   resolve the exact `res.users` name or login and use that id instead; 0 or 2+ matches → stop and
-  list. Never assign silently. No `state`, no deadline unless I gave one.
+  list. No `state`, no deadline unless I gave one.
 - Description, exactly:
   `<h1>{title}</h1><p>{As a …, I want …, so that …}</p><p><em>ai-daridev: story/{slug}</em></p>`
   — the `Requires: #N` clause is not prose and never appears here.
@@ -82,8 +82,10 @@ is where a new card goes; `Requires: #N` stays in the list as text. Write no fil
   and write nothing outside it. No block → ask once: create it here, use the git root, or chat-only.
 - **Config.** Read `odoo_project`, `odoo_stage_done`, `card_tag`, `card_tag_extra`,
   `odoo_assignee_uid` and `odoo_assignee_manual_uid` from the block. No `odoo_project` → Odoo is off.
-  Resolve the project, the tags and the stages by exact name; 0 or 2+ matches → stop and list the
-  real ones. Backlog stage = lowest `sequence`. Default tag `backend`.
+  Resolve the project and the tags by exact name; 0 or 2+ matches → stop and list the real ones.
+  Resolve the stages **inside that project** (`project.task.type` whose `project_ids` contains it);
+  a stage name that also exists in other projects is not a match and must not stop the run.
+  Backlog stage = lowest `sequence`. Default tag `backend`.
 - **Moves and assignees are proposed, not assumed.** Move a card only when I ask in this turn, when
   the phase gate lists it and I say yes, or when the column and the state already disagree and I
   approve the repair. Show the exact write in the gate; never move silently.
@@ -91,8 +93,9 @@ is where a new card goes; `Requires: #N` stays in the list as text. Write no fil
   → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
   backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
   (I confirm; dependents stay blocked). Never move a subtask or an archived (`1_done`) card.
-- **Assignees need a name.** `user_ids` only when I name the person; resolve the exact `res.users`
-  name or login, 0 or 2+ matches → stop and list.
+- **Assignees come from the block.** Cards and `[agent]` steps use `odoo_assignee_uid`; `[you]`
+  steps use `odoo_assignee_manual_uid`; with no key, Odoo assigns the creator. Writing `user_ids`
+  for a person I name still resolves the exact `res.users` name or login, 0 or 2+ matches → stop.
 - **Agents write:** the description (story), its `Evidence` tail (pair), subtask states,
   `state=03_approved` + `date_end` (close), `state=02_changes_requested` (review).
 - **One approval gate per phase.** Structure asks once; state changes are reported, not asked.

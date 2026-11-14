@@ -53,8 +53,9 @@ Add the block to the `AGENTS.md` of the repo (or subproject) that uses the workf
   `[you]` steps. With no key, Odoo assigns the creator.
 - `odoo_stage_done` is the validated column: review moves an approved card there with the green dot,
   and archive only closes cards already there and green. Pair unblocks on `1_done`, not on the
-  column. It must match the exact stage name. Archived cards (`1_done`) are hidden by the default
-  board filter; enable `Closed Tasks` to see them.
+  column. It must match exactly one stage **inside the project**; a stage name shared with other
+  projects is not ambiguous. Archived cards (`1_done`) are hidden by the default board filter;
+  enable `Closed Tasks` to see them.
 - Existing 3.x blocks work unchanged; unknown keys are ignored.
 
 ## Odoo MCP
