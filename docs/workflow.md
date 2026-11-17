@@ -51,11 +51,11 @@ The description has four zones: the brief, `Review (daridev)` (the probes), `Evi
 
 ## Worktree, not branch
 
-`pair` and any ad-hoc edit ask once `Worktree or current branch? [worktree]` before the first write,
-after the mode line; the answer is kept for the session. A worktree is `<repo>-<slug>` on
-`feat/<slug>`, and the close reports `worktree: removed|kept <path>`. Read-only phases, doc-only
-writes and `/daridev-campaign` never ask. OpenCode removes nothing by itself: removal is
-`worktree_remove`, or `git worktree remove` + `prune` + `branch -d` once merged.
+`pair` and ad-hoc edits ask once `Worktree or current branch? [worktree]` before the first write,
+after the mode line, and keep the answer. A worktree is a sibling of the canonical checkout, named
+`<repo>-<slug>` and on `feat/<slug>`; the close reports `worktree: removed|kept <path>`. Read-only
+phases, doc-only writes and `/daridev-campaign` never ask. OpenCode removes nothing by itself:
+removal is `worktree_remove`, or `git worktree remove` + `prune` + `branch -d` once merged.
 
 ## Odoo is per session
 
