@@ -6,8 +6,17 @@ disable-model-invocation: true
 
 # Odoo
 
-Read **Mode** first, even when the session may end up off. When it is on, read the rest before the
-first write. This file is the only copy of these rules; the phases never restate them.
+Read **Root memory** and **Mode** first, even when the session may end up off. When it is on, read
+the rest before the first write. This file is the only copy of these rules; the phases never
+restate them.
+
+## Root memory
+
+The root is the nearest `AGENTS.md` holding `<!-- daridev:start -->` (or the legacy
+`<!-- ai-daridev:start -->`). Its memory is `docs/records/`; if only `docs/ai-daridev/` exists, it
+is the memory: read **and write** it in place (`spec.md`, `log.md`, `evidence/`, `decisions.md`)
+and print the `git mv docs/ai-daridev docs/records` hint. Never create `docs/records/` beside it.
+If both exist, use `docs/records/` and report the stale one. Nothing is written above the root.
 
 ## Mode (per session)
 
@@ -29,9 +38,7 @@ first write. This file is the only copy of these rules; the phases never restate
 ## Config
 
 Read `odoo_project`, `odoo_stage_done`, `card_tag`, `card_tag_extra`, `odoo_assignee_uid`,
-`odoo_assignee_manual_uid`, `deploy_url`, `deploy_expect` from the nearest `AGENTS.md` holding
-`<!-- daridev:start -->`. The root's memory is `docs/records/`; read `docs/ai-daridev/` when the
-new folder is absent, and if both exist use `records` and report the stale one.
+`odoo_assignee_manual_uid`, `deploy_url`, `deploy_expect` from the root block.
 
 Resolve the project and tags by exact name; 0 or 2+ → stop and list. Resolve stages inside that
 project (`project.task.type` whose `project_ids` contains it). Backlog = lowest `sequence`;

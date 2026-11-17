@@ -12,8 +12,8 @@ You drive, I navigate. One step at a time; stop only when the plan runs out.
 `Odoo: on · <project> · card #<id> "<name>"` or `Odoo: off · chat-only`.
 A card, slug or flag decides; with nothing it is off and you do not ask.
 
-On Odoo, read `../daridev-odoo/SKILL.md` before the first write: it owns mode, stages, moves,
-assignees and the evidence upload. Never restate it.
+Before the first write, read `../daridev-odoo/SKILL.md`: it owns the root memory and, on Odoo,
+mode, stages, moves, assignees and the evidence upload. Never restate it.
 
 ## Open
 

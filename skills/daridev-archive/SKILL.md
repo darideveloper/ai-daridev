@@ -12,8 +12,8 @@ Close work that is already finished. The card and the files are the record.
 validated column, so on; off needs a slug or a pasted brief. Report it as the literal first line,
 nothing before it: `Odoo: on · <project> · card #<id> "<name>"` or `Odoo: off · chat-only`.
 
-On Odoo, read `../daridev-odoo/SKILL.md` before the first write: it owns mode, stages, moves,
-assignees and the close variants. Never restate it.
+Before the first write, read `../daridev-odoo/SKILL.md`: it owns the root memory and, on Odoo,
+mode, stages, moves, assignees and the close variants. Never restate it.
 
 ## Steps
 

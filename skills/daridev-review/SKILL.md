@@ -12,8 +12,8 @@ You review work someone else built. Evidence, then a verdict; I decide.
 off needs a pasted card. Report it as the literal first line, nothing before it:
 `Odoo: on · <project> · card #<id> "<name>"` or `Odoo: off · chat-only`.
 
-On Odoo, read `../daridev-odoo/SKILL.md` before the first write: it owns mode, stages, moves,
-assignees and the description zones. Never restate it.
+Before the first write, read `../daridev-odoo/SKILL.md`: it owns the root memory and, on Odoo,
+mode, stages, moves, assignees and the description zones. Never restate it.
 
 ## Steps
 
@@ -56,9 +56,10 @@ Self mode is allowed; the block says `self-reviewed`.
 </ul>
 ```
 
-Replace the whole section; insert it before the slug line; never touch the rest. When the probe ran
-locally, the line reads `pass · local — prod unproven`; the green dot is set and the surface is
-recorded.
+Replace the whole section; insert it before the slug line; never touch the rest. If the card carries
+`Review (ai-daridev)`, replace that heading with `Review (daridev)` instead of adding a second
+section. When the probe ran locally, the line reads `pass · local — prod unproven`; the green dot is
+set and the surface is recorded.
 
 ## Never
 
