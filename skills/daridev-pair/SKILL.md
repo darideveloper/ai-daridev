@@ -19,6 +19,8 @@ mode, stages, moves, assignees and the evidence upload. Never restate it.
 
 - Card via MCP, or the brief pasted, or the plan already approved in this conversation. No plan →
   propose one with `/daridev-plan`'s rules, one gate, continue.
+- Worktree: in the canonical checkout, ask `Worktree or current branch? [worktree]` before p1 and
+  follow the `AGENTS.md` worktree block — it owns when to ask and what follows.
 - On: read `depend_on_ids` first. A blocker not `1_done` outside Cancelled stops the run with one
   line and what unblocks it. Then move the card to the in-progress column (one write, reported, not
   asked; skip when already there, in the validated column, Cancelled or `1_done`). Checklist = the
@@ -49,8 +51,8 @@ missing or wrong check is a plan change — stop and ask.
 
 - List open steps: flip, leave the card open, or drop (`1_canceled` + ` (dropped)`, never deleted).
 - Propose one sentence for `docs/records/spec.md` under `## <domain>` when behaviour changed.
-- Print the handoff: what shipped, the spec line, the card state, the step summary, and the commit
-  message for me to run.
+- Print the handoff: what shipped, the spec line, the card state, the step summary,
+  `worktree: removed|kept <path>`, and the commit message for me to run.
 - **No MCP:** print one block per step, in order, each with its local path and label, plus the
   upload instruction:
 
