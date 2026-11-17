@@ -36,8 +36,8 @@ new folder is absent, and if both exist use `records` and report the stale one.
 Resolve the project and tags by exact name; 0 or 2+ → stop and list. Resolve stages inside that
 project (`project.task.type` whose `project_ids` contains it). Backlog = lowest `sequence`;
 sprint = name matches `sprint backlog`; in progress = `in progress` (case-insensitive);
-validated = `odoo_stage_done`. Cards are found by `<p><em>daridev: story/<slug></em></p>`; legacy
-`ai-daridev:` and `engram:` are accepted on read.
+validated = `odoo_stage_done`. Cards are found by `<p><em>daridev: card/<slug></em></p>`; legacy
+`story/`, `ai-daridev: story/` and `engram: story/` are accepted on read.
 
 ## Moves
 
@@ -55,19 +55,21 @@ next open step is `[you]`. Next open = lowest `sequence` child not `1_done`/`1_c
 `[[4, uid]]`/`[[3, uid]]`, never `[[6,0,…]]`; add the agent when missing. Derived, reported, not
 asked. No manual uid → no handoff; ask once and offer the key. A named person resolves exactly.
 
-## Description — three zones
+## Description — four zones
 
 ```
-[plan]    <h1>, Problem, Done when
-[review]  <h2>Review (daridev)</h2> ...        (above the slug line)
-[frozen]  <p><em>daridev: story/<slug></em></p>
-[legacy]  <h2>Evidence (ai-daridev)</h2> ...   (old cards; byte-for-byte)
+[plan]      <h1>, Problem, Done when
+[review]    <h2>Review (daridev)</h2> ...        (above the slug line)
+[evidence]  <h2>Evidence (daridev)</h2> ...      (pair-owned, append-only)
+[frozen]    <p><em>daridev: card/<slug></em></p>
+[legacy]    <h2>Evidence (ai-daridev)</h2> ...   (old cards; byte-for-byte)
 ```
 
-`plan` writes the first zone, rewrites the slug line, and preserves everything after it (or after
-an existing `Review` heading) byte-for-byte. A legacy tail may be collapsed to one attachment
-pointer only with approval. `review` replaces only its section, inserting it before the slug.
-Nobody else writes the description. Cap: 10 lines above the review block.
+`plan` writes the first zone, rewrites the slug line to `card/<slug>`, and preserves everything
+after it (or after an existing `Review` heading) byte-for-byte, including the evidence gallery. A
+legacy tail may be collapsed to one attachment pointer only with approval. `review` replaces only
+its section, inserting it before the slug. `pair` appends the evidence gallery. Nobody else writes
+the description. Cap: 10 lines above the review block.
 
 ## Subtasks = steps
 
@@ -75,16 +77,26 @@ Nobody else writes the description. Cap: 10 lines above the review block.
 `sequence = index × 10`, `state=01_in_progress`, owner uid, `display_in_project=False`. Never write
 the subtask's `project_id` or `stage_id`. On a legacy card, new steps start at `max+10`; open
 legacy steps superseded by a new plan become `1_canceled` + ` (superseded)` with approval; a
-`1_done` step is never renamed or dropped. States: `01_in_progress` · `1_done` ·
+`1_done` step is never renamed or dropped. Review-created missing-work steps use
+`state=02_changes_requested` (yellow). States: `01_in_progress` · `1_done` ·
 `02_changes_requested` · `1_canceled`. Never delete a subtask.
 
 ## Evidence
 
-A visual step gets one screenshot attached to **that subtask** (`ir.attachment`,
-`res_model=project.task`, `res_id=<subtask>`, `image/*`, > 0 bytes), named `pN-<step>.png`, and a
-local copy under `docs/records/evidence/<YYYY-MM-DD>-<slug>/`. A non-visual step attaches nothing;
-its `check:` is the proof. Never a `.txt` link as the only proof; never delete an orphan. The
-probe block in `Review` is what proves the Done-when.
+The card shows the screenshots in `Evidence (daridev)`, one entry per step, labelled
+`pN "<step>" — [owner] · <surface>` (`prod`, `staging — not deployed`, `local — not deployed`).
+
+- **With MCP:** the image is attached to **that subtask** (`ir.attachment`,
+  `res_model=project.task`, `res_id=<subtask>`, `image/*`, > 0 bytes), named `pN-<step>.png`; the
+  card renders `<p><img src="/web/image/{id}" …/></p>` under the label.
+- **Without MCP:** the teammate pastes the image into `Evidence (daridev)`; Odoo attaches it to the
+  card. The subtask keeps no attachment.
+- One entry per step; a re-capture replaces it; old attachments stay as history.
+- A non-visual step gets one `<code>` line under the label instead of an image.
+- Local copy always: `docs/records/evidence/<YYYY-MM-DD>-<slug>/pN-<step>.png` (untracked).
+- Verify before flipping: the image resolves and the attachment row is on the expected record
+  (subtask or card), `image/*`, `file_size > 0`. Never a `.txt` link as the only proof; never delete
+  an orphan. The probe block in `Review` is what proves the Done-when.
 
 ## Who writes what
 
@@ -92,8 +104,9 @@ probe block in `Review` is what proves the Done-when.
 |---|---|
 | description top | plan |
 | subtasks create/rename/sequence | plan; review for new steps |
-| subtask state | plan (open), pair (done/drop), review (changes) |
+| subtask state | plan (open), pair (done/drop), review (changes and new steps) |
 | attachment on a subtask | pair |
+| `Evidence (daridev)` gallery | pair, or the teammate without MCP |
 | `stage_id` + `state` | plan (sprint), pair (in progress), review, archive (skip-review) |
 | `Review` block | review |
 | `1_done`, `docs/records/log.md` | archive |

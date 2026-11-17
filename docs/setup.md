@@ -70,7 +70,9 @@ the project and its parameters; whether a session writes cards is decided per se
   match `Sprint Backlog` and `In Progress` (case-insensitive). Zero or two matches → the skill asks
   once.
 - `deploy_url` is the campaign’s deploy signal: after pushing main it waits 100s and requests that
-  URL four times. `deploy_expect` optionally names a commit marker the response must contain.
+  URL four times. `deploy_expect` optionally names a commit marker the response must contain. If
+  the key is missing, the campaign asks once at pre-flight and prints the line to add; `skip` means
+  no deploy wait and the app root is probed.
 - Existing `ai-daridev` blocks are read unchanged; unknown keys are ignored.
 
 ## Odoo MCP
@@ -108,7 +110,8 @@ Verify by calling a read tool in a **new session**, not by listing servers.
 
 The agent’s Odoo allowlist must include `ir.attachment` (read/create only, scoped to
 `project.task` attachments) so pair can attach the step screenshot. Attachments are created on the
-**subtask** the step lives in.
+**subtask** the step lives in, and the card renders them in `Evidence (daridev)` by
+`/web/image/{id}`.
 
 ## Permissions
 
@@ -136,7 +139,9 @@ dependencies.
 
 Without Odoo credentials the skills print the manual checklist and still write the files; captures
 land in `docs/records/evidence/` instead of an attachment. A teammate with MCP reads the card
-directly; without MCP, they paste the card text and the skill works on that.
+directly; without MCP, they paste the card text and the skill works on that. Without MCP they also
+paste the screenshots into the card’s `Evidence (daridev)` section — the label is printed by
+`pair` — or send the files to the reviewer if they cannot edit the card.
 
 ## Existing repos
 
@@ -158,7 +163,7 @@ directly; without MCP, they paste the card text and the skill works on that.
 | Two command sets after upgrading | re-run `./scripts/install.sh`; it removes `ai-daridev-*` links |
 | The agent says the Odoo project has 0 or 2 matches | make `odoo_project` match exactly one project |
 | No cards are created | the session is off — say `--odoo`; or the block has no `odoo_project`, or MCP is not registered |
-| Evidence is not on the step | the session was chat-only, or the upload failed; the file is under `docs/records/evidence/` |
+| Evidence is not on the step | the session was chat-only, or the upload failed; the file is under `docs/records/evidence/`, and a no-MCP teammate pastes it into the card gallery |
 | `docs/records/evidence/` shows in `git status` | commit its `.gitignore` (`*` and `!.gitignore`); the images stay untracked |
 | A refined card stays in Backlog | the project has no `Sprint Backlog` stage, or the card was not in the backlog stage |
 | Files land in the wrong repo | a parent `AGENTS.md` has the block; add one where you want the root |

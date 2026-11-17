@@ -33,7 +33,7 @@ about the expensive decisions (tenancy, roles, offline/sync, i18n/currency) with
 Output: `Context` + ≤10 one-line briefs, first one a walking skeleton; `Requires: #N` only when a
 story cannot stand alone. On approval (Odoo on) create the cards: backlog stage, `sequence` max+10,
 primary tag + `card_tag_extra`, agent assignee, `Requires` as `depend_on_ids`, description
-`<h1>{title}</h1><p>{problem}</p><p><em>daridev: story/{slug}</em></p>`, no subtasks. Off → print
+`<h1>{title}</h1><p>{problem}</p><p><em>daridev: card/{slug}</em></p>`, no subtasks. Off → print
 the block. Guards: no self-link, no duplicate, same project, no cycle, never remove a link.
 
 ## Card
@@ -61,17 +61,29 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
    unambiguous; ask only what changes an action.
 5. **Gate.** Show the brief, the steps and the exact writes (description, N subtasks, stage/state,
    assignees). Stop.
-6. Apply. On: one description write + the subtasks + the move to the sprint column (or in progress
-   when there is no sprint stage), re-reading `write_date` first. Off: print the brief and steps.
+6. Apply. On: one description write (preserving the review block, the evidence gallery, the slug
+   line and any legacy tail) + the subtasks + the move to the sprint column (or in progress when
+   there is no sprint stage), re-reading `write_date` first. Off: print the brief and steps.
    Never green, never done, never cancel, never remove a blocker.
 
 ## Check
 
-- **Workflow** (a card is named): read it, audit, two gates — the plan, then the writes. Update
-  only the description top and the subtasks. Never move or create a card.
-- **Standalone** (no card): no root walk, no `AGENTS.md`, no git, no `docs/records/`, no Odoo, no
-  MCP, no writes. Runs from `~` or any directory. Never asks about Odoo. The two-gate rule does not
-  apply; ask one question at a time while auditing.
+- **Workflow** (a card is named): read it, `docs/records/spec.md`, the related ADRs and the files
+  the steps name. Audit, then two gates — the plan, then the writes. Update only the description
+  top and the subtasks. Never move or create a card.
+- **Standalone** (no card): no Odoo, no MCP, no writes to the board or docs. It reads the files the
+  plan names and runs the `check:` commands; outside a repo it audits the text only. Never asks
+  about Odoo. The two-gate rule does not apply; ask one question at a time while auditing.
+- **Read the code.** `Touched:` and every path in the steps. None named → ask once which files.
+  Report `Read: file1, file2 — no write.` A missing file, a step the code already does, or a plan
+  that contradicts the code is a finding.
+- **Run the checks.** The `check:` commands named in the steps, in order. Only test commands; never
+  servers, migrations, deploys or destructive commands. A test to be written is
+  `not yet written — expected`; an existing failure the plan does not address is a finding (a red
+  baseline the plan is meant to fix is expected); a manual check is `manual — not run`. A Django
+  test DB is throwaway; the product DB, Odoo and `docs/records/` are untouched. No `check:`
+  commands → ask once: run the suite or read-only. Timeout per command. Report
+  `step · command · result · implication`.
 - Select the plan: pasted → last ~20 messages → ask. Extract the intent verbatim. Audit coverage,
   accuracy, scope creep, clarity, consistency, feasibility/order, risk, simpler alternative.
   Auto-fix the unambiguous; ask only what changes an action; never invent; >10 gaps → stop.
@@ -82,4 +94,5 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
 ## Never
 
 Write code. Create a card in check mode. Move a card. Delete a subtask. Touch the review block, the
-slug line or a legacy tail. Invent a requirement. Fence the whole plan. Print a bare id.
+evidence gallery, the slug line or a legacy tail. Invent a requirement. Fence the whole plan. Print
+a bare id.

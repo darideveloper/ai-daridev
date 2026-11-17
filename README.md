@@ -18,7 +18,7 @@ The agent proposes and writes code in small steps. You decide.
 | Command | Does | Never does |
 |---|---|---|
 | `/daridev-plan` | Splits an idea into ≤10 one-line briefs, or refines one card into `Problem` / `Done when` / 3–7 steps with checks. Audits any plan read-only. | Write code, move a card in check mode, invent a requirement. |
-| `/daridev-pair` | Executes the approved steps: check red → minimum code → green → screenshot on the step's subtask. Stops on anything unplanned. | Review itself, archive, mark green, commit. |
+| `/daridev-pair` | Executes the approved steps: check red → minimum code → green → screenshot in the card gallery. Stops on anything unplanned. | Review itself, archive, mark green, commit. |
 | `/daridev-review` | Runs the `Done when` probes as the lowest-privilege actor and writes one `Review` block. | Capture evidence, archive, invent a verdict. |
 | `/daridev-archive` | Closes a green validated card, or a self-verified one you explicitly release, and appends a 4-line log. | Set the green dot, cancel a card, invent a retro. |
 | `/daridev-campaign` | Runs the flow over a batch: one worktree per card, plan → pair → integrate → deploy → review → archive. | Skip review, waive evidence, archive drift. |
@@ -38,10 +38,10 @@ asked.
 ## What the agent writes
 
 **Odoo (only when the session is on):** one card per brief; `Problem` / `Done when` in the
-description; one hidden subtask per step with its owner; a screenshot attached to the step for
-visual work; one `Review` block written by review; green + validated column on a pass; `1_done` at
-archive. `stage_id` and `state` always travel in the same write. Assignees follow the next open
-step. Archived cards are hidden by the default board filter.
+description; one hidden subtask per step with its owner; a screenshot in the card's `Evidence`
+gallery, attached to the step when MCP is available; one `Review` block written by review; green +
+validated column on a pass; `1_done` at archive. `stage_id` and `state` always travel in the same
+write. Assignees follow the next open step. Archived cards are hidden by the default board filter.
 
 **In the repo:** `docs/records/spec.md` (one sentence per behaviour), `docs/records/log.md`
 (4 lines per card), `docs/records/evidence/` (untracked), and `docs/decisions/` for ADRs. The root

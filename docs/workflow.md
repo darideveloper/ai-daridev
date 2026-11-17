@@ -23,12 +23,16 @@ No persona, no separate acceptance criteria. `Done when` names every surface a g
 limit or export must hold on. The description is at most 10 lines above the review block; anything
 longer belongs in the conversation or an ADR.
 
+The description has four zones: the brief, `Review (daridev)` (the probes), `Evidence (daridev)`
+(the screenshots, one entry per step, labelled `pN "<step>" · prod|local`), and the
+`daridev: card/<slug>` line. Old cards keep their `Evidence (ai-daridev)` tail below it.
+
 ## Three paths
 
 **Light — no card.**
 ```
 /daridev-plan <one-liner>      Odoo: off, one gate
-/daridev-plan check            optional, read-only
+/daridev-plan check            optional; reads the code and runs the checks
 /daridev-pair                  consumes the approved plan
 /daridev-archive               log + spec sentence, no card
 ```
@@ -36,7 +40,7 @@ longer belongs in the conversation or an ADR.
 **Carded — small fix, no review.**
 ```
 /daridev-plan <card>           card + subtasks
-/daridev-pair                  steps, screenshots on the subtasks
+/daridev-pair                  steps, screenshots in the card gallery
 /daridev-archive               "skip review" → done, not green
 ```
 
@@ -55,6 +59,12 @@ conversation and only the files are written.
 
 Green means **reviewed**. The validated column means **finished**; a skip-review card lands there
 without the green dot, so the board still shows who looked at it.
+
+## Evidence surface
+
+`pair` asks once `Screenshots from prod, staging or local? [prod]`; `review` asks once
+`Probe against prod or local? [prod]`. A probe on local, or on a card that is not deployed, is
+recorded as `surface: local — prod unproven` and holds the green dot; it is not a failure.
 
 ## Memory
 
@@ -75,7 +85,8 @@ tail is preserved unless you approve collapsing it to one attachment pointer.
 
 ## Outside the flow
 
-- `/daridev-plan check` — audits any plan read-only. No repo, no card, no Odoo, no writes.
+- `/daridev-plan check` — reads the code the plan names and runs its `check:` commands; no card,
+  no Odoo, no writes.
 - `/daridev-campaign` — runs the flow over a batch, unattended, one worktree per card.
 - `/daridev-plan split` — one idea into ≤10 one-line briefs and cards.
 

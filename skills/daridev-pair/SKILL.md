@@ -31,9 +31,13 @@ assignees and the evidence upload. Never restate it.
 2. Show it fail.
 3. Minimum code to pass.
 4. Show it pass.
-5. Visual step → screenshot the shipped surface, resize 1600×1000, mask client data, local copy
-   under `docs/records/evidence/<date>-<slug>/pN-<step>.png`, attach it to that step's subtask.
-   Non-visual → nothing extra.
+5. Visual step → before the first one, ask once
+   `Screenshots from prod, staging or local? [prod]` (default prod when deployed, local when not)
+   and keep it. Capture on that surface at 1600×1000, mask client data, save under
+   `docs/records/evidence/<date>-<slug>/pN-<step>.png`. With MCP: attach it to that step's subtask,
+   append the gallery entry to `Evidence (daridev)` (`pN "<step>" — [agent] · <surface>` plus
+   `<img src="/web/image/{id}">`), and verify both before flipping. Without MCP: print the handoff
+   label and the upload instruction (see Close). Non-visual → one `<code>` line under the label.
 6. Flip the subtask to `1_done` (on) and report.
 7. `Plan 4/7 · next p5 "<step>" ([agent|you])`.
 
@@ -47,6 +51,17 @@ missing or wrong check is a plan change — stop and ask.
 - Propose one sentence for `docs/records/spec.md` under `## <domain>` when behaviour changed.
 - Print the handoff: what shipped, the spec line, the card state, the step summary, and the commit
   message for me to run.
+- **No MCP:** print the exact label and the upload instruction:
+
+  ```
+  Open the screenshot and confirm it shows the step. If it does, open the card in Odoo,
+  add this label under Evidence (daridev), and paste the image under it. If you cannot
+  edit the card, send the files to the reviewer.
+
+  pN "<step>" — [agent] · local — not deployed
+  ```
+
+  For a non-visual step, the same label and the `<code>` line go in the same place.
 
 ## Never
 

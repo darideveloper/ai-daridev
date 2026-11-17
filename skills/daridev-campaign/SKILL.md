@@ -33,6 +33,9 @@ printed once and then it runs.
 - `--parallel N` (default 4), `--max N` (default 10). `--dry-run` prints the batch, the gate and
   every write, then stops with no Odoo write, branch, worktree or journal.
 - `fresh` refuses when a selected slug already has a sibling worktree.
+- Missing `deploy_url` at pre-flight → ask once
+  (`deploy_url for <repo>? [<app root> / skip]`), use the answer for the run and print the block
+  line to add; `skip` means no deploy wait and the app root is probed.
 
 ## 2. The gate
 
@@ -40,8 +43,9 @@ One table — card, next open step, owner, blockers, branch, worktree — then o
 Authorized, and nothing else:
 
 - move each card to the in-progress column (`stage_id` + `state=01_in_progress`);
-- flip steps to `1_done`, attach screenshots to the step's subtask, create the hidden park step,
-  reconcile `user_ids`;
+- apply the plan check's description and subtask updates;
+- flip steps to `1_done`, attach screenshots to the step's subtask and append the evidence gallery,
+  create the hidden park step, reconcile `user_ids`;
 - commit on the card's branch, push it, fetch, rebase, run the suite, `merge --ff-only` into main,
   `git revert` a landed card, push main;
 - wait for the deploy (100s + `deploy_url` ×4) and run review's probes on prod;
@@ -66,14 +70,16 @@ step means.
 
 1. **Implementer** (up to the ready set): `worktree_create <repo>-<slug>` with an explicit name
    (shell `git worktree add` only for a specific base, sibling only), `session_move` in, branch
-   `feat/<slug>`, run `/daridev-plan` if unrefined then `/daridev-pair`. It returns `complete`,
-   `blocked` or `partial`, the steps it flipped, the local evidence, the spec/decision lines and
-   the branch head. Anything but `complete` is parked, never integrated. A `[you]` step mid-card
-   parks on that step, no new one.
+   `feat/<slug>`, run `/daridev-plan check` on every card (code-only, no gate; the campaign gate
+   authorizes) then `/daridev-pair`. A plan change is applied under the gate; a decision parks the
+   card. It returns `complete`, `blocked` or `partial`, the steps it flipped, the local evidence,
+   the spec/decision lines and the branch head. Anything but `complete` is parked, never integrated.
+   A `[you]` step mid-card parks on that step, no new one.
 2. **Integrate** (the scheduler): fetch, rebase onto `origin/main`, install only when needed, run
    the full suite. Conflict or red → park, main untouched. Then `merge --ff-only` and push.
-3. **Wait for the deploy:** 100s, then `deploy_url` (HTTP 200, plus `deploy_expect` when declared);
-   no `deploy_url` → the app root. Four attempts, ~400s. Exhausted → park that card only.
+3. **Wait for the deploy:** 100s, then the `deploy_url` asked at pre-flight (HTTP 200, plus
+   `deploy_expect` when declared); `skip` → no wait, probe the app root. Four attempts, ~400s.
+   Exhausted → park that card only.
 4. **Review:** a fresh subagent runs `/daridev-review` and its probes on prod. Approved → it writes
    green + the validated move. Changes requested → `git revert` the landed commit first, push, wait
    for the deploy, reset the worktree, hand the findings back. Three loops, then park.
@@ -88,7 +94,7 @@ step means.
 
 | Skill | Single card | Campaign |
 |---|---|---|
-| pair | one gate per phase, waits for me | the gate is §2; the plan is audited in-session, never asks |
+| pair | one gate per phase, waits for me | the gate is §2; the plan is always re-checked against the current code, never asks |
 | pair close | green only when I say yes | never green; review is the only green authority |
 | review | moves only with my approval | its write is the §2 authorization |
 | archive | waits for my yes | automatic when green and proven; drift parks |
