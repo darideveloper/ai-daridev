@@ -62,8 +62,8 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
    invent; ask.
 4. Audit before the gate: coverage, scope creep, order, risk, a simpler alternative. Auto-fix the
    unambiguous; ask only what changes an action.
-5. **Gate.** Show the brief, the steps and the exact writes (description, N subtasks, stage/state,
-   assignees). Stop.
+5. **Gate.** Show the brief and the steps, rendered as `## Render`, plus the exact writes
+   (description, N subtasks, stage/state, assignees). Stop.
 6. Apply. On: one description write (preserving the review block, the evidence gallery, the slug
    line and any legacy tail) + the subtasks + the move to the sprint column (or in progress when
    there is no sprint stage), re-reading `write_date` first. Off: print the brief and steps.
@@ -92,9 +92,33 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
 - Select the plan: pasted → last ~20 messages → ask. Extract the intent verbatim. Audit coverage,
   accuracy, scope creep, clarity, consistency, feasibility/order, risk, simpler alternative.
   Auto-fix the unambiguous; ask only what changes an action; never invent; >10 gaps → stop.
-- Map every requirement to a step; print the count. Render the full plan: owner and check per step,
-  ≤6 change rows, commands in fenced blocks indented to the bullet, never fence the whole plan.
-  `show audit` / `full report` expands the detail.
+- Map every requirement to a step; print the count. Render it as `## Render` says — never the write
+  shape. `show audit` / `full report` expands the detail.
+
+## Render
+
+Return the full plan every time, even when nothing is asked. Every step is `- [ ]` (`- [x]` when it
+is already `1_done`), never a bare `- pN`: the card's `Steps: … check:` is the write format, not the
+render. One command per step, in a fence indented to that bullet's content column (4 spaces under
+`  - `, 2 spaces directly under the step), never at column 0 — a column-0 fence closes the list and
+flattens every step after it — and never inline after the step as well. ≤6 change rows. Never fence
+the whole plan.
+
+````markdown
+## Plan: <title>
+_standalone · no card_        <!-- or _card #14842 "<name>"_ -->
+
+**Done when:** <outcome, one per surface>
+
+- [ ] p1 <one action> — [agent]
+  - `<path>` — what the check proves · <result>
+    ```
+    <the check command>
+    ```
+- [ ] p2 <one action> — [you]
+
+_5 steps · 4 agent · 1 you · <N>/<N> requirements traced · <N> findings · <N> answers_
+````
 
 ## Never
 
