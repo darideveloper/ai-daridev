@@ -35,8 +35,8 @@ assignees and the evidence upload. Never restate it.
    `Screenshots from prod, staging or local? [prod]` (default prod when deployed, local when not)
    and keep it. Capture on that surface at 1600×1000, mask client data, save under
    `docs/records/evidence/<date>-<slug>/pN-<step>.png`. With MCP: attach it to that step's subtask,
-   append the gallery entry to `Evidence (daridev)` (`pN "<step>" — [agent] · <surface>` plus
-   `<img src="/web/image/{id}">`), and verify both before flipping. Without MCP: print the handoff
+   append the gallery entry to `Evidence (daridev)` (create the heading only when missing, after
+   `Review` and before the slug), and verify both before flipping. Without MCP: print the handoff
    label and the upload instruction (see Close). Non-visual → one `<code>` line under the label.
 6. Flip the subtask to `1_done` (on) and report.
 7. `Plan 4/7 · next p5 "<step>" ([agent|you])`.
@@ -51,17 +51,19 @@ missing or wrong check is a plan change — stop and ask.
 - Propose one sentence for `docs/records/spec.md` under `## <domain>` when behaviour changed.
 - Print the handoff: what shipped, the spec line, the card state, the step summary, and the commit
   message for me to run.
-- **No MCP:** print the exact label and the upload instruction:
+- **No MCP:** print one block per step, in order, each with its local path and label, plus the
+  upload instruction:
 
   ```
   Open the screenshot and confirm it shows the step. If it does, open the card in Odoo,
-  add this label under Evidence (daridev), and paste the image under it. If you cannot
+  add each label under Evidence (daridev), and paste its image under it. If you cannot
   edit the card, send the files to the reviewer.
 
-  pN "<step>" — [agent] · local — not deployed
+  p5 "<step>" — [agent] · local — not deployed
+     docs/records/evidence/<date>-<slug>/p5-<step>.png
   ```
 
-  For a non-visual step, the same label and the `<code>` line go in the same place.
+  A non-visual step prints the same label and the `<code>` line to paste.
 
 ## Never
 

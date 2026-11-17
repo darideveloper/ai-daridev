@@ -24,8 +24,8 @@ assignees and the close variants. Never restate it.
      assignees;
    - card in an active column, all steps closed, and I say **skip review** → one write:
      `stage_id=odoo_stage_done`, `state=1_done`, `date_end`, agent-only assignees. **No green dot.**
-     Skip review only when the Done-when were probed on the accepted surface; a card proven only
-     locally goes through review.
+     Skip review only when the Done-when were probed on the accepted surface. A card proven only
+     locally goes through review, which greens it and records `surface: local — prod unproven`.
 
    Refuse an open step, a cancelled card, an archived card, another project. List what frees and
    what stays blocked.

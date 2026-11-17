@@ -22,8 +22,9 @@ assignees and the description zones. Never restate it.
 2. Read the brief, the steps and their states, `write_date`. No `Done when` → say so and ask what
    correct means; never invent a verdict.
 3. **Surface.** Ask once: `Probe against prod or local? [prod]`. Prod → the probes are the prod
-   proof. Local or not deployed → record `surface: local — prod unproven`, hold the green dot, and
-   never FAIL for a missing deploy.
+   proof. Local or not deployed → record `surface: local — prod unproven`; the verdict may still
+   pass and green the card, and the block names the surface. Never FAIL for a missing deploy.
+   Invoked by a campaign → prod, never ask.
 4. **Probe** every `Done when` line as the lowest-privilege actor it names. For a gate, permission,
    limit or export, enumerate the sibling surfaces (each export, bulk action, list, detail,
    autocomplete, API). Record actor + probe + result. A claim you cannot prove is FAIL, never PASS,
@@ -37,10 +38,10 @@ assignees and the description zones. Never restate it.
    - Pass → flip every step that passed to `1_done` (one update), then one card update
      (`03_approved`, `date_end`, validated column, assignee diff) plus the `Review` block. A step
      that is not `1_done`/`1_canceled` blocks the green dot: list it instead of approving.
-   - Fail → card `02_changes_requested` + the block, and move it to **In Progress** from Backlog,
-     Sprint Backlog, In Progress or Sprint Complete (one write); stop from a later stage. Existing
-     failing steps to `02_changes_requested`; missing work becomes new subtasks created with
-     `state=02_changes_requested` (yellow).
+   - Fail → one card update (`state=02_changes_requested` + move to **In Progress** from Backlog,
+     Sprint Backlog, In Progress or Sprint Complete); stop from a later stage. Then the `Review`
+     block, the failing steps to `02_changes_requested`, and missing work as new subtasks created
+     with `state=02_changes_requested` (yellow).
 8. Apply, then print the verdict and the checklist states. Stop: archiving is my next move.
 
 Self mode is allowed; the block says `self-reviewed`.
@@ -56,7 +57,8 @@ Self mode is allowed; the block says `self-reviewed`.
 ```
 
 Replace the whole section; insert it before the slug line; never touch the rest. When the probe ran
-locally, the line reads `pass (local; prod unproven)` and the green dot is held.
+locally, the line reads `pass · local — prod unproven`; the green dot is set and the surface is
+recorded.
 
 ## Never
 

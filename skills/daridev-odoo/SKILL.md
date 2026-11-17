@@ -14,7 +14,7 @@ first write. This file is the only copy of these rules; the phases never restate
 | Signal | Mode | Ask |
 |---|---|---|
 | `--odoo` / `--no-odoo`, or I say it | that | never |
-| A card: `#14842`, a task URL, a card name, `story/<slug>` | on | never |
+| A card: `#14842`, a task URL, a card name, `card/<slug>` or `story/<slug>` | on | never |
 | `plan` with pasted text or a one-liner | off | never |
 | `plan` with nothing, no prior answer | — | once, default no |
 | `pair` with nothing | off | never |
@@ -92,11 +92,15 @@ The card shows the screenshots in `Evidence (daridev)`, one entry per step, labe
 - **Without MCP:** the teammate pastes the image into `Evidence (daridev)`; Odoo attaches it to the
   card. The subtask keeps no attachment.
 - One entry per step; a re-capture replaces it; old attachments stay as history.
-- A non-visual step gets one `<code>` line under the label instead of an image.
+- A non-visual step gets one `<code>` line under the label instead of an image; the text must be
+  non-empty and the label must match a subtask.
+- `pair` creates `Evidence (daridev)` only when missing, after the `Review` block and before the
+  slug line; it appends one entry per step, replacing that step's entry on a re-capture.
 - Local copy always: `docs/records/evidence/<YYYY-MM-DD>-<slug>/pN-<step>.png` (untracked).
 - Verify before flipping: the image resolves and the attachment row is on the expected record
-  (subtask or card), `image/*`, `file_size > 0`. Never a `.txt` link as the only proof; never delete
-  an orphan. The probe block in `Review` is what proves the Done-when.
+  (subtask or card), `image/*`, `file_size > 0`; for a code line, the text is non-empty. Never a
+  `.txt` link as the only proof; never delete an orphan. The probe block in `Review` is what proves
+  the Done-when.
 
 ## Who writes what
 
@@ -106,6 +110,7 @@ The card shows the screenshots in `Evidence (daridev)`, one entry per step, labe
 | subtasks create/rename/sequence | plan; review for new steps |
 | subtask state | plan (open), pair (done/drop), review (changes and new steps) |
 | attachment on a subtask | pair |
+| attachment on the card | teammate without MCP |
 | `Evidence (daridev)` gallery | pair, or the teammate without MCP |
 | `stage_id` + `state` | plan (sprint), pair (in progress), review, archive (skip-review) |
 | `Review` block | review |

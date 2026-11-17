@@ -39,8 +39,8 @@ printed once and then it runs.
 
 ## 2. The gate
 
-One table — card, next open step, owner, blockers, branch, worktree — then one question.
-Authorized, and nothing else:
+One table — card, next open step, owner, blockers, branch, worktree — then one question. Print the
+`deploy_url` (or `skip`) the run will use. Authorized, and nothing else:
 
 - move each card to the in-progress column (`stage_id` + `state=01_in_progress`);
 - apply the plan check's description and subtask updates;
@@ -70,19 +70,20 @@ step means.
 
 1. **Implementer** (up to the ready set): `worktree_create <repo>-<slug>` with an explicit name
    (shell `git worktree add` only for a specific base, sibling only), `session_move` in, branch
-   `feat/<slug>`, run `/daridev-plan check` on every card (code-only, no gate; the campaign gate
-   authorizes) then `/daridev-pair`. A plan change is applied under the gate; a decision parks the
-   card. It returns `complete`, `blocked` or `partial`, the steps it flipped, the local evidence,
-   the spec/decision lines and the branch head. Anything but `complete` is parked, never integrated.
-   A `[you]` step mid-card parks on that step, no new one.
+   `feat/<slug>`, run `/daridev-plan check --no-tests` on every card (code-only, no gate; the
+   campaign gate authorizes) then `/daridev-pair`. A plan change is applied under the gate; a
+   decision parks the card. It returns `complete`, `blocked` or `partial`, the steps it flipped, the
+   local evidence, the spec/decision lines and the branch head. Anything but `complete` is parked,
+   never integrated. A `[you]` step mid-card parks on that step, no new one.
 2. **Integrate** (the scheduler): fetch, rebase onto `origin/main`, install only when needed, run
    the full suite. Conflict or red → park, main untouched. Then `merge --ff-only` and push.
 3. **Wait for the deploy:** 100s, then the `deploy_url` asked at pre-flight (HTTP 200, plus
    `deploy_expect` when declared); `skip` → no wait, probe the app root. Four attempts, ~400s.
    Exhausted → park that card only.
-4. **Review:** a fresh subagent runs `/daridev-review` and its probes on prod. Approved → it writes
-   green + the validated move. Changes requested → `git revert` the landed commit first, push, wait
-   for the deploy, reset the worktree, hand the findings back. Three loops, then park.
+4. **Review:** a fresh subagent runs `/daridev-review` in campaign mode — probe prod, never ask —
+   and its probes run on prod. Approved → it writes green + the validated move. Changes requested →
+   `git revert` the landed commit first, push, wait for the deploy, reset the worktree, hand the
+   findings back. Three loops, then park.
 5. **Archive:** `/daridev-archive` on the card, then `docs: archive <slug>` on main and push.
    Never archive drift; park it.
 6. **Clean up:** stop any dev server, `git worktree remove`, `prune`, `branch -d` (merged only),

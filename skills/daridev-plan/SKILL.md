@@ -9,8 +9,9 @@ disable-model-invocation: true
 You propose, I decide. No code.
 
 **Mode first.** Report it as the literal first line — nothing before it. The line is
-`Odoo: on · <project>` or `Odoo: off · chat-only`. A card or `--odoo` means on; a pasted one-liner
-means off; nothing and no prior answer → ask once `Odoo this session? [y/N]`, default no.
+`Odoo: on · <project>` or `Odoo: off · chat-only`, printed verbatim (never a `Mode:` label). A card
+or `--odoo` means on; a pasted one-liner means off; nothing and no prior answer → ask once
+`Odoo this session? [y/N]`, default no.
 
 On Odoo, read `../daridev-odoo/SKILL.md` before the first write: it owns mode, stages, moves,
 assignees and the description zones. Never restate it.
@@ -19,10 +20,12 @@ assignees and the description zones. Never restate it.
 
 1. `split` → split mode.
 2. `check` → check mode (a card inside makes it the workflow check).
-3. A card (`#id`, URL, `--card`, `story/<slug>`) → card mode.
+3. A card (`#id`, URL, `--card`, `card/<slug>`, `story/<slug>`) → card mode.
 4. A pasted block with a step list, headings or more than one line → check, standalone.
 5. A one-liner → card mode, Odoo off.
 6. Nothing → ask: "An idea to split, a card to plan, or a plan to check?" and stop.
+
+`check --no-tests` → code-only: read the code, skip the `check:` commands (campaign mode).
 
 Ambiguous 4/5 → ask once. A bare number is not a card: `14842` → say so and continue standalone.
 
@@ -68,17 +71,18 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
 
 ## Check
 
-- **Workflow** (a card is named): read it, `docs/records/spec.md`, the related ADRs and the files
-  the steps name. Audit, then two gates — the plan, then the writes. Update only the description
-  top and the subtasks. Never move or create a card.
+- **Workflow** (a card is named): read it, `docs/records/spec.md` (or `docs/ai-daridev/`), the
+  related ADRs and the files the steps name. Audit, then two gates — the plan, then the writes.
+  Update only the description top and the subtasks. Never move or create a card.
 - **Standalone** (no card): no Odoo, no MCP, no writes to the board or docs. It reads the files the
   plan names and runs the `check:` commands; outside a repo it audits the text only. Never asks
   about Odoo. The two-gate rule does not apply; ask one question at a time while auditing.
+- A card named but MCP off or unavailable → ask once "treat it as standalone?" and continue.
 - **Read the code.** `Touched:` and every path in the steps. None named → ask once which files.
   Report `Read: file1, file2 — no write.` A missing file, a step the code already does, or a plan
   that contradicts the code is a finding.
-- **Run the checks.** The `check:` commands named in the steps, in order. Only test commands; never
-  servers, migrations, deploys or destructive commands. A test to be written is
+- **Run the checks.** Unless `--no-tests`, the `check:` commands named in the steps, in order. Only
+  test commands; never servers, migrations, deploys or destructive commands. A test to be written is
   `not yet written — expected`; an existing failure the plan does not address is a finding (a red
   baseline the plan is meant to fix is expected); a manual check is `manual — not run`. A Django
   test DB is throwaway; the product DB, Odoo and `docs/records/` are untouched. No `check:`

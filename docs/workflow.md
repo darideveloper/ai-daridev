@@ -64,7 +64,8 @@ without the green dot, so the board still shows who looked at it.
 
 `pair` asks once `Screenshots from prod, staging or local? [prod]`; `review` asks once
 `Probe against prod or local? [prod]`. A probe on local, or on a card that is not deployed, is
-recorded as `surface: local — prod unproven` and holds the green dot; it is not a failure.
+recorded as `surface: local — prod unproven`; it can still pass and green the card, and the block
+names the surface. It is not a failure.
 
 ## Memory
 
