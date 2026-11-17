@@ -1,6 +1,0 @@
-interface:
-  display_name: "Story"
-  short_description: "Refine one story into criteria and a step checklist"
-  default_prompt: "Use $ai-daridev-story to refine this story."
-policy:
-  allow_implicit_invocation: false

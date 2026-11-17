@@ -1,0 +1,6 @@
+interface:
+  display_name: "Archive"
+  short_description: "Close a finished card and log it"
+  default_prompt: "Use $daridev-archive to close this card."
+policy:
+  allow_implicit_invocation: false

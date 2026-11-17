@@ -1,267 +1,90 @@
 # Workflow
 
-Five phases, one story at a time. Each phase ends waiting for your approval. A card changes column
-only when you ask or approve it — a story's gate and the start of a pair are that ask — and always in
-one write that keeps the column and the state in sync.
-
-## The rules that apply everywhere
-
-- **Root.** The repo root is the nearest `AGENTS.md` holding `<!-- ai-daridev:start -->`, walking up
-  from the current directory. `docs/ai-daridev/` is always relative to it; nothing is written above.
-  No block → the skill asks once (create it here, use the git root, or chat-only).
-- **Odoo is per session.** The block supplies the project, never the switch: `--odoo`/`--no-odoo` or
-  your words decide, a card reference decides, and `backlog`/`story` ask once (`Odoo this session?
-  [y/N]`, default no). `pair` with no card is chat-only without asking; `campaign` is always on. Every
-  phase prints `Odoo: on · <project>` or `Odoo: off · chat-only` as its first line. Odoo off → no
-  cards: stories live in the conversation and only the three files are written.
-- **Size decides how much you run.** A small change is `/ai-daridev-pair` alone on a pasted one-liner
-  — criteria, one plan gate, red → green, the spec line — then `/ai-daridev-archive` for the log. The
-  full chain is for work that must be split into steps or handed to a second agent across sessions.
-- **Moves and assignees are proposed, not assumed.** Move a card only when you ask in this turn,
-  when the phase gate lists it and you say yes, or when the column and the state already disagree
-  and you approve the repair. Show the exact write in the gate; never move silently. Story's gate is
-  one exception: approving the checklist approves the move to the sprint column, in one announced
-  write. That column is the single stage inside the project whose name matches `sprint backlog`
-  (case-insensitive); 0 or 2+ matches → ask once, never guess. The move is allowed only from the
-  backlog stage, on an open card (`state=01_in_progress`): a card already in the sprint column, in a
-  later stage or in any other state stays put and the skill reports "refined in place".
-  Pair's start is the other exception: invoking `/ai-daridev-pair` on a card is the ask, and the card
-  goes to the in-progress column. That column is the single stage inside the project whose
-  name matches `in progress` (case-insensitive); 0 or 2+ matches → ask once, never guess. The
-  assignee reconcile is the last one: it only mirrors the checklist owner, so it rides the
-  step's own write and is reported.
-- **A move is one write.** `stage_id`, `state` and `date_end` go in the same `odoo_update`:
-  → `odoo_stage_done` = `03_approved` + `date_end`; → an active stage = `01_in_progress`; → the
-  backlog stage = `01_in_progress` (explicit reopen only); → the Cancelled stage = `1_canceled`
-  (you confirm first; dependents stay blocked). Never move a subtask or an archived (`1_done`)
-  card, and never into `odoo_stage_done` unless every step is `1_done`/`1_canceled` and it turns
-  green in the same write.
-- **Two users, one card.** The card always carries the agent user — `odoo_assignee_uid` when the
-  block declares it, else the MCP connection user — and carries `odoo_assignee_manual_uid` (you)
-  only while the **next open step** is `[you]`. Next open = the lowest `sequence` child whose state
-  is not `1_done`/`1_canceled`; `02_changes_requested` is open, for its own owner. A legacy card with
-  no children takes the owner from its `<h2>Checklist</h2>` line; a card with neither is left alone.
-  Creates send the full set `[[6,0,[…]]]`; updates diff with `[[4, uid]]`/`[[3, uid]]`, never
-  `[[6,0,[…]]]`, and add the agent when it is missing. Both uids ride the step's own update,
-  reported, not asked. No manual uid → no handoff; the skill asks once and offers to add the key. Writing
-  `user_ids` for a person you name still resolves the exact `res.users` name or login, 0 or 2+
-  matches → stop and list.
-- **Who writes what.** Archive is the only skill that sets a **card** `1_done`, after its gate; no
-  skill sets `1_canceled` on a visible card unless you ask or approve it, and dependents stay
-  blocked. The agent writes the description (story), its `Evidence` tail (pair), subtask states,
-  `stage_id` → the sprint column (story), `state=03_approved` + `date_end` (close),
-  `state=02_changes_requested` (review) and `state=1_done` (archive, on the card).
-- **One gate per phase.** Structure changes, a column move and archive's done write ask once; the
-  other state changes are reported.
-- **Evidence.** Every `1_done` step has an entry in the card's `Evidence` section: a screenshot by
-  default, one code line only when the proof is invisible in a browser, a waiver when there is
-  nothing to show. Pair captures it, stores it under `docs/ai-daridev/evidence/` first, and review
-  refuses a step without it — and never captures one itself. Archive names it as drift and archives
-  anyway on your word. A file in the attachment list is not evidence.
-- **Decisions only when they last.** Project-wide, hard to reverse or a shared/ops contract goes to
-  `decisions.md`; everything else stays in the conversation.
-
-## 1. Backlog
-
-`/ai-daridev-backlog` splits the idea into ≤10 one-line stories:
+Investigate → plan → validate → do → verify → archive. Two approvals: the plan and the close.
+Everything else is reported.
 
 ```
-1. As a visitor, I want to retry an upload, so that a flaky network doesn't lose my file.
-2. As an operator, I want to see failed uploads, so that I can follow up. Requires: #1
+/daridev-plan   →   /daridev-pair   →   /daridev-review   →   /daridev-archive
+brief + steps       one step at a       probes the            closes the card
++ one gate          time, no stops      Done-when             + 4-line log
 ```
 
-Each story delivers value on its own and cuts through every layer. No technical stories, no
-estimates. The first one is the walking skeleton. On approval the cards are created in the backlog
-stage, assigned to the agent user, one primary tag plus `card_tag_extra`, no
-subtasks. A backward `Requires: #N` is written as a real Odoo **Blocked By** link (`depend_on_ids`)
-in the create call itself, and a second pass covers forward references; the clause never stays in
-the name or description.
-
-## 2. Story
-
-`/ai-daridev-story` refines exactly one story. It reads `spec.md`, the code the story touches and
-the related decisions, then proposes:
-
-```
-## Acceptance criteria
-- [ ] Given a 500 from storage, when I retry, then exactly one record exists.
-
-## Checklist
-- [ ] p1 Reproduce a retry twice — [agent]
-  - tests/test_upload.py; run `pytest -k retry`
-- [ ] p2 Make the write idempotent — [agent]
-- [ ] p3 Run the staging check — [you]
-```
-
-As many criteria and steps as the story needs; no count cap. One gate, then the card description is
-regenerated (`<h2>Acceptance criteria</h2>`, `<h2>Checklist</h2>`, no status) and one hidden subtask
-per step is created, each carrying its `[agent]`/`[you]` owner. In the same write the card moves to
-the sprint column (`stage_id`, `state=01_in_progress`), from the backlog stage only, on an open card:
-a card already refined or further along is left in place. The card gets the agent user, plus
-you when the first step is `[you]`. Anything from `<h2>Evidence (ai-daridev)</h2>` to the end is
-copied byte-for-byte. Existing children are matched by name, updated, never deleted.
-
-## 3. Pair
-
-`/ai-daridev-pair <slug>` loads the card and its checklist, and moves the card into the in-progress
-column before proposing a mode.
-
-Before anything else it reads the card's blockers. Only `1_done`, outside the Cancelled column,
-frees a dependent; anything else is a hard stop: no override, no test list. A canceled blocker keeps
-blocking and needs re-planning.
-
-1. **Test list first**, names only: `retry keeps one record — tests/test_upload.py — covers p1 "<step>"`.
-   Manual criteria are marked as such. One approval; the list lives in the conversation.
-2. **One step per stop**: write the test, show it red, write the minimum code, show it green,
-   embed the evidence in the card, reconcile the card's assignees for the new next open step, flip
-   that subtask to `1_done`, print `Plan 4/9 · next p5 "<step>" ([you])` and who the card is on.
-3. **Stop immediately** on an unplanned design decision, an unrequested addition, a test that would
-   have to change, two failed attempts, or a step over ~50 lines / 3 files.
-4. **Non-code** (n8n, server, infra): read-only investigation, numbered plan, one approval, execute
-   one step at a time showing command, output, state and rollback. Destructive steps ask again. The
-   command and state stay in the conversation; the card gets the screenshot, same contract.
-
-**Never print a bare id.** A step is `p4 "<step>"`, a card is `#14842 "<name>"`; a test-list mapping
-is `covers p4 "<step>"`.
-
-Each step appends one dated entry to `<h2>Evidence (ai-daridev)</h2>` at the end of the card
-description, keyed `p4 "<step>"`: the final UI screenshot from prod via `playwright-cli`, or one code
-line when the proof is invisible in a browser. Attachments live on the card and render inline via
-`/web/image/<id>`; a file in the attachment list alone is not evidence. Redact secrets and mask client
-data. No entry → a waiver, never a silent done. Upload or embed failure stops the flip.
-
-At close: open steps are listed and decided (a step left open keeps the card gray), every closed step
-already has its entry in the card's `Evidence` section, the card gets `state=03_approved` + `date_end`,
-and one sentence is added or replaced in `spec.md` when behavior changed. The same gate offers the
-column move to `odoo_stage_done` as one write with the green dot, default no, so a self-reviewed card
-can land validated for archive. The agent prints the commit message for **you** to run. It never
-commits.
-
-## 4. Review
-
-`/ai-daridev-review <card>` is for work someone else built. It reads the card, asks for a diff or a
-screenshot only when the card does not settle it, and prints a verdict table: each criterion
-pass/fail/manual and each step pass/fail/not reached, with one evidence line.
-
-Each completed step must have an entry in the card's `Evidence` section, or a waiver; a `1_done` step
-without one fails, even when the test passed. The `<h2>Review (ai-daridev)</h2>` section stays above
-the slug line, outside the tail.
-
-- **Approved** → one write turns the card green (`03_approved` + `date_end`) and moves it to
-  `odoo_stage_done`, so it lands validated and not archived. A step that is not
-  `1_done`/`1_canceled` blocks the green dot. The move is part of the gate: you can drop it and
-  move the card yourself.
-- **Changes requested** → the failing steps and the card go to `02_changes_requested`, and the
-  `<h2>Review (ai-daridev)</h2>` section is replaced with the dated findings. If the card is in
-  `odoo_stage_done`, the same write moves it back to the in-progress column; from a later stage, stop and
-  report. Missing work becomes new steps, in the same gate, and so does a criterion you cannot
-  verify: it becomes a `[you]` step, which is what hands the card to you.
-
-## 5. Archive
-
-`/ai-daridev-archive <slug>` marks the card done and appends its retro to `log.md`. The gate stops
-unless the card is in `odoo_stage_done`, is **green** (`03_approved`) or already done (not gray,
-yellow, waiting or canceled), and every step is closed. A step with no entry in the card's `Evidence`
-tail is drift, not a stop: the gate lists it and continues only on `archive anyway`, and the retro's
-`Drift:` line names it. It
-then shows the dependents it frees and waits for your yes. A gray card in the validated column is
-listed with one line: review it, or ask for the green dot. Archive never turns a card green.
-
-```
-## retry-safe-upload — shipped 2026-11-07
-Shipped: uploads survive retries, exactly one record.
-Decisions: 2026-11-07 — dedupe by hash, not a unique index (see decisions.md)
-Follow-ups: backfill dedupe for legacy rows
-Plan: 4/4 steps · dropped 0 · open 0
-Card: task 14842 · state 1_done · end 2026-11-07 10:12:00
-Drift: none
-```
-
-Odoo clears the blocked-by badge of the dependents when the card turns `1_done`. Bare
-`/ai-daridev-archive` lists ready cards in the done stage that are not in `log.md` and asks one, all
-or cancel; not-ready cards are listed with the reason. Follow-ups are listed, never turned into
-cards.
+`review` is skipped when there is no card, or when you say **skip review** at the archive gate.
 
 ## The card
 
 ```
-<h1>{current card name}</h1>
-<p>{one-line goal}</p>
-<h2>Acceptance criteria</h2>
-<ul><li>Given …, when …, then …</li></ul>
-<h2>Checklist</h2>
-<ol><li><b>p1</b> {step} — [agent]<ul><li>{detail}</li></ul></li></ol>
-<h2>Review (ai-daridev)</h2>            <!-- owned by review, above the slug line, preserved by story -->
-<p><b>{date}</b> — changes requested</p>
-<p><em>ai-daridev: story/{slug}</em></p>  <!-- idempotency key -->
-<h2>Evidence (ai-daridev)</h2>            <!-- owned by pair, always last, append-only -->
-<h3>{YYYY-MM-DD HH:MM UTC} · p4 "{step}" · [agent]</h3>
-<p><img src="/web/image/{id}" alt="p4 {step} — final UI" style="max-width:100%"/></p>
-<p>{one line: what the screenshot proves}</p>
+Problem:      <observed, with the path or surface>
+Done when:    <outcome, one per surface>
+Steps:        p1 … · p2 … · p3 …      (subtasks when Odoo is on)
 ```
 
-Subtask description (story and check-plan own the detail; pair never writes it):
+No persona, no separate acceptance criteria. `Done when` names every surface a gate, permission,
+limit or export must hold on. The description is at most 10 lines above the review block; anything
+longer belongs in the conversation or an ADR.
 
-```html
-<p>{detail}</p>
+## Three paths
+
+**Light — no card.**
+```
+/daridev-plan <one-liner>      Odoo: off, one gate
+/daridev-plan check            optional, read-only
+/daridev-pair                  consumes the approved plan
+/daridev-archive               log + spec sentence, no card
 ```
 
-- Subtasks: `name` = `<step> — [agent|you]` (the owner lives here, so it survives a restart;
-  legacy names without the suffix still match), `description` = the detail, `parent_id`,
-  `sequence = index × 10`, `state=01_in_progress`, `display_in_project=False`, never the subtask's
-  `project_id` or `stage_id`. The subtask carries its owner's uid from creation; the card is the turn
-  signal.
-- Assignees: the card always carries the agent user, and you while the next open step is `[you]`;
-  the write rides the step's own update, diff-style (`[[4, uid]]` / `[[3, uid]]`), never `[[6,0,…]]`.
-- Evidence: one dated entry per attempt, keyed `pN "<step>"`, on the card; never overwrite an
-  attempt; a step without one is not `1_done`. A file in the attachment list is not evidence.
-- Step states: `01_in_progress` open · `1_done` done · `02_changes_requested` rejected ·
-  `1_canceled` dropped. Only open steps can be dropped; validated steps are never cancelled.
-- The card closes at `03_approved` (green), archive marks it `1_done`, and the column move to
-  `odoo_stage_done` is one write with the green dot — proposed in the gate, never silent. No skill
-  sets `1_canceled` on a visible card without your say-so.
-
-## The three files
-
+**Carded — small fix, no review.**
 ```
-docs/ai-daridev/
-├── spec.md        # what the product does now
-├── decisions.md   # why it is built this way (append-only)
-└── log.md         # what shipped (append-only)
+/daridev-plan <card>           card + subtasks
+/daridev-pair                  steps, screenshots on the subtasks
+/daridev-archive               "skip review" → done, not green
 ```
 
-Query them with `rg`, or let the agent read them at the start of a story. `spec.md` is edited by
-section; `decisions.md` and `log.md` only grow. No secrets or client data: they are committed.
+**Full — delegated or risky.**
+```
+/daridev-plan → /daridev-pair → /daridev-review → /daridev-archive
+```
 
-First run in a repo that already has `docs/decisions/*.md` or an `openspec/` folder: one gate, then
-they are folded into these three files and the originals stay as frozen history.
+## Odoo is per session
+
+The block supplies the project; the session decides whether cards are written. `--odoo` /
+`--no-odoo`, a card reference, or your words decide it; `plan` with a pasted one-liner is off
+without asking; `plan` with nothing asks once, default no. Every phase prints
+`Odoo: on · <project>` or `Odoo: off · chat-only` first. With Odoo off, stories live in the
+conversation and only the files are written.
+
+Green means **reviewed**. The validated column means **finished**; a skip-review card lands there
+without the green dot, so the board still shows who looked at it.
+
+## Memory
+
+```
+docs/records/
+├── spec.md        what the product does now, one sentence per behaviour
+├── log.md         4 lines per closed card
+└── evidence/      untracked screenshots (`*` + `!.gitignore`)
+```
+
+Lasting decisions are ADRs under `docs/decisions/`, referenced by path from the log. The root is
+the nearest `AGENTS.md` with `<!-- daridev:start -->`; memory follows the code, so each code repo
+has its own. Nothing is written above the root.
+
+Legacy reads: the old `ai-daridev:start` marker, `docs/ai-daridev/`, `ai-daridev: story/<slug>`
+and `Review (ai-daridev)` still work; new writes use the new names. An old `Evidence (ai-daridev)`
+tail is preserved unless you approve collapsing it to one attachment pointer.
 
 ## Outside the flow
 
-`/ai-daridev-check-plan` audits any plan in detail — pasted, from the conversation, or a card's
-current checklist — fixes the gaps, asks one question at a time and renders it as an ordered
-`p1..pN` checklist in the same format as a card. Standalone it writes nothing. If you name a card
-(`#14842`, a task URL, `--card`, `story/<slug>`), it also updates that card's `<h2>Checklist</h2>`,
-its subtasks and the derived assignees after two gates (the plan, then the exact writes). It never creates a card, never deletes a subtask and
-never drops a `1_done` step.
+- `/daridev-plan check` — audits any plan read-only. No repo, no card, no Odoo, no writes.
+- `/daridev-campaign` — runs the flow over a batch, unattended, one worktree per card.
+- `/daridev-plan split` — one idea into ≤10 one-line briefs and cards.
 
-`/ai-daridev-campaign` runs the five phases over a batch instead of a card. One invocation is one
-authorization: the gate lists the batch, the ready set, and every write it may make, and then it runs
-without stopping. One worktree per card (`<repo>-<slug>`), `--parallel 4` implementers, and exactly one
-closer that owns `fetch`/rebase/`ff-only`/push on main, so only one agent writes to main at a time. Per
-card: pair → rebase + suite → `ff-only` → push → 100s + deploy validation ×4 → prod evidence refresh →
-a fresh agent reviews → archive → `log.md` push → worktree cleanup, then the ready set is recomputed so
-archived blockers free their dependents in the same run. A card that cannot proceed is **parked**: one
-`[you]` step plus the assignee handoff, reported, never archived. A failed review reverts the card's
-commit before the fix. Limits: 10 cards, 45 minutes of implementation per card, three loops, and the
-run stops after three card-level parks in a row. It never waives evidence, never archives a drifted
-card, never cancels one and never runs a destructive non-code step. Resume from the journal unless you
-pass `fresh`; `--dry-run` prints the whole plan and writes nothing.
+## Caps
 
-## With Odoo off
-
-Every phase still works. Backlog and story print the card, the subtask list and the `Evidence`
-heading to paste; pair loads the story from what you pasted, keeps the checklist in the conversation
-and saves each capture under `docs/ai-daridev/evidence/`; review takes the card as text and never
-captures; archive takes a slug or the story and appends the retro with `Card: none (chat-only)`. Only
-the three files are written, and the printed close checklist tells you what to update by hand.
+| Thing | Cap |
+|---|---|
+| Card above the review block | 10 lines |
+| Review block | 6 lines |
+| Log entry | 4 lines |
+| Steps per card | 3–7 |
+| Gates per work item | 2 |

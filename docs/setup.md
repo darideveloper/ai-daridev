@@ -1,9 +1,8 @@
 # Setup
 
-Requirements: `bash` and `git`. Python, Node and Engram are not needed. Odoo is optional and chosen
-per session.
-`playwright-cli` is used for browser evidence; ImageMagick `convert` is optional for the screenshot
-cap.
+Requirements: `bash` and `git`. Python, Node and Engram are not needed. Odoo is optional and
+chosen per session. `playwright-cli` is used for browser evidence; ImageMagick `convert` is
+optional for the screenshot cap.
 
 ## Install
 
@@ -19,64 +18,60 @@ cd ai-daridev
 1. symlinks `skills/*` into `~/.agents/skills` and into every installed agent that has a home
    (`~/.claude`, `~/.codex`, `~/.gemini`, `~/.continue`, `~/.codeium/windsurf`, `~/.kiro`,
    `~/.config/devin`);
-2. removes `~/.config/opencode/skills/ai-daridev-*` copies, because OpenCode gives that directory
+2. removes the old `ai-daridev-*` skill links and command links, so only one command set exists;
+3. removes `~/.config/opencode/skills/daridev-*` copies, because OpenCode gives that directory
    precedence and a stale copy would shadow the link;
-3. symlinks `commands/*.md` into `~/.config/opencode/commands`;
-4. replaces the old `<!-- ai-daridev -->` block in the global instruction files with the current
-   one, keeping a timestamped backup;
-5. prints the Odoo MCP snippet.
+4. symlinks `commands/*.md` into `~/.config/opencode/commands`;
+5. replaces the global instruction block (`<!-- ai-daridev -->` or `<!-- daridev -->`) with the
+   current one, keeping a timestamped backup;
+6. prints the Odoo MCP snippet.
 
-It never installs packages, never edits JSON/TOML, never touches credentials. `--check` verifies the
-links, the commands and the global block, and lists what is missing.
+It never installs packages, never edits JSON/TOML, never touches credentials. `--check` verifies
+the links, the commands, the absence of the old names and the global block.
 
 A `git pull` is enough after the first install: skills and commands are symlinks.
 
 ## Repo block
 
-Add the block to the `AGENTS.md` of the repo (or subproject) that uses the workflow. It supplies the
-project and its parameters; whether a session writes cards is decided per session, never by the key.
+Add the block to the `AGENTS.md` of the repo (or subproject) that uses the workflow. It supplies
+the project and its parameters; whether a session writes cards is decided per session.
 
 ```md
-<!-- ai-daridev:start -->
+<!-- daridev:start -->
 - odoo_project: acme-app
 - odoo_stage_done: Sprint Complete
 - card_tag: backend
 - odoo_assignee_manual_uid: 2
 - deploy_url: https://acme.example.com/health
-<!-- ai-daridev:end -->
+<!-- daridev:end -->
 ```
 
-- `deploy_url` is the campaign's deploy signal: after pushing main, it waits 100s and then requests
-  that URL, four times. A 200 means the deploy is up; `deploy_expect` optionally names a commit
-  marker the response must contain. No `deploy_url` → the campaign requests the app root instead.
-  The key is read only by `/ai-daridev-campaign`; the other skills ignore it.
-- **The switch is per session, not the block.** `--odoo`/`--no-odoo` or your words decide it, a card
-  reference decides it, and `backlog`/`story` ask once (`Odoo this session? [y/N]`, default no).
-  `pair` with no card is chat-only and does not ask; `campaign` is always on. Each phase prints
-  `Odoo: on · acme-app` or `Odoo: off · chat-only` first, so the mode is visible. Two sessions in the
-  same repo can differ.
-- The block is also the anchor: the nearest one wins. `n8n-automations/ourlivesapp` inherits
-  `n8n-automations`, unless `ourlivesapp/AGENTS.md` declares its own block — then it gets its own
-  `docs/ai-daridev/` and its own Odoo project.
+- **Memory follows the code.** Each repo that owns code gets its own block and its own
+  `docs/records/`. A product spanning repos keeps one spec per repo; the Odoo board is the
+  cross-repo view.
+- **The switch is per session, not the block.** `--odoo`/`--no-odoo` or your words decide it, a
+  card reference decides it, `plan` with a one-liner is off without asking, and `plan` with
+  nothing asks once (`Odoo this session? [y/N]`, default no). Every phase prints the mode first.
+- The block is also the anchor: the nearest one wins. A subproject with its own block gets its own
+  `docs/records/` and its own Odoo project.
 - A block with no keys (just the two markers) is valid for a files-only repo.
-- `odoo_project` must be the **exact** name in Odoo. Zero or two matches → the skill stops and lists
-  the real ones.
+- `odoo_project` must be the **exact** name in Odoo. Zero or two matches → the skill stops and
+  lists the real ones.
 - `card_tag` is the primary tag; `card_tag_extra` adds a second one to every card.
-- **Two users, one card.** The agent user is the MCP connection user; declare
-  `odoo_assignee_uid` only to pin a different account, because the connection uid is used otherwise.
-  `odoo_assignee_manual_uid` is **you**: the card carries that user only while the next open step is
-  a `[you]` step, and `[you]` subtasks are assigned to it from creation. No manual uid → no handoff:
-  the first skill that needs one asks once and offers to add the key.
-- `odoo_stage_done` is the validated column: review moves an approved card there with the green dot,
-  and archive only closes cards already there and green. Pair unblocks on `1_done`, not on the
-  column. It must match exactly one stage **inside the project**; a stage name shared with other
-  projects is not ambiguous. Archived cards (`1_done`) are hidden by the default board filter;
-  enable `Closed Tasks` to see them.
-- The **sprint column** needs no key: it is the stage whose name matches `Sprint Backlog`
-  (case-insensitive). Approving a story's checklist moves the card there from the backlog stage only,
-  and only while the card is open (`01_in_progress`); without that stage the skill asks once which
-  column to use and otherwise leaves the card where it is.
-- Existing 3.x blocks work unchanged; unknown keys are ignored.
+- **Two users, one card.** The agent user is the MCP connection user; declare `odoo_assignee_uid`
+  only to pin a different account. `odoo_assignee_manual_uid` is **you**: the card carries that
+  user only while the next open step is a `[you]` step. No manual uid → no handoff; the first skill
+  that needs one asks once.
+- `odoo_stage_done` is the validated column. Review moves an approved card there with the green
+  dot; archive closes a green card there, or closes a self-verified card you explicitly release
+  (which lands there **without** the green dot). It must match exactly one stage inside the
+  project. Archived cards (`1_done`) are hidden by the default board filter.
+- The **sprint column** and the **in-progress column** need no key: they are the stages whose names
+  match `Sprint Backlog` and `In Progress` (case-insensitive). Zero or two matches → the skill asks
+  once.
+- `deploy_url` is the campaign’s deploy signal: after pushing main it waits 100s and requests that
+  URL four times. `deploy_expect` optionally names a commit marker the response must contain.
+- Existing `ai-daridev` blocks are read unchanged; unknown keys are ignored.
 
 ## Odoo MCP
 
@@ -102,39 +97,34 @@ Register it:
 
 - **OpenCode** — `~/.config/opencode/opencode.json`, under `mcp.servers`:
   `"odoo": { "type": "local", "command": ["<path>/mcp.sh"], "disabled": false }`.
-  Inside Code Mode the reference server's tools are `tools.odoo.odoo_search_read` (search —
-  there is no `odoo_search`), `tools.odoo.odoo_search_count`, `tools.odoo.odoo_get_fields`,
-  `tools.odoo.odoo_create`, `tools.odoo.odoo_update` and `tools.odoo.odoo_delete`. Servers name
-  these differently, so verify before the first call.
+  Inside Code Mode the tools are `tools.odoo.odoo_search_read` (there is no `odoo_search`),
+  `odoo_search_count`, `odoo_get_fields`, `odoo_create`, `odoo_update`, `odoo_delete`. Servers
+  name these differently, so verify before the first call.
 - **Claude Code** — `claude mcp add --scope user odoo -- <path>/mcp.sh`.
 - **Codex** — `~/.codex/config.toml`: `[mcp_servers.odoo]` with `command = "<path>/mcp.sh"`.
 - **Gemini, Continue, Windsurf, Kiro, Devin** — register the same command in their MCP settings.
 
 Verify by calling a read tool in a **new session**, not by listing servers.
 
-The agent's Odoo allowlist must include `ir.attachment` (read/create only, scoped to `project.task`
-attachments) so pair can embed evidence. Attachments are created on the **card**, never a subtask, and
-referenced from its description with `/web/image/<id>`.
+The agent’s Odoo allowlist must include `ir.attachment` (read/create only, scoped to
+`project.task` attachments) so pair can attach the step screenshot. Attachments are created on the
+**subtask** the step lives in.
 
 ## Permissions
 
-A story creates one card and up to seven subtasks, so a per-call `ask` policy means up to eight
-prompts. If that is noise, allow `odoo_create` in your agent's permissions and keep `odoo_update`
-and `odoo_delete` on `ask`. Archive adds one `odoo_update` for the done state; the gate
-is the approval, but the client may still prompt. Evidence adds three writes per step — the
-`ir.attachment` create, one `odoo_update` on the **card** description and one on the subtask state —
-so with `odoo_update` on `ask` plan for three prompts per step; allowing `odoo_update` is safe because
-the per-phase gate is already the approval. Cap: screenshot ≤500 KB. Redact
-secrets and mask client data
-before upload. The skills never delete or bulk-update.
+A plan creates one card and up to seven subtasks, so a per-call `ask` policy means up to eight
+prompts. If that is noise, allow `odoo_create` and keep `odoo_update` and `odoo_delete` on `ask`.
+The per-phase gate is already the approval, but the client may still prompt. Evidence adds one
+`ir.attachment` create and one subtask update per visual step, so with `odoo_update` on `ask` plan
+for two prompts per step. Cap: screenshot ≤500 KB. Redact secrets and mask client data before
+upload. The skills never delete or bulk-update.
 
-`/ai-daridev-campaign` cannot wait on a prompt, so it needs `odoo_create` and `odoo_update` on
-`allow`; keep `odoo_delete` and `odoo_execute` on `ask`, the campaign never uses them. That grant is
-global to the client, not scoped to a campaign session.
+`/daridev-campaign` cannot wait on a prompt, so it needs `odoo_create` and `odoo_update` on
+`allow`; keep `odoo_delete` and `odoo_execute` on `ask`, the campaign never uses them.
 
 ## Windows
 
-Use WSL and run `./scripts/install.sh`. Without WSL, copy `skills/*` into your agent's skills
+Use WSL and run `./scripts/install.sh`. Without WSL, copy `skills/*` into your agent’s skills
 directory and `commands/*.md` into `~/.config/opencode/commands` by hand; the skills have no
 dependencies.
 
@@ -144,24 +134,31 @@ dependencies.
 2. Clone the project. Its `AGENTS.md` block is committed, so nothing to configure.
 3. No Engram, no uid file, no preflight. Open the agent in the repo and use a command.
 
-Without Odoo credentials the skills print the manual checklist and still write the three files;
-captures land in `docs/ai-daridev/evidence/` instead of an attachment.
+Without Odoo credentials the skills print the manual checklist and still write the files; captures
+land in `docs/records/evidence/` instead of an attachment. A teammate with MCP reads the card
+directly; without MCP, they paste the card text and the skill works on that.
 
-## First run in an existing repo
+## Existing repos
 
-If the repo has `docs/decisions/*.md` or an `openspec/` folder and no `docs/ai-daridev/`, the first
-skill that writes asks once: fold the old decisions and specs into `decisions.md` and `spec.md`
-(originals untouched) or skip. It never asks again.
+- `docs/ai-daridev/` is read in place and the skill prints a one-line hint:
+  `git mv docs/ai-daridev docs/records`. If `docs/records/` already exists, stop and ask; never
+  merge two memories.
+- Old blocks (`ai-daridev:start`), old slugs (`ai-daridev: story/<slug>`, `engram:`) and old
+  `Review (ai-daridev)` headings are read; new writes use the new names.
+- `decisions.md` is retired: a decision that lasts becomes an ADR under `docs/decisions/`; the rest
+  moves frozen to `docs/decisions/legacy-decisions.md`.
+- The first skill that writes asks once about folding an existing `openspec/` or
+  `docs/decisions/*.md` into the memory; the originals stay as history.
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| `/ai-daridev-pair` missing in OpenCode | run `./scripts/install.sh`; commands live in `~/.config/opencode/commands` |
-| Two entries for the same command in Claude Code | you have both a skill and `~/.claude/commands/<name>.md`; delete the command file |
+| `/daridev-plan` missing in OpenCode | run `./scripts/install.sh`; commands live in `~/.config/opencode/commands` |
+| Two command sets after upgrading | re-run `./scripts/install.sh`; it removes `ai-daridev-*` links |
 | The agent says the Odoo project has 0 or 2 matches | make `odoo_project` match exactly one project |
-| No cards are created | the session is on Odoo off — say `--odoo`, or answer yes to the ask; or the block has no `odoo_project`, or the MCP is not registered |
-| Evidence is not on the card | the session was chat-only, or the upload failed (`EVIDENCE FAILED`); the file is under `docs/ai-daridev/evidence/` |
-| `docs/ai-daridev/evidence/` shows in `git status` | commit its `.gitignore` (`*` and `!.gitignore`); the images themselves stay untracked |
-| A refined card stays in Backlog | the project has no stage matching `Sprint Backlog`, or the card was not in the backlog stage |
+| No cards are created | the session is off — say `--odoo`; or the block has no `odoo_project`, or MCP is not registered |
+| Evidence is not on the step | the session was chat-only, or the upload failed; the file is under `docs/records/evidence/` |
+| `docs/records/evidence/` shows in `git status` | commit its `.gitignore` (`*` and `!.gitignore`); the images stay untracked |
+| A refined card stays in Backlog | the project has no `Sprint Backlog` stage, or the card was not in the backlog stage |
 | Files land in the wrong repo | a parent `AGENTS.md` has the block; add one where you want the root |

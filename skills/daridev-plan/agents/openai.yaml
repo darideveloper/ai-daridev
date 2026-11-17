@@ -1,0 +1,6 @@
+interface:
+  display_name: "Plan"
+  short_description: "Plan a card, split an idea, or check a plan"
+  default_prompt: "Use $daridev-plan to plan this."
+policy:
+  allow_implicit_invocation: false

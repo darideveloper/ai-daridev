@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# ai-daridev installer: link the skills and the OpenCode commands, migrate the global block.
-# Usage: ./scripts/install.sh [--check]
+# daridev installer: link the skills and the OpenCode commands, remove the old ai-daridev links,
+# migrate the global block. Usage: ./scripts/install.sh [--check]
 set -euo pipefail
 
 FORK="$(cd "$(dirname "$0")/.." && pwd)"
@@ -21,17 +21,14 @@ INSTRUCTIONS=(
   "$HOME/.gemini/GEMINI.md"
   "$HOME/.codex/AGENTS.md"
 )
-BLOCK='<!-- ai-daridev -->
-Work is tracked with the `ai-daridev` skills, invoked manually: backlog → story → pair → review →
-archive. The repo root is the nearest `AGENTS.md` holding an `ai-daridev:start` block; read it
-before writing. Move an Odoo card between stages, or assign it, only when I ask or approve it
-(approving a story checklist or starting a pair counts as asking: sprint column and in-progress
-column respectively), and always in the same write as its state. Only
-`/ai-daridev-archive` may set a card `1_done` or write `docs/ai-daridev/log.md`; hidden
-checklist steps use `1_done` when a step passes. Never set `1_canceled` unless I ask or approve (the
-hidden dropped-step marker is the exception).
-Repo memory lives in `docs/ai-daridev/` and is committed by a human.
-<!-- ai-daridev -->'
+BLOCK='<!-- daridev -->
+Work is tracked with the `daridev` skills, invoked manually: plan → pair → review → archive.
+The repo root is the nearest `AGENTS.md` holding a `daridev:start` block. Move or assign an
+Odoo card only when I ask or approve it, in the same write as its state. Only
+`/daridev-archive` sets a card `1_done` or writes `docs/records/log.md`; it never sets the green
+dot. Never set `1_canceled` unless I ask.
+Repo memory lives in `docs/records/` and is committed by a human.
+<!-- daridev -->'
 
 say() { printf '%s\n' "$*"; }
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
@@ -51,12 +48,12 @@ done
 migrate_block() {
   local file="$1" tmp n
   [ -f "$file" ] || return 0
-  n="$(grep -c '<!-- ai-daridev -->' "$file" || true)"
+  n="$(grep -cE '<!-- (ai-daridev|daridev) -->' "$file" || true)"
   if [ "$n" -eq 0 ]; then return 0; fi
   if [ "$n" -lt 2 ]; then say "skip $file (single marker)"; return 0; fi
   tmp="$(mktemp)"
   awk -v block="$BLOCK" '
-    /<!-- ai-daridev -->/ {
+    /<!-- (ai-daridev|daridev) -->/ {
       n++
       if (n == 1) { print block; skip = 1 }
       else if (n == 2) { skip = 0 }
@@ -75,25 +72,62 @@ migrate_block() {
   say "block $file"
 }
 
+remove_legacy() {
+  local t f
+  for t in "${targets[@]}"; do
+    for f in "$t"/ai-daridev-*; do
+      [ -e "$f" ] || [ -L "$f" ] || continue
+      if [ -L "$f" ]; then
+        rm -f "$f"
+        say "removed legacy skill link: $f"
+      else
+        say "skip legacy directory (not a link): $f"
+      fi
+    done
+  done
+  for f in "$CMD_DIR"/ai-daridev-*.md; do
+    [ -e "$f" ] || [ -L "$f" ] || continue
+    if [ -L "$f" ]; then
+      rm -f "$f"
+      say "removed legacy command link: $f"
+    else
+      say "skip legacy command (not a link): $f"
+    fi
+  done
+  for f in "$HOME/.config/opencode/skills"/ai-daridev-*; do
+    [ -e "$f" ] || [ -L "$f" ] || continue
+    rm -rf "$f"
+    say "removed legacy shadow copy: $f"
+  done
+}
+
 check() {
   local rc=0 t id f n found
   for t in "${targets[@]}"; do
     for id in "${IDS[@]}"; do
       if [ -e "$t/$id/SKILL.md" ]; then say "ok    $t/$id"; else say "MISS  $t/$id"; rc=1; fi
     done
+    for f in "$t"/ai-daridev-*; do
+      [ -e "$f" ] || [ -L "$f" ] || continue
+      say "STALE legacy skill $f"; rc=1
+    done
   done
   for f in "$FORK"/commands/*.md; do
     n="$(basename "$f")"
     if [ -e "$CMD_DIR/$n" ]; then say "ok    $CMD_DIR/$n"; else say "MISS  $CMD_DIR/$n"; rc=1; fi
   done
+  for f in "$CMD_DIR"/ai-daridev-*.md; do
+    [ -e "$f" ] || [ -L "$f" ] || continue
+    say "STALE legacy command $f"; rc=1
+  done
   for f in "${INSTRUCTIONS[@]}"; do
     [ -f "$f" ] || continue
-    n="$(grep -c '<!-- ai-daridev -->' "$f" || true)"
+    n="$(grep -cE '<!-- (ai-daridev|daridev) -->' "$f" || true)"
     if [ "$n" -lt 2 ]; then
       say "skip  block $f (no marker pair)"
       continue
     fi
-    found="$(awk '/<!-- ai-daridev -->/ { n++; if (n == 1) { print; next } else if (n == 2) { print; exit } } n == 1 { print }' "$f")"
+    found="$(awk '/<!-- (ai-daridev|daridev) -->/ { n++; if (n == 1) { print; next } else if (n == 2) { print; exit } } n == 1 { print }' "$f")"
     if [ "$found" = "$BLOCK" ]; then
       say "ok    block $f"
     else
@@ -108,6 +142,8 @@ if [ "${1:-}" = "--check" ]; then
   check
   exit $?
 fi
+
+remove_legacy
 
 # 1. skills into ~/.agents/skills and every installed agent
 for t in "${targets[@]}"; do mkdir -p "$t"; done

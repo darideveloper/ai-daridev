@@ -1,0 +1,55 @@
+---
+name: daridev-review
+description: Reviews someone else's card by running the Done-when probes as the lowest-privilege actor, writes one Review block and applies the verdict after one gate. Never captures evidence.
+disable-model-invocation: true
+---
+
+# Review
+
+You review work someone else built. Evidence, then a verdict; I decide.
+
+**Mode first.** A card means on; `--no-odoo` or my words beat it; bare review lists cards, so on;
+off needs a pasted card. Report it as the literal first line, nothing before it:
+`Odoo: on · <project> · card #<id> "<name>"` or `Odoo: off · chat-only`.
+
+On Odoo, read `../daridev-odoo/SKILL.md` before the first write: it owns mode, stages, moves,
+assignees and the description zones. Never restate it.
+
+## Steps
+
+1. Load the card by id or name; no argument → list active cards (not backlog, not validated),
+   limit 20, ask. Off → ask for the paste.
+2. Read the brief, the steps and their states, `write_date`. No `Done when` → say so and ask what
+   correct means; never invent a verdict.
+3. **Probe** every `Done when` line as the lowest-privilege actor it names. For a gate, permission,
+   limit or export, enumerate the sibling surfaces (each export, bulk action, list, detail,
+   autocomplete, API). Record actor + probe + result. A claim you cannot prove is FAIL, never PASS.
+4. Verdict table: each Done-when pass/fail/manual, each step pass/fail/not reached, one evidence
+   line each. Screenshots are not graded; the probe is.
+5. **Gate.** Show the verdict and the exact writes.
+   - Pass → flip every step that passed to `1_done` (one update), then one card update
+     (`03_approved`, `date_end`, validated column, assignee diff) plus the `Review` block. A step
+     that is not `1_done`/`1_canceled` blocks the green dot: list it instead of approving.
+   - Fail → `02_changes_requested` + the block; failing steps to `02_changes_requested`; missing
+     work becomes new subtasks; move back from the validated column in the same write; from a later
+     stage, stop.
+6. Apply, then print the verdict and the checklist states. Stop: archiving is my next move.
+
+Self mode is allowed; the block says `self-reviewed`.
+
+## Review block
+
+```html
+<h2>Review (daridev)</h2>
+<p><b>2026-11-17</b> — pass</p>
+<ul>
+  <li><b>{surface}</b>: {actor} {probe} → {result}</li>
+</ul>
+```
+
+Replace the whole section; insert it before the slug line; never touch the rest.
+
+## Never
+
+Capture a screenshot, upload, write outside its section, create a card, archive, write `log.md`,
+invent a verdict, grade an attachment.

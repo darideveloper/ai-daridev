@@ -1,0 +1,102 @@
+---
+name: daridev-odoo
+description: The Odoo rules every daridev phase shares — per-session mode, project and stage lookup, one write per move, assignees, the description zones, subtasks and the evidence upload. A contract, not a phase.
+disable-model-invocation: true
+---
+
+# Odoo
+
+Read **Mode** first, even when the session may end up off. When it is on, read the rest before the
+first write. This file is the only copy of these rules; the phases never restate them.
+
+## Mode (per session)
+
+| Signal | Mode | Ask |
+|---|---|---|
+| `--odoo` / `--no-odoo`, or I say it | that | never |
+| A card: `#14842`, a task URL, a card name, `story/<slug>` | on | never |
+| `plan` with pasted text or a one-liner | off | never |
+| `plan` with nothing, no prior answer | — | once, default no |
+| `pair` with nothing | off | never |
+| `review` / `archive` bare | on, they list cards | off needs a pasted card/brief |
+| `campaign` | on | never; no `odoo_project` → stop |
+
+- `--no-odoo` beats a card: off, and the card is ignored in one line.
+- First line of every phase: `Odoo: on · <project> · card #<id> "<name>"` or `Odoo: off · chat-only`.
+- On with no `odoo_project` → ask for the exact project and offer the block line.
+- MCP unavailable → print what it would write, continue in chat, never guess an id.
+
+## Config
+
+Read `odoo_project`, `odoo_stage_done`, `card_tag`, `card_tag_extra`, `odoo_assignee_uid`,
+`odoo_assignee_manual_uid`, `deploy_url`, `deploy_expect` from the nearest `AGENTS.md` holding
+`<!-- daridev:start -->`. The root's memory is `docs/records/`; read `docs/ai-daridev/` when the
+new folder is absent, and if both exist use `records` and report the stale one.
+
+Resolve the project and tags by exact name; 0 or 2+ → stop and list. Resolve stages inside that
+project (`project.task.type` whose `project_ids` contains it). Backlog = lowest `sequence`;
+sprint = name matches `sprint backlog`; in progress = `in progress` (case-insensitive);
+validated = `odoo_stage_done`. Cards are found by `<p><em>daridev: story/<slug></em></p>`; legacy
+`ai-daridev:` and `engram:` are accepted on read.
+
+## Moves
+
+A move is one write: `stage_id` + `state` (+ `date_end`) together.
+→ validated = `03_approved` + `date_end` (review) or `1_done` + `date_end` (archive skip-review);
+→ an active stage = `01_in_progress`; → backlog = explicit reopen only; → Cancelled = `1_canceled`
+with my approval. Never move a subtask or an archived card. Never enter validated without review
+unless it is archive's skip-review close.
+
+## Assignees
+
+The card carries the agent (`odoo_assignee_uid` or the MCP uid) and the manual user only while the
+next open step is `[you]`. Next open = lowest `sequence` child not `1_done`/`1_canceled`;
+`02_changes_requested` is open, for its own owner. Creates send the full set; updates diff with
+`[[4, uid]]`/`[[3, uid]]`, never `[[6,0,…]]`; add the agent when missing. Derived, reported, not
+asked. No manual uid → no handoff; ask once and offer the key. A named person resolves exactly.
+
+## Description — three zones
+
+```
+[plan]    <h1>, Problem, Done when
+[review]  <h2>Review (daridev)</h2> ...        (above the slug line)
+[frozen]  <p><em>daridev: story/<slug></em></p>
+[legacy]  <h2>Evidence (ai-daridev)</h2> ...   (old cards; byte-for-byte)
+```
+
+`plan` writes the first zone, rewrites the slug line, and preserves everything after it (or after
+an existing `Review` heading) byte-for-byte. A legacy tail may be collapsed to one attachment
+pointer only with approval. `review` replaces only its section, inserting it before the slug.
+Nobody else writes the description. Cap: 10 lines above the review block.
+
+## Subtasks = steps
+
+`name` = `<step> — [agent|you]`, `description` = the detail (or empty), `parent_id`,
+`sequence = index × 10`, `state=01_in_progress`, owner uid, `display_in_project=False`. Never write
+the subtask's `project_id` or `stage_id`. On a legacy card, new steps start at `max+10`; open
+legacy steps superseded by a new plan become `1_canceled` + ` (superseded)` with approval; a
+`1_done` step is never renamed or dropped. States: `01_in_progress` · `1_done` ·
+`02_changes_requested` · `1_canceled`. Never delete a subtask.
+
+## Evidence
+
+A visual step gets one screenshot attached to **that subtask** (`ir.attachment`,
+`res_model=project.task`, `res_id=<subtask>`, `image/*`, > 0 bytes), named `pN-<step>.png`, and a
+local copy under `docs/records/evidence/<YYYY-MM-DD>-<slug>/`. A non-visual step attaches nothing;
+its `check:` is the proof. Never a `.txt` link as the only proof; never delete an orphan. The
+probe block in `Review` is what proves the Done-when.
+
+## Who writes what
+
+| Write | Owner |
+|---|---|
+| description top | plan |
+| subtasks create/rename/sequence | plan; review for new steps |
+| subtask state | plan (open), pair (done/drop), review (changes) |
+| attachment on a subtask | pair |
+| `stage_id` + `state` | plan (sprint), pair (in progress), review, archive (skip-review) |
+| `Review` block | review |
+| `1_done`, `docs/records/log.md` | archive |
+| `user_ids` diff | plan, pair, review; archive closes agent-only |
+
+Never print a bare id: `p4 "<step>"`, `#14842 "<name>"`, `covers p4 "<step>"`.

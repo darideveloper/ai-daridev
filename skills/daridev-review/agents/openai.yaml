@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review"
+  short_description: "Review a card with probes"
+  default_prompt: "Use $daridev-review to review this card."
+policy:
+  allow_implicit_invocation: false
