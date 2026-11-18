@@ -110,17 +110,17 @@ Verify by calling a read tool in a **new session**, not by listing servers.
 
 The agent’s Odoo allowlist must include `ir.attachment` (read/create only, scoped to
 `project.task` attachments) so pair can attach the step screenshot. Attachments are created on the
-**subtask** the step lives in, and the card renders them in `Evidence (daridev)` by
-`/web/image/{id}`.
+**card**, and `Evidence (daridev)` renders them by `/web/image/{id}`.
 
 ## Permissions
 
 A plan creates one card and up to seven subtasks, so a per-call `ask` policy means up to eight
 prompts. If that is noise, allow `odoo_create` and keep `odoo_update` and `odoo_delete` on `ask`.
 The per-phase gate is already the approval, but the client may still prompt. Evidence adds one
-`ir.attachment` create and one subtask update per visual step, so with `odoo_update` on `ask` plan
-for two prompts per step. Cap: screenshot ≤500 KB. Redact secrets and mask client data before
-upload. The skills never delete or bulk-update.
+`ir.attachment` create and one `odoo_update` call per visual step — the gallery on the card plus
+the step's state — so with `odoo_update` on `ask` plan for two prompts per step. Cap: screenshot
+≤500 KB. Redact secrets and mask client data before upload. The skills never delete or
+bulk-update.
 
 `/daridev-campaign` cannot wait on a prompt, so it needs `odoo_create` and `odoo_update` on
 `allow`; keep `odoo_delete` and `odoo_execute` on `ask`, the campaign never uses them.

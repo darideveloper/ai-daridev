@@ -86,7 +86,7 @@ subtask `state` is the status — and `<`, `>`, `&` are escaped:
 <pre>- [ ] p1 Add a hidden status region — [agent]
   check: npx playwright test tests/e2e/scan-report.spec.ts
   files: src/layouts/Layout.astro, tests/e2e/scan-report.spec.ts
-- [ ] p4 Run the mobile suites — [agent]
+- [ ] p2 Run the mobile suites — [agent]
   check: npx playwright test --project="local: mobile-chrome"
 </pre>
 ```

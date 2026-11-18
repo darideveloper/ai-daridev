@@ -26,8 +26,9 @@ printed once and then it runs.
 - Default selection = every card in the in-progress column of `odoo_project`, paged with
   `limit`/`offset`. Exclude archived (`1_done`), hidden subtasks (`display_in_project=False`), the
   backlog stage and the validated column.
-- A card whose next open step is `[you]` is a handoff: list it and skip. A card with no subtasks
-  and no brief is not planned: list it with "run `/daridev-plan`" and skip. Never invent steps.
+- A card whose next open step is `[you]` is a handoff: list it and skip. A card with no subtasks,
+  no `Steps` and no brief is not planned: list it with "run `/daridev-plan`" and skip. Never invent
+  steps.
 - Ready = every `depend_on_ids` blocker is `1_done` outside Cancelled. Otherwise print
   `Blocked by #<id> "<name>" — <stage> · <state>`.
 - `--parallel N` (default 4), `--max N` (default 10). `--dry-run` prints the batch, the gate and
@@ -43,9 +44,10 @@ One table — card, next open step, owner, blockers, branch, worktree — then o
 `deploy_url` (or `skip`) the run will use. Authorized, and nothing else:
 
 - move each card to the in-progress column (`stage_id` + `state=01_in_progress`);
-- apply the plan check's description and subtask updates;
-- flip steps to `1_done`, attach screenshots to the step's subtask and append the evidence gallery,
-  create the hidden park step, reconcile `user_ids`;
+- apply the plan check's description and subtask updates, including a legacy card's `Steps`
+  backfill;
+- flip steps to `1_done`, attach screenshots to the card and append the evidence gallery, create the
+  hidden park step and mirror its line into `Steps`, reconcile `user_ids`;
 - commit on the card's branch, push it, fetch, rebase, run the suite, `merge --ff-only` into main,
   `git revert` a landed card, push main;
 - wait for the deploy (100s + `deploy_url` ×4) and run review's probes on prod;
@@ -109,17 +111,17 @@ Everything else — evidence shape, assignees, step states, one write per move, 
 
 - **One campaign per repo.** A journal without its `closed` line → refuse in one line.
 - **Pre-flight main.** Default branch, clean, `pull --ff-only`-able, or stop before any work.
-- **Park** = one `[you]` step `pN Decide <blocker> — [you]`, detail = what blocked it and how to
-  unblock, `sequence = index × 10`, `state=01_in_progress`, `display_in_project=False`, plus the
-  assignee handoff — one write. If the next open step is already `[you]`, create nothing and only
-  reconcile the assignees. Every park is reported.
+- **Park** = one `[you]` step `pN Decide <blocker> — [you]`, its line in `Steps` carrying what
+  blocked it and how to unblock, `sequence = index × 10`, `state=01_in_progress`,
+  `display_in_project=False`, plus the assignee handoff — one write. If the next open step is
+  already `[you]`, create nothing and only reconcile the assignees. Every park is reported.
 - **Loops:** three reverts per card, 45 minutes per card, ten cards per run, three consecutive
   parks stop the run.
 - **Resume:** read the journal; archived cards are skipped, a parked card whose `[you]` step is now
   `1_done` re-enters, an existing worktree is reused, a missing one is recreated. `fresh` ignores
   it.
-- Never write a card's description, never touch cards the run did not select, never write above the
-  root.
+- Never write a card's description beyond the plan check's block and a park's line (both covered by
+  §2), never touch cards the run did not select, never write above the root.
 
 ## 7. Report
 

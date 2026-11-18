@@ -19,8 +19,9 @@ mode, stages, moves, assignees and the description zones. Never restate it.
 
 1. Load the card by id or name; no argument → list active cards (not backlog, not validated),
    limit 20, ask. Off → ask for the paste.
-2. Read the brief, the steps and their states, `write_date`. No `Done when` → say so and ask what
-   correct means; never invent a verdict.
+2. Read the brief, its `Steps`, and the subtask states, `write_date`. No `Steps` → legacy card:
+   read the subtask names and descriptions. No `Done when` → say so and ask what correct means;
+   never invent a verdict.
 3. **Surface.** Ask once: `Probe against prod or local? [prod]`. Prod → the probes are the prod
    proof. Local or not deployed → record `surface: local — prod unproven`; the verdict may still
    pass and green the card, and the block names the surface. Never FAIL for a missing deploy.
@@ -29,9 +30,11 @@ mode, stages, moves, assignees and the description zones. Never restate it.
    limit or export, enumerate the sibling surfaces (each export, bulk action, list, detail,
    autocomplete, API). Record actor + probe + result. A claim you cannot prove is FAIL, never PASS,
    except the not-deployed case above.
-5. **Gallery.** Each visual step has a label that matches a subtask (`pN "<step>"`) and an image
-   that resolves (`/web/image/{id}` plus the attachment on the card or the subtask, `image/*`,
-   `file_size > 0`). A missing or mismatched entry is a finding; never upload or capture.
+5. **Gallery.** Each visual step has a label matching its step in `Steps` and its subtask
+   (`pN "<step>"`); the subtask is only the tracker, the image lives on the card. The image
+   resolves (`/web/image/{id}` with an `ir.attachment` on the card, `image/*`, `file_size > 0`; a
+   legacy attachment on the subtask is accepted). A missing or mismatched entry is a finding; never
+   upload or capture.
 6. Verdict table: each Done-when pass/fail/manual, each step pass/fail/not reached, one evidence
    line each. Screenshots are not graded; the probe is.
 7. **Gate.** Show the verdict and the exact writes.
@@ -40,8 +43,8 @@ mode, stages, moves, assignees and the description zones. Never restate it.
      that is not `1_done`/`1_canceled` blocks the green dot: list it instead of approving.
    - Fail → one card update (`state=02_changes_requested` + move to **In Progress** from Backlog,
      Sprint Backlog, In Progress or Sprint Complete); stop from a later stage. Then the `Review`
-     block, the failing steps to `02_changes_requested`, and missing work as new subtasks created
-     with `state=02_changes_requested` (yellow).
+     block, the failing steps to `02_changes_requested`, and missing work appended to `Steps` **and**
+     created as new subtasks with `state=02_changes_requested` (yellow).
 8. Apply, then print the verdict and the checklist states. Stop: archiving is my next move.
 
 Self mode is allowed; the block says `self-reviewed`.
@@ -63,5 +66,5 @@ set and the surface is recorded.
 
 ## Never
 
-Capture a screenshot, upload, write outside its section, create a card, archive, write `log.md`,
-invent a verdict, grade an attachment.
+Capture a screenshot, upload, write outside its section (except a step's line in `Steps`), create a
+card, archive, write `log.md`, invent a verdict, grade an attachment.

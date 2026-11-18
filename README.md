@@ -37,11 +37,13 @@ asked.
 
 ## What the agent writes
 
-**Odoo (only when the session is on):** one card per brief; `Problem` / `Done when` in the
-description; one hidden subtask per step with its owner; a screenshot in the card's `Evidence`
-gallery, attached to the step when MCP is available; one `Review` block written by review; green +
-validated column on a pass; `1_done` at archive. `stage_id` and `state` always travel in the same
-write. Assignees follow the next open step. Archived cards are hidden by the default board filter.
+**Odoo (only when the session is on):** one card per brief; the whole plan in the description — a
+`Problem` / `Done when` brief and a `Steps` markdown checklist with every owner, check and file, so
+a teammate without MCP can copy it whole; one hidden subtask per step for tracking only, its
+description empty; a screenshot in the card's `Evidence` gallery, attached to the card; one
+`Review` block written by review; green + validated column on a pass; `1_done` at archive.
+`stage_id` and `state` always travel in the same write. Assignees follow the next open step.
+Archived cards are hidden by the default board filter.
 
 **In the repo:** `docs/records/spec.md` (one sentence per behaviour), `docs/records/log.md`
 (4 lines per card), `docs/records/evidence/` (untracked), and `docs/decisions/` for ADRs. The root

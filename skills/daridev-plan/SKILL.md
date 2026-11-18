@@ -63,12 +63,12 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
    No persona, no "so that", no separate criteria. `Done when` names every surface for a gate,
    permission, limit or export (list, detail, each export, bulk action, autocomplete, API). 3–7
    steps, one action each, ≤80 chars in the action, verb first, each with a `check` and an owner.
-   This block is exactly what the card carries inside one `<pre>`, so keep the two-space
+   The `Steps:` list is what the card carries inside one `<pre>`, so keep the two-space
    `check:`/`files:` continuations and never fence a command here. Never invent; ask.
 4. Audit before the gate: coverage, scope creep, order, risk, a simpler alternative. Auto-fix the
    unambiguous; ask only what changes an action.
 5. **Gate.** Show the brief and the steps, rendered as `## Render`, plus the exact writes
-   (description, N subtasks, stage/state, assignees). Stop.
+   (description with `Steps`, N subtasks with an empty description, stage/state, assignees). Stop.
 6. Apply. On: one description write carrying the whole brief and `Steps` (preserving the review
    block, the evidence gallery, the slug line and any legacy tail) + the subtasks, each with an
    empty description, + the move to the sprint column (or in progress when there is no sprint
@@ -78,9 +78,12 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
 ## Check
 
 - **Workflow** (a card is named): read it, `docs/records/spec.md` (or `docs/ai-daridev/`), the
-  related ADRs (or `docs/ai-daridev/decisions.md`), and the files the steps name. Audit, then two
-  gates — the plan, then the writes. Update only the description top and the subtasks. Never move
-  or create a card.
+  related ADRs (or `docs/ai-daridev/decisions.md`), and the files the steps name. Read the steps
+  from `Steps`; no block → legacy, read the subtasks. **Backfill:** give a legacy card a `Steps`
+  block built from its subtask names and descriptions, shown in the plan gate, then the one
+  description write; leave the legacy subtask text as history. A step a subtask has and `Steps`
+  lacks is a finding, and the backfill appends it. Audit, then two gates — the plan, then the
+  writes. Update only the description top and the subtasks. Never move or create a card.
 - **Standalone** (no card): no Odoo, no MCP, no writes to the board or docs. It reads the files the
   plan names and runs the `check:` commands; outside a repo it audits the text only. Never asks
   about Odoo. The two-gate rule does not apply; ask one question at a time while auditing.
@@ -103,8 +106,9 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
 
 ## Render
 
-Return the full plan every time, even when nothing is asked. Every step is `- [ ]` (`- [x]` when it
-is already `1_done`), never a bare `- pN`: the card's `Steps: … check:` is the write format, not the
+Return the full plan every time, even when nothing is asked. Every step is `- [ ]` in the card,
+always; the chat render shows `- [x]` for a step already `1_done` and never writes that back — the
+subtask is the status. Never a bare `- pN`: the card's `Steps` block is the write format, not the
 render. One command per step, in a fence indented to that bullet's content column (4 spaces under
 `  - `, 2 spaces directly under the step), never at column 0 — a column-0 fence closes the list and
 flattens every step after it — and never inline after the step as well. ≤6 change rows. Never fence

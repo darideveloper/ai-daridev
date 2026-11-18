@@ -1,6 +1,6 @@
 ---
 name: daridev-pair
-description: Executes an approved plan one step at a time — check red, minimum code, check green, screenshot on the step's subtask — and stops on anything unplanned. Never reviews, never archives, never commits.
+description: Executes an approved plan one step at a time — check red, minimum code, check green, screenshot on the card — and stops on anything unplanned. Never reviews, never archives, never commits.
 disable-model-invocation: true
 ---
 
@@ -24,7 +24,9 @@ mode, stages, moves, assignees and the evidence upload. Never restate it.
 - On: read `depend_on_ids` first. A blocker not `1_done` outside Cancelled stops the run with one
   line and what unblocks it. Then move the card to the in-progress column (one write, reported, not
   asked; skip when already there, in the validated column, Cancelled or `1_done`). Checklist = the
-  subtasks by `sequence`, fallback to the brief's `Steps:`.
+  `Steps` block of the description; the subtasks supply only `state`, by `sequence`, and the block's
+  `check:` line is what step 1 runs. No `Steps` block → legacy card: read the subtask names and
+  descriptions, and say so once.
 - Off: the checklist is the approved steps in the conversation.
 
 ## Per step — no stop
@@ -36,10 +38,11 @@ mode, stages, moves, assignees and the evidence upload. Never restate it.
 5. Visual step → before the first one, ask once
    `Screenshots from prod, staging or local? [prod]` (default prod when deployed, local when not)
    and keep it. Capture on that surface at 1600×1000, mask client data, save under
-   `docs/records/evidence/<date>-<slug>/pN-<step>.png`. With MCP: attach it to that step's subtask,
-   append the gallery entry to `Evidence (daridev)` (create the heading only when missing, after
-   `Review` and before the slug), and verify both before flipping. Without MCP: print the handoff
-   label and the upload instruction (see Close). Non-visual → one `<code>` line under the label.
+   `docs/records/evidence/<date>-<slug>/pN-<step>.png`. With MCP: attach it to the card, append the
+   gallery entry to `Evidence (daridev)` (create the heading only when missing, after `Review` and
+   before the slug), and verify the attachment row on the card and the gallery entry before
+   flipping. Without MCP: print the handoff label and the upload instruction (see Close).
+   Non-visual → one `<code>` line under the label.
 6. Flip the subtask to `1_done` (on) and report.
 7. `Plan 4/7 · next p5 "<step>" ([agent|you])`.
 
@@ -69,5 +72,5 @@ missing or wrong check is a plan change — stop and ask.
 
 ## Never
 
-Review yourself, archive, mark green, commit, write `log.md`, rewrite the description, change a
-subtask description after creation, add what the plan does not name. Never print a bare id.
+Review yourself, archive, mark green, commit, write `log.md`, rewrite the description, write a
+subtask description, add what the plan does not name. Never print a bare id.

@@ -1,7 +1,7 @@
 # Subtask evidence — design
 
-> **Superseded 2026-11-13:** evidence now lives in the card description tail. See
-> `skills/ai-daridev-pair/SKILL.md` §4 and `docs/workflow.md`.
+> **Superseded 2026-11-13:** evidence now lives in the card description, attached to the card. See
+> `skills/daridev-pair/SKILL.md` and `docs/workflow.md`.
 
 Date: 2026-11-08
 Status: approved

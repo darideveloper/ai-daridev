@@ -16,16 +16,20 @@ brief + steps       one step at a       probes the            closes the card
 ```
 Problem:      <observed, with the path or surface>
 Done when:    <outcome, one per surface>
-Steps:        p1 … · p2 … · p3 …      (subtasks when Odoo is on)
+Steps:        a markdown checklist, 3–7 steps, each with owner, check and files
+              (subtasks mirror the names; they track, they carry no text)
 ```
 
 No persona, no separate acceptance criteria. `Done when` names every surface a gate, permission,
-limit or export must hold on. The description is at most 10 lines above the review block; anything
-longer belongs in the conversation or an ADR.
+limit or export must hold on. The brief above `Steps` is at most 10 lines and `Steps` is 3–7;
+anything longer belongs in the conversation or an ADR. The description is the whole plan — a
+teammate without Odoo MCP copies it and has every step, check and file; the subtasks are a
+checklist of names and states, never a document.
 
-The description has four zones: the brief, `Review (daridev)` (the probes), `Evidence (daridev)`
-(the screenshots, one entry per step, labelled `pN "<step>" · prod|local`), and the
-`daridev: card/<slug>` line. Old cards keep their `Evidence (ai-daridev)` tail below it.
+The description has four zones: the brief and its `Steps`, `Review (daridev)` (the probes),
+`Evidence (daridev)` (the screenshots, one per step, labelled `pN "<step>" · prod|local`, attached
+to the card), and the `daridev: card/<slug>` line. Old cards keep their `Evidence (ai-daridev)`
+tail below it.
 
 ## Three paths
 
@@ -39,7 +43,7 @@ The description has four zones: the brief, `Review (daridev)` (the probes), `Evi
 
 **Carded — small fix, no review.**
 ```
-/daridev-plan <card>           card + subtasks
+/daridev-plan <card>           card + Steps + tracking subtasks
 /daridev-pair                  steps, screenshots in the card gallery
 /daridev-archive               "skip review" → done, not green
 ```
@@ -94,8 +98,8 @@ tail is preserved unless you approve collapsing it to one attachment pointer.
 
 ## Outside the flow
 
-- `/daridev-plan check` — reads the code the plan names and runs its `check:` commands; no card,
-  no Odoo, no writes.
+- `/daridev-plan check` — standalone, reads the code the plan names and runs its `check:`
+  commands, no Odoo and no writes; on a card it also backfills `Steps` and updates the subtasks.
 - `/daridev-campaign` — runs the flow over a batch, unattended, one worktree per card.
 - `/daridev-plan split` — one idea into ≤10 one-line briefs and cards.
 
@@ -103,8 +107,8 @@ tail is preserved unless you approve collapsing it to one attachment pointer.
 
 | Thing | Cap |
 |---|---|
-| Card above the review block | 10 lines |
+| Brief above `Steps` | 10 lines |
+| `Steps` block | 3–7 steps |
 | Review block | 6 lines |
 | Log entry | 4 lines |
-| Steps per card | 3–7 |
 | Gates per work item | 2 |
