@@ -14,9 +14,20 @@ restate them.
 
 The root is the nearest `AGENTS.md` holding `<!-- daridev:start -->` (or the legacy
 `<!-- ai-daridev:start -->`). Its memory is `docs/records/`; if only `docs/ai-daridev/` exists, it
-is the memory: read **and write** it in place (`spec.md`, `log.md`, `evidence/`, `decisions.md`)
-and print the `git mv docs/ai-daridev docs/records` hint. Never create `docs/records/` beside it.
-If both exist, use `docs/records/` and report the stale one. Nothing is written above the root.
+is the memory: read **and write** it in place (`spec.md`, `log.md`, `evidence/`) and print the
+`git mv docs/ai-daridev docs/records` hint. Never create `docs/records/` beside it. If both exist,
+use `docs/records/` and report the stale one. Nothing is written above the root.
+
+`decisions.md` is retired: read it, never append. Lasting decisions are ADRs under
+`docs/decisions/`, one per file, named `NNNN-<slug>.md` — zero-padded from `0001`, next = highest
+existing + 1, slug kebab-case, numbered per repo, never reused. A `decisions.md` still in the
+memory root is frozen by the first ADR: `mkdir -p docs/decisions` and `git mv` it to
+`docs/decisions/legacy-decisions.md` unless that file is already there.
+
+Memory is created by the write that needs it, never as empty stubs: in the memory root
+(`docs/records/`, or the legacy `docs/ai-daridev/` in place) `pair` creates the folder, `spec.md`
+and `evidence/.gitignore` (`*`, `!.gitignore`); `archive` creates `log.md` with a `# Log` header;
+`docs/decisions/` exists once an ADR is written.
 
 ## Mode (per session)
 
@@ -127,7 +138,8 @@ The card shows the screenshots in `Evidence (daridev)`, one entry per step, labe
   non-empty and the label must match a step in `Steps` and its subtask.
 - `pair` creates `Evidence (daridev)` only when missing, after the `Review` block and before the
   slug line; it appends one entry per step, replacing that step's entry on a re-capture.
-- Local copy always: `docs/records/evidence/<YYYY-MM-DD>-<slug>/pN-<step>.png` (untracked).
+- Local copy always: `docs/records/evidence/<YYYY-MM-DD>-<slug>/pN-<step>.png` in the memory root
+  (`docs/ai-daridev/evidence/` in a legacy repo), untracked.
 - Verify before flipping: the image resolves and the attachment row is on the card, `image/*`,
   `file_size > 0`; for a code line, the text is non-empty. Never a
   `.txt` link as the only proof; never delete an orphan. The probe block in `Review` is what proves
@@ -144,6 +156,8 @@ The card shows the screenshots in `Evidence (daridev)`, one entry per step, labe
 | `Evidence (daridev)` gallery | pair, or the teammate without MCP |
 | `stage_id` + `state` | plan (sprint), pair (in progress), review, archive (skip-review) |
 | `Review` block | review |
+| `spec.md`, `evidence/`, `docs/records/` | pair |
+| `docs/decisions/NNNN-<slug>.md` | archive, on approval |
 | `1_done`, `docs/records/log.md` | archive |
 | `user_ids` diff | plan, pair, review; archive closes agent-only |
 

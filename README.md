@@ -46,9 +46,9 @@ description empty; a screenshot in the card's `Evidence` gallery, attached to th
 Archived cards are hidden by the default board filter.
 
 **In the repo:** `docs/records/spec.md` (one sentence per behaviour), `docs/records/log.md`
-(4 lines per card), `docs/records/evidence/` (untracked), and `docs/decisions/` for ADRs. The root
-is the nearest `AGENTS.md` holding `<!-- daridev:start -->`; nothing is written above it. Files are
-committed with your code, by you.
+(4 lines per card), `docs/records/evidence/` (untracked), and `docs/decisions/NNNN-<slug>.md` for
+ADRs. The root is the nearest `AGENTS.md` holding `<!-- daridev:start -->`; nothing is written above
+it. Files are committed with your code, by you.
 
 ## Install
 

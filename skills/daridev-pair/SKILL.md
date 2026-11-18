@@ -38,7 +38,9 @@ mode, stages, moves, assignees and the evidence upload. Never restate it.
 5. Visual step → before the first one, ask once
    `Screenshots from prod, staging or local? [prod]` (default prod when deployed, local when not)
    and keep it. Capture on that surface at 1600×1000, mask client data, save under
-   `docs/records/evidence/<date>-<slug>/pN-<step>.png`. With MCP: attach it to the card, append the
+   `docs/records/evidence/<date>-<slug>/pN-<step>.png` (the memory root: `docs/ai-daridev/evidence/`
+   in a legacy repo). Create that evidence folder and its `.gitignore` (`*` and `!.gitignore`) when
+   missing. With MCP: attach it to the card, append the
    gallery entry to `Evidence (daridev)` (create the heading only when missing, after `Review` and
    before the slug), and verify the attachment row on the card and the gallery entry before
    flipping. Without MCP: print the handoff label and the upload instruction (see Close).
@@ -53,7 +55,8 @@ missing or wrong check is a plan change — stop and ask.
 ## Close (only when every step is green and I say yes)
 
 - List open steps: flip, leave the card open, or drop (`1_canceled` + ` (dropped)`, never deleted).
-- Propose one sentence for `docs/records/spec.md` under `## <domain>` when behaviour changed.
+- Propose one sentence for `docs/records/spec.md` under `## <domain>` when behaviour changed; on
+  yes, create the file (`# Spec` header) when missing instead of only printing the line.
 - Print the handoff: what shipped, the spec line, the card state, the step summary,
   `worktree: removed|kept <path>`, and the commit message for me to run.
 - **No MCP:** print one block per step, in order, each with its local path and label, plus the

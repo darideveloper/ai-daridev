@@ -87,7 +87,8 @@ step means.
    `git revert` the landed commit first, push, wait for the deploy, reset the worktree, hand the
    findings back. Three loops, then park.
 5. **Archive:** `/daridev-archive` on the card, then `docs: archive <slug>` on main and push.
-   Never archive drift; park it.
+   Never archive drift; park it. A lasting decision found at the gate parks the card (`lasting
+   decision — needs sign-off`); campaign never writes an ADR.
 6. **Clean up:** stop any dev server, `git worktree remove`, `prune`, `branch -d` (merged only),
    `fetch -p`. Parked cards keep their worktree.
 7. **Recompute the ready set** — the archive freed dependents — and continue until nothing is

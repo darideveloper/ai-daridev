@@ -150,10 +150,15 @@ paste the screenshots into the card’s `Evidence (daridev)` section — the lab
   merge two memories.
 - Old blocks (`ai-daridev:start`), old slugs (`ai-daridev: story/<slug>`, `engram:`) and old
   `Review (ai-daridev)` headings are read; new writes use the new names.
-- `decisions.md` is retired: a decision that lasts becomes an ADR under `docs/decisions/`; the rest
-  moves frozen to `docs/decisions/legacy-decisions.md`.
-- The first skill that writes asks once about folding an existing `openspec/` or
-  `docs/decisions/*.md` into the memory; the originals stay as history.
+- `decisions.md` is retired and read-only. The first ADR freezes it: `mkdir -p docs/decisions` and
+  `git mv` it to `docs/decisions/legacy-decisions.md` (skip when that file already exists).
+- ADRs are `docs/decisions/NNNN-<slug>.md`, numbered per repo from `0001`, next = highest existing
+  + 1; `archive` writes one only when you approve it at the close gate.
+- The first skill that writes asks once about folding an existing `openspec/` into the memory;
+  the originals stay as history. `docs/decisions/` is already the home for decisions and is never
+  folded.
+- The memory is created by the write that needs it: `pair` creates `docs/records/`, `spec.md` and
+  `evidence/.gitignore`; `archive` creates `log.md`. No empty stubs.
 
 ## Troubleshooting
 
@@ -165,5 +170,6 @@ paste the screenshots into the card’s `Evidence (daridev)` section — the lab
 | No cards are created | the session is off — say `--odoo`; or the block has no `odoo_project`, or MCP is not registered |
 | Evidence is not on the step | the session was chat-only, or the upload failed; the file is under `docs/records/evidence/`, and a no-MCP teammate pastes it into the card gallery |
 | `docs/records/evidence/` shows in `git status` | commit its `.gitignore` (`*` and `!.gitignore`); the images stay untracked |
+| `spec.md` or `log.md` missing | the write that needs it creates it: `pair` for the spec and the evidence folder, `archive` for the log |
 | A refined card stays in Backlog | the project has no `Sprint Backlog` stage, or the card was not in the backlog stage |
 | Files land in the wrong repo | a parent `AGENTS.md` has the block; add one where you want the root |

@@ -43,7 +43,8 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
 ## Card
 
 1. Load the card or pasted text. Read `docs/records/spec.md` (or the old path), the code the work
-   touches, `rg docs/decisions/` (or `docs/ai-daridev/decisions.md`), and `depend_on_ids`.
+   touches, `rg docs/decisions/ 2>/dev/null` (or `docs/ai-daridev/decisions.md`, read-only — the
+   legacy file is never written), and `depend_on_ids`.
 2. A blocker that is not `1_done` outside Cancelled is a hard stop with one line on what unblocks it.
 3. Brief:
 
@@ -78,8 +79,8 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
 ## Check
 
 - **Workflow** (a card is named): read it, `docs/records/spec.md` (or `docs/ai-daridev/`), the
-  related ADRs (or `docs/ai-daridev/decisions.md`), and the files the steps name. Read the steps
-  from `Steps`; no block → legacy, read the subtasks. **Backfill:** give a legacy card a `Steps`
+  related ADRs under `docs/decisions/` (or `docs/ai-daridev/decisions.md`, read-only), and the
+  files the steps name. Read the steps from `Steps`; no block → legacy, read the subtasks. **Backfill:** give a legacy card a `Steps`
   block built from its subtask names and descriptions, shown in the plan gate, then the one
   description write; leave the legacy subtask text as history. A step a subtask has and `Steps`
   lacks is a finding, and the backfill appends it. Audit, then two gates — the plan, then the

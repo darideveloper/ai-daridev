@@ -28,6 +28,7 @@ Odoo card only when I ask or approve it, in the same write as its state. Only
 `/daridev-archive` sets a card `1_done` or writes `docs/records/log.md`; it never sets the green
 dot. Never set `1_canceled` unless I ask.
 Repo memory lives in `docs/records/` and is committed by a human.
+Lasting decisions are ADRs in `docs/decisions/NNNN-<slug>.md`, written by archive when I approve.
 <!-- daridev -->'
 
 say() { printf '%s\n' "$*"; }

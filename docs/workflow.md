@@ -88,7 +88,10 @@ docs/records/
 └── evidence/      untracked screenshots (`*` + `!.gitignore`)
 ```
 
-Lasting decisions are ADRs under `docs/decisions/`, referenced by path from the log. The root is
+Lasting decisions are ADRs under `docs/decisions/NNNN-<slug>.md`, numbered per repo from `0001`
+(next = highest + 1), referenced by path from the log. A legacy `docs/ai-daridev/decisions.md` is
+read-only and frozen to `docs/decisions/legacy-decisions.md` by the first ADR. Memory is created by
+the write that needs it: `pair` for `spec.md` and `evidence/`, `archive` for `log.md`. The root is
 the nearest `AGENTS.md` with `<!-- daridev:start -->`; memory follows the code, so each code repo
 has its own. Nothing is written above the root.
 
