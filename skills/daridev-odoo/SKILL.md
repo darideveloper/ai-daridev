@@ -68,24 +68,44 @@ asked. No manual uid → no handoff; ask once and offer the key. A named person 
 ## Description — four zones
 
 ```
-[plan]      <h1>, Problem, Done when
+[plan]      <h1>, Problem, Done when, Out of scope, Touched, Steps
 [review]    <h2>Review (daridev)</h2> ...        (above the slug line)
 [evidence]  <h2>Evidence (daridev)</h2> ...      (pair-owned, append-only)
 [frozen]    <p><em>daridev: card/<slug></em></p>
 [legacy]    <h2>Evidence (ai-daridev)</h2> ...   (old cards; byte-for-byte)
 ```
 
+The description is the whole plan: a teammate without Odoo MCP copies it and has every step, owner,
+check and file. The subtasks are a checklist, never a document.
+
+`Steps` is one `<pre>` block of markdown so a copy keeps its shape. Every box stays `[ ]` — the
+subtask `state` is the status — and `<`, `>`, `&` are escaped:
+
+```html
+<p><b>Steps</b></p>
+<pre>- [ ] p1 Add a hidden status region — [agent]
+  check: npx playwright test tests/e2e/scan-report.spec.ts
+  files: src/layouts/Layout.astro, tests/e2e/scan-report.spec.ts
+- [ ] p4 Run the mobile suites — [agent]
+  check: npx playwright test --project="local: mobile-chrome"
+</pre>
+```
+
 `plan` writes the first zone, rewrites the slug line to `card/<slug>`, and preserves everything
 after it (or after an existing `Review` heading) byte-for-byte, including the evidence gallery. A
 legacy tail may be collapsed to one attachment pointer only with approval. `review` replaces only
-its section, inserting it before the slug. `pair` appends the evidence gallery. Nobody else writes
-the description. Cap: 10 lines above the review block.
+its section, inserting it before the slug, and mirrors a new or refused step into `Steps`.
+`campaign`'s park line is the only other write inside `Steps`. `pair` appends the evidence gallery.
+Nobody else writes the description. Cap: the brief above `Steps` is 10 lines; `Steps` is 3–7.
 
-## Subtasks = steps
+## Subtasks = tracking
 
-`name` = `<step> — [agent|you]`, `description` = the detail (or empty), `parent_id`,
+`name` = `pN <step> — [agent|you]`, `description` empty, `parent_id`,
 `sequence = index × 10`, `state=01_in_progress`, owner uid, `display_in_project=False`. Never write
-the subtask's `project_id` or `stage_id`. On a legacy card, new steps start at `max+10`; open
+the subtask's `project_id`, `stage_id` or description; the name mirrors its line in `Steps` and the
+detail stays there. A subtask never carries information the description does not: every step,
+rename, drop and park is mirrored into `Steps` in the same write. A card with no `Steps` block is
+legacy — read the steps from its subtasks. On a legacy card, new steps start at `max+10`; open
 legacy steps superseded by a new plan become `1_canceled` + ` (superseded)` with approval; a
 `1_done` step is never renamed or dropped. Review-created missing-work steps use
 `state=02_changes_requested` (yellow). States: `01_in_progress` · `1_done` ·
@@ -96,19 +116,20 @@ legacy steps superseded by a new plan become `1_canceled` + ` (superseded)` with
 The card shows the screenshots in `Evidence (daridev)`, one entry per step, labelled
 `pN "<step>" — [owner] · <surface>` (`prod`, `staging — not deployed`, `local — not deployed`).
 
-- **With MCP:** the image is attached to **that subtask** (`ir.attachment`,
-  `res_model=project.task`, `res_id=<subtask>`, `image/*`, > 0 bytes), named `pN-<step>.png`; the
-  card renders `<p><img src="/web/image/{id}" …/></p>` under the label.
-- **Without MCP:** the teammate pastes the image into `Evidence (daridev)`; Odoo attaches it to the
-  card. The subtask keeps no attachment.
+- The image is attached to **the card** (`ir.attachment`, `res_model=project.task`,
+  `res_id=<card>`, `image/*`, > 0 bytes), named `pN-<step>.png`; the card renders
+  `<p><img src="/web/image/{id}" …/></p>` under the label. A legacy attachment on a subtask is
+  accepted on read.
+- A teammate without MCP pastes the image into `Evidence (daridev)`; Odoo attaches it to the card
+  the same way.
 - One entry per step; a re-capture replaces it; old attachments stay as history.
 - A non-visual step gets one `<code>` line under the label instead of an image; the text must be
-  non-empty and the label must match a subtask.
+  non-empty and the label must match a step in `Steps` and its subtask.
 - `pair` creates `Evidence (daridev)` only when missing, after the `Review` block and before the
   slug line; it appends one entry per step, replacing that step's entry on a re-capture.
 - Local copy always: `docs/records/evidence/<YYYY-MM-DD>-<slug>/pN-<step>.png` (untracked).
-- Verify before flipping: the image resolves and the attachment row is on the expected record
-  (subtask or card), `image/*`, `file_size > 0`; for a code line, the text is non-empty. Never a
+- Verify before flipping: the image resolves and the attachment row is on the card, `image/*`,
+  `file_size > 0`; for a code line, the text is non-empty. Never a
   `.txt` link as the only proof; never delete an orphan. The probe block in `Review` is what proves
   the Done-when.
 
@@ -116,11 +137,10 @@ The card shows the screenshots in `Evidence (daridev)`, one entry per step, labe
 
 | Write | Owner |
 |---|---|
-| description top | plan |
-| subtasks create/rename/sequence | plan; review for new steps |
+| description top: the brief and `Steps` | plan; review for a new or refused step; campaign for a park |
+| subtasks create/rename/sequence | plan; review for new steps, with their `Steps` line |
 | subtask state | plan (open), pair (done/drop), review (changes and new steps) |
-| attachment on a subtask | pair |
-| attachment on the card | teammate without MCP |
+| attachment on the card | pair, or the teammate without MCP |
 | `Evidence (daridev)` gallery | pair, or the teammate without MCP |
 | `stage_id` + `state` | plan (sprint), pair (in progress), review, archive (skip-review) |
 | `Review` block | review |

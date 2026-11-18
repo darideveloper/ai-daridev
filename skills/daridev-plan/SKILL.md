@@ -54,20 +54,25 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
    Out of scope: <one line>
    Touched: <files / systems>
    Steps:
-   - p1 <one action> — [agent] — check: <command or test>
+   - [ ] p1 <one action> — [agent]
+     check: <command or test>
+     files: <path, path>
+   - [ ] p2 <one action> — [you]
    ```
 
    No persona, no "so that", no separate criteria. `Done when` names every surface for a gate,
    permission, limit or export (list, detail, each export, bulk action, autocomplete, API). 3–7
-   steps, one action each, ≤80 chars, verb first, each with a `check`, each with an owner. Never
-   invent; ask.
+   steps, one action each, ≤80 chars in the action, verb first, each with a `check` and an owner.
+   This block is exactly what the card carries inside one `<pre>`, so keep the two-space
+   `check:`/`files:` continuations and never fence a command here. Never invent; ask.
 4. Audit before the gate: coverage, scope creep, order, risk, a simpler alternative. Auto-fix the
    unambiguous; ask only what changes an action.
 5. **Gate.** Show the brief and the steps, rendered as `## Render`, plus the exact writes
    (description, N subtasks, stage/state, assignees). Stop.
-6. Apply. On: one description write (preserving the review block, the evidence gallery, the slug
-   line and any legacy tail) + the subtasks + the move to the sprint column (or in progress when
-   there is no sprint stage), re-reading `write_date` first. Off: print the brief and steps.
+6. Apply. On: one description write carrying the whole brief and `Steps` (preserving the review
+   block, the evidence gallery, the slug line and any legacy tail) + the subtasks, each with an
+   empty description, + the move to the sprint column (or in progress when there is no sprint
+   stage), re-reading `write_date` first. Off: print the brief and steps.
    Never green, never done, never cancel, never remove a blocker.
 
 ## Check
