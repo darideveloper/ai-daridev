@@ -20,7 +20,8 @@ mode, stages, moves, assignees and the description zones. Never restate it.
 
 1. `split` → split mode.
 2. `check` → check mode (a card inside makes it the workflow check).
-3. A card (`#id`, URL, `--card`, `card/<slug>`, `story/<slug>`) → card mode.
+3. A card (`#id`, URL, a card name, `--card`, `card/<slug>`, `story/<slug>`) → card mode. A single
+   line is tried as a card name before rule 5; unmatched, it falls through and is never an error.
 4. A pasted block with a step list, headings or more than one line → check, standalone.
 5. A one-liner → card mode, Odoo off.
 6. Nothing → ask: "An idea to split, a card to plan, or a plan to check?" and stop.

@@ -44,7 +44,10 @@ Resolve the project and tags by exact name; 0 or 2+ → stop and list. Resolve s
 project (`project.task.type` whose `project_ids` contains it). Backlog = lowest `sequence`;
 sprint = name matches `sprint backlog`; in progress = `in progress` (case-insensitive);
 validated = `odoo_stage_done`. Cards are found by `<p><em>daridev: card/<slug></em></p>`; legacy
-`story/`, `ai-daridev: story/` and `engram: story/` are accepted on read.
+`story/`, `ai-daridev: story/` and `engram: story/` are accepted on read. No `#id`, no slug, no
+match inside `odoo_project`, and the reference is still unclear → `odoo_search_read project.task`
+with `name ilike` on its longest word, `limit 20`; report the project the card came from; 2+ → list
+`#<id> "<name>" · <project>`, never guess.
 
 ## Moves
 
