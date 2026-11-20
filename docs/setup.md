@@ -62,10 +62,11 @@ the project and its parameters; whether a session writes cards is decided per se
   only to pin a different account. `odoo_assignee_manual_uid` is **you**: the card carries that
   user only while the next open step is a `[you]` step. No manual uid → no handoff; the first skill
   that needs one asks once.
-- `odoo_stage_done` is the validated column. Review moves an approved card there with the green
-  dot; archive closes a green card there, or closes a self-verified card you explicitly release
-  (which lands there **without** the green dot). It must match exactly one stage inside the
-  project. Archived cards (`1_done`) are hidden by the default board filter.
+- `odoo_stage_done` is the validated column. Review moves an approved card there and stamps
+  `date_end`; `pair`'s close sets the green dot without moving the card; archive closes a green card
+  there, or closes a self-verified card you explicitly release (which lands there **without** the
+  green dot). It must match exactly one stage inside the project. Archived cards (`1_done`) are
+  hidden by the default board filter.
 - The **sprint column** and the **in-progress column** need no key: they are the stages whose names
   match `Sprint Backlog` and `In Progress` (case-insensitive). Zero or two matches → the skill asks
   once.

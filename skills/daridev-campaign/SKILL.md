@@ -51,7 +51,7 @@ One table — card, next open step, owner, blockers, branch, worktree — then o
 - commit on the card's branch, push it, fetch, rebase, run the suite, `merge --ff-only` into main,
   `git revert` a landed card, push main;
 - wait for the deploy (100s + `deploy_url` ×4) and run review's probes on prod;
-- let review write green + the validated move;
+- write the green dot in place at pair's close, then let review add `date_end` + the validated move;
 - archive each green card (`state=1_done`, `date_end` when empty), then commit and push `log.md`;
 - remove the card's worktree after a successful archive.
 
@@ -83,9 +83,9 @@ step means.
    `deploy_expect` when declared); `skip` → no wait, probe the app root. Four attempts, ~400s.
    Exhausted → park that card only.
 4. **Review:** a fresh subagent runs `/daridev-review` in campaign mode — probe prod, never ask —
-   and its probes run on prod. Approved → it writes green + the validated move. Changes requested →
-   `git revert` the landed commit first, push, wait for the deploy, reset the worktree, hand the
-   findings back. Three loops, then park.
+   and its probes run on prod. Approved → it adds `date_end` + the validated move. Changes
+   requested → `git revert` the landed commit first, push, wait for the deploy, reset the worktree,
+   hand the findings back. Three loops, then park.
 5. **Archive:** `/daridev-archive` on the card, then `docs: archive <slug>` on main and push.
    Never archive drift; park it. A lasting decision found at the gate parks the card (`lasting
    decision — needs sign-off`); campaign never writes an ADR.
@@ -99,7 +99,7 @@ step means.
 | Skill | Single card | Campaign |
 |---|---|---|
 | pair | one gate per phase, waits for me | the gate is §2; the plan is always re-checked against the current code, never asks |
-| pair close | green only when I say yes | never green; review is the only green authority |
+| pair close | green only when I say yes, column untouched | green at close, column untouched; the §2 gate is the yes |
 | review | moves only with my approval | its write is the §2 authorization |
 | archive | waits for my yes | automatic when green and proven; drift parks |
 | all | never commit | branch commits, the merge, the revert and `log.md` belong here |

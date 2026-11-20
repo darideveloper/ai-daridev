@@ -45,7 +45,7 @@ tail below it.
 ```
 /daridev-plan <card>           card + Steps + tracking subtasks
 /daridev-pair                  steps, screenshots in the card gallery
-/daridev-archive               "skip review" → done, not green
+/daridev-archive               "skip review" → done, no review pass
 ```
 
 **Full — delegated or risky.**
@@ -69,8 +69,10 @@ without asking; `plan` with nothing asks once, default no. Every phase prints
 `Odoo: on · <project>` or `Odoo: off · chat-only` first. With Odoo off, stories live in the
 conversation and only the files are written.
 
-Green means **reviewed**. The validated column means **finished**; a skip-review card lands there
-without the green dot, so the board still shows who looked at it.
+Green means **approved** — by `pair` when the close is accepted (a campaign's §2 gate is that
+acceptance), by `review` when it passes. The validated column means **reviewed and finished**: only
+review moves a card there, so the column — not the dot — is what proves someone else looked at it.
+A skip-review card lands there without the green dot.
 
 ## Evidence surface
 

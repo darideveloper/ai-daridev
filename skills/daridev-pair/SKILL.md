@@ -55,6 +55,10 @@ missing or wrong check is a plan change — stop and ask.
 ## Close (only when every step is green and I say yes)
 
 - List open steps: flip, leave the card open, or drop (`1_canceled` + ` (dropped)`, never deleted).
+- **Green dot.** On, once no step is open and I said yes: one write `state=03_approved`, stage
+  untouched, no `date_end` — green in the column it already sits in, never the validated column.
+  Skip an archived, cancelled, validated or already-green card. It is not a review pass: only the
+  `Review` block proves that.
 - Propose one sentence for `docs/records/spec.md` under `## <domain>` when behaviour changed; on
   yes, create the file (`# Spec` header) when missing instead of only printing the line.
 - Print the handoff: what shipped, the spec line, the card state, the step summary,
@@ -75,5 +79,6 @@ missing or wrong check is a plan change — stop and ask.
 
 ## Never
 
-Review yourself, archive, mark green, commit, write `log.md`, rewrite the description, write a
-subtask description, add what the plan does not name. Never print a bare id.
+Review yourself, archive, move the card forward, set `1_done` or `date_end`, green a card with an
+open step, commit, write `log.md`, rewrite the description, write a subtask description, add what
+the plan does not name. Never print a bare id.

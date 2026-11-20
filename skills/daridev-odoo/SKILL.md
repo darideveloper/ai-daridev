@@ -62,7 +62,10 @@ with `name ilike` on its longest word, `limit 20`; report the project the card c
 
 ## Moves
 
-A move is one write: `stage_id` + `state` (+ `date_end`) together.
+A move is one write: `stage_id` + `state` (+ `date_end`) together. The one state-only write is
+`pair`'s close: `state=03_approved`, `stage_id` and `date_end` untouched, when no step is open and I
+said yes (in a campaign, the §2 gate is that yes). It is the green dot in the column the card
+already sits in, never the validated move.
 → validated = `03_approved` + `date_end` (review) or `1_done` + `date_end` (archive skip-review);
 → an active stage = `01_in_progress`; → backlog = explicit reopen only; → Cancelled = `1_canceled`
 with my approval. Never move a subtask or an archived card. Never enter validated without review
@@ -154,7 +157,7 @@ The card shows the screenshots in `Evidence (daridev)`, one entry per step, labe
 | subtask state | plan (open), pair (done/drop), review (changes and new steps) |
 | attachment on the card | pair, or the teammate without MCP |
 | `Evidence (daridev)` gallery | pair, or the teammate without MCP |
-| `stage_id` + `state` | plan (sprint), pair (in progress), review, archive (skip-review) |
+| `stage_id` + `state` | plan (sprint), pair (in progress; green dot at close, state only), review, archive (skip-review) |
 | `Review` block | review |
 | `spec.md`, `evidence/`, `docs/records/` | pair |
 | `docs/decisions/NNNN-<slug>.md` | archive, on approval |
