@@ -128,7 +128,8 @@ legacy steps superseded by a new plan become `1_canceled` + ` (superseded)` with
 ## Evidence
 
 The card shows the screenshots in `Evidence (daridev)`, one entry per step, labelled
-`pN "<step>" — [owner] · <surface>` (`prod`, `staging — not deployed`, `local — not deployed`).
+`pN "<step>" — [owner] · <surface>` (`prod`, `staging`, `local`), with ` — not deployed` appended
+while that surface is not deployed.
 
 - The image is attached to **the card** (`ir.attachment`, `res_model=project.task`,
   `res_id=<card>`, `image/*`, > 0 bytes), named `pN-<step>.png`; the card renders
@@ -155,8 +156,8 @@ The card shows the screenshots in `Evidence (daridev)`, one entry per step, labe
 | description top: the brief and `Steps` | plan; review for a new or refused step; campaign for a park |
 | subtasks create/rename/sequence | plan; review for new steps, with their `Steps` line |
 | subtask state | plan (open), pair (done/drop), review (changes and new steps) |
-| attachment on the card | pair, or the teammate without MCP |
-| `Evidence (daridev)` gallery | pair, or the teammate without MCP |
+| attachment on the card | pair, or the campaign's post-deploy re-capture, or the teammate without MCP |
+| `Evidence (daridev)` gallery | pair, or the campaign's post-deploy re-capture, or the teammate without MCP |
 | `stage_id` + `state` | plan (sprint), pair (in progress; green dot at close, state only), review, archive (skip-review) |
 | `Review` block | review |
 | `spec.md`, `evidence/`, `docs/records/` | pair |

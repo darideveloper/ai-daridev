@@ -26,31 +26,58 @@ printed once and then it runs.
 - Default selection = every card in the in-progress column of `odoo_project`, paged with
   `limit`/`offset`. Exclude archived (`1_done`), hidden subtasks (`display_in_project=False`), the
   backlog stage and the validated column.
-- A card whose next open step is `[you]` is a handoff: list it and skip. A card with no subtasks,
-  no `Steps` and no brief is not planned: list it with "run `/daridev-plan`" and skip. Never invent
-  steps.
+- A card whose next open step is `[you]` is a handoff: list it and skip. A card with subtasks but no
+  `Steps` is legacy: backfill it from them (§2). A card with a brief and neither is planned in
+  pre-flight. A card with nothing to plan from — no `Steps`, no subtasks, no Problem/Done-when —
+  parks (§6) as `p1 Decide needs brief — [you]`: never a silent skip, never an invented step.
 - Ready = every `depend_on_ids` blocker is `1_done` outside Cancelled. Otherwise print
   `Blocked by #<id> "<name>" — <stage> · <state>`.
-- `--parallel N` (default 4), `--max N` (default 10). `--dry-run` prints the batch, the gate and
-  every write, then stops with no Odoo write, branch, worktree or journal.
+- `--parallel N` (default 4), `--max N` (default 10). `--dry-run` prints the pre-flight questions
+  with their defaults, the batch, the gate those defaults build and every write, then stops with no
+  Odoo write, branch, worktree or journal.
 - `fresh` refuses when a selected slug already has a sibling worktree.
-- Missing `deploy_url` at pre-flight → ask once
-  (`deploy_url for <repo>? [<app root> / skip]`), use the answer for the run and print the block
-  line to add; `skip` means no deploy wait and the app root is probed.
+
+### Pre-flight — one round, then silence
+
+Ask everything once, in one message, before the gate; after the answer the run asks nothing until
+the report. Every question carries its default and an unanswered question takes it. Ask only what
+the root block and the selection do not already answer:
+
+| Question | Default when unanswered |
+|---|---|
+| the resolved batch: ids and names | the selection as chosen |
+| surface: `prod`, `staging` or `local` | `prod` when the `deploy_url` answer is not `skip`, else `local` |
+| `deploy_url` and `deploy_expect` for `<repo>` | `skip` |
+| manual uid for the handoff, when `odoo_assignee_manual_uid` is empty | none |
+
+`surface` is one surface for the whole card — the captures and review's probes both run on it, its
+Review block's `surface:` line records it, and the gate prints it. The default follows the
+`deploy_url` answer: a `skip` run has nothing to deploy, so the app root is probed and the surface
+is recorded unproven. Every answer worth keeping is printed as its root block line.
+
+Each card with a brief and neither `Steps` nor subtasks is planned by a subagent running
+`/daridev-plan` card mode up to its gate — text only, no write — against the pre-flight main
+checkout, since no worktree exists yet (§4.1). The gate prints those briefs; the same subagent
+applies them once the gate is answered (§2). A card with nothing to plan from is a park (§6), never
+an invented plan.
 
 ## 2. The gate
 
-One table — card, next open step, owner, blockers, branch, worktree — then one question. Print the
-`deploy_url` (or `skip`) the run will use. Authorized, and nothing else:
+One table — card, next open step with the brief of a card planned in pre-flight, owner, blockers,
+branch, worktree, and a park reason with no branch for a card that will be parked — then one
+question. Print the surface and the `deploy_url` (or `skip`) the run will use. Authorized,
+and nothing else:
 
 - move each card to the in-progress column (`stage_id` + `state=01_in_progress`);
-- apply the plan check's description and subtask updates, including a legacy card's `Steps`
-  backfill;
-- flip steps to `1_done`, attach screenshots to the card and append the evidence gallery, create the
-  hidden park step and mirror its line into `Steps`, reconcile `user_ids`;
+- the planner applies each plan generated in pre-flight — description, `Steps`, subtasks — once the
+  gate is answered; the plan check applies its description and subtask updates, including a legacy
+  card's `Steps` backfill;
+- flip steps to `1_done`, attach screenshots to the card and append or re-capture the evidence
+  gallery, create the hidden park step and mirror its line into `Steps`, reconcile `user_ids`;
 - commit on the card's branch, push it, fetch, rebase, run the suite, `merge --ff-only` into main,
   `git revert` a landed card, push main;
-- wait for the deploy (100s + `deploy_url` ×4) and run review's probes on prod;
+- wait for the deploy (100s + `deploy_url` ×4), re-capture each visual step on that surface, and run
+  review's probes on it;
 - write the green dot in place at pair's close, then let review add `date_end` + the validated move;
 - archive each green card (`state=1_done`, `date_end` when empty), then commit and push `log.md`;
 - remove the card's worktree after a successful archive.
@@ -73,19 +100,28 @@ step means.
 1. **Implementer** (up to the ready set): `worktree_create <repo>-<slug>` with an explicit name
    (shell `git worktree add` only for a specific base, sibling only), `session_move` in, branch
    `feat/<slug>`, run `/daridev-plan check --no-tests` on every card (code-only, no gate; the
-   campaign gate authorizes) then `/daridev-pair`. A plan change is applied under the gate; a
-   decision parks the card. It returns `complete`, `blocked` or `partial`, the steps it flipped, the
-   local evidence, the spec/decision lines and the branch head. Anything but `complete` is parked,
-   never integrated. A `[you]` step mid-card parks on that step, no new one.
+   campaign gate authorizes) then `/daridev-pair`. A card planned in pre-flight already carries the
+   `Steps` the gate printed: the check re-reads the plan, the implementer never plans. A plan change
+   is applied under the gate; a decision parks the card. It returns `complete`, `blocked` or
+   `partial`, the steps it flipped, the local evidence, the spec/decision lines and the branch head.
+   Anything but `complete` is parked, never integrated. A `[you]` step mid-card parks on that step,
+   no new one.
 2. **Integrate** (the scheduler): fetch, rebase onto `origin/main`, install only when needed, run
    the full suite. Conflict or red → park, main untouched. Then `merge --ff-only` and push.
-3. **Wait for the deploy:** 100s, then the `deploy_url` asked at pre-flight (HTTP 200, plus
-   `deploy_expect` when declared); `skip` → no wait, probe the app root. Four attempts, ~400s.
-   Exhausted → park that card only.
-4. **Review:** a fresh subagent runs `/daridev-review` in campaign mode — probe prod, never ask —
-   and its probes run on prod. Approved → it adds `date_end` + the validated move. Changes
-   requested → `git revert` the landed commit first, push, wait for the deploy, reset the worktree,
-   hand the findings back. Three loops, then park.
+3. **Wait for the deploy, then re-capture:** 100s, then the `deploy_url` asked at pre-flight
+   (HTTP 200, plus `deploy_expect` when declared); `skip` → no wait, probe the app root, no
+   re-capture. Four attempts, ~400s; exhausted → park that card only. Green → a capture subagent
+   re-runs each visual step on that surface at 1600×1000, masked, under
+   `flock /tmp/opencode/playwright.lock`, and replaces that step's `Evidence (daridev)` entry
+   (`../daridev-odoo/SKILL.md`: a re-capture replaces it, the old attachment stays as history). A
+   capture that fails or cannot reproduce the step parks the card — the capture is the proof, not a
+   label.
+4. **Review:** a fresh subagent runs `/daridev-review` in campaign mode — it probes the surface and
+   never asks; `skip` probes the app root and takes review's not-deployed branch (`surface: local —
+   prod unproven`, never a FAIL for a missing deploy) — with the gallery already re-captured unless
+   the run is `skip`; review never captures. Approved → it adds `date_end` + the validated move.
+   Changes requested → `git revert` the landed commit first, push, wait for the deploy, reset the
+   worktree, hand the findings back. Three loops, then park.
 5. **Archive:** `/daridev-archive` on the card, then `docs: archive <slug>` on main and push.
    Never archive drift; park it. A lasting decision found at the gate parks the card (`lasting
    decision — needs sign-off`); campaign never writes an ADR.
@@ -98,7 +134,7 @@ step means.
 
 | Skill | Single card | Campaign |
 |---|---|---|
-| pair | one gate per phase, waits for me | the gate is §2; the plan is always re-checked against the current code, never asks |
+| pair | one gate per phase, waits for me, asks the capture surface | the gate is §2 and pre-flight fixed the surface; the plan is re-checked against the code; never asks |
 | pair close | green only when I say yes, column untouched | green at close, column untouched; the §2 gate is the yes |
 | review | moves only with my approval | its write is the §2 authorization |
 | archive | waits for my yes | automatic when green and proven; drift parks |
@@ -111,18 +147,22 @@ Everything else — evidence shape, assignees, step states, one write per move, 
 ## 6. Rules
 
 - **One campaign per repo.** A journal without its `closed` line → refuse in one line.
-- **Pre-flight main.** Default branch, clean, `pull --ff-only`-able, or stop before any work.
+- **Pre-flight main, before the questions.** Default branch, clean, `pull --ff-only`-able, or stop
+  before any work.
 - **Park** = one `[you]` step `pN Decide <blocker> — [you]`, its line in `Steps` carrying what
-  blocked it and how to unblock, `sequence = index × 10`, `state=01_in_progress`,
-  `display_in_project=False`, plus the assignee handoff — one write. If the next open step is
+  blocked it and how to unblock, `sequence = index × 10`, `display_in_project=False`, plus the
+  assignee handoff — one write. A card review failed keeps its `02_changes_requested`: the park adds
+  the step and nothing else. Any other card parks at `01_in_progress`. If the next open step is
   already `[you]`, create nothing and only reconcile the assignees. Every park is reported.
-- **Loops:** three reverts per card, 45 minutes per card, ten cards per run, three consecutive
-  parks stop the run.
-- **Resume:** read the journal; archived cards are skipped, a parked card whose `[you]` step is now
-  `1_done` re-enters, an existing worktree is reused, a missing one is recreated. `fresh` ignores
-  it.
-- Never write a card's description beyond the plan check's block and a park's line (both covered by
-  §2), never touch cards the run did not select, never write above the root.
+- **Loops:** three reverts per card, 45 minutes of work per card (the deploy wait and the capture
+  pass excluded), ten cards per run, three consecutive parks stop the run.
+- **Resume:** read the last closed journal of this repo; archived cards are skipped, a parked card
+  whose `[you]` step is now `1_done` re-enters — its `02_changes_requested` is cleared by the gate's
+  move to the in-progress column (§2), and pair fixes the yellow steps — an existing worktree is
+  reused, a missing one is recreated. `fresh` ignores it.
+- Never write a card's description beyond the plan check's block, a plan generated in pre-flight and
+  a park's line (all covered by §2), never touch cards the run did not select, never write above the
+  root.
 
 ## 7. Report
 
