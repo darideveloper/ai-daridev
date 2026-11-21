@@ -14,7 +14,9 @@ or `--odoo` means on; a pasted one-liner means off; nothing and no prior answer 
 `Odoo this session? [y/N]`, default no.
 
 **Render contract.** Every step renders as `- [ ] pN`; `- [x]` only in chat, for a step already
-`1_done`; a bare `- pN` or a command at column 0 is a render bug — `## Render` owns the shape.
+`1_done`, or — in a standalone check — already satisfied. In a card the subtask is the status: a
+code-satisfied step with an open subtask stays `- [ ]` and says `already satisfied in code`. A bare
+`- pN` or a command at column 0 is a render bug — `## Render` owns the shape.
 
 Before the first write, read `../daridev-odoo/SKILL.md`: it owns the root memory and, on Odoo,
 mode, stages, moves, assignees and the description zones. Never restate it.
@@ -98,6 +100,14 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
   test DB is throwaway; the product DB, Odoo and `docs/records/` are untouched. No `check:`
   commands → ask once: run the suite or read-only. Timeout per command. Report
   `step · command · result · implication`.
+- **Report the state, not the plan.** In a standalone check, a step whose outcome already holds is
+  `already satisfied` — `- [x]`, a finding, never a to-do; a partial outcome is `- [ ]` with
+  `partial: <what holds> · <what does not>`. For an imperative step (`mv`, `daemon-reload`,
+  `git push`) run only a read-only probe derived from the step's outcome, never the action; a
+  `check:` that is the action, or that only proves the action ran, is a finding. An executed row
+  carries what you observed (command output or code read); never present the plan's `expected:`
+  clause as the result. Filter a probe's own process before declaring it silent
+  (`pgrep -af '[d]aily-master'`).
 - Select the plan: pasted → last ~20 messages → ask. Extract the intent verbatim. Audit coverage,
   accuracy, scope creep, clarity, consistency, feasibility/order, risk, simpler alternative.
   Auto-fix the unambiguous; ask only what changes an action; never invent; >10 gaps → stop.
@@ -107,21 +117,25 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
 ## Render
 
 Return the full plan every time, even when nothing is asked. Every step is `- [ ]` in the card,
-always; the chat render shows `- [x]` for a step already `1_done` and never writes that back — the
-subtask is the status. Never a bare `- pN`: the card's `Steps` block is the write format, not the
-render. One command per step, in a fence indented to that bullet's content column (4 spaces under
-`  - `, 2 spaces directly under the step), never at column 0 — a column-0 fence closes the list and
-flattens every step after it — and never inline after the step as well. ≤6 change rows. Never fence
-the whole plan.
+always; the chat render shows `- [x]` for a step already `1_done`, or — in a standalone check —
+already satisfied, and never writes that back — in a card the subtask is the status. Never a bare
+`- pN`: the card's `Steps` block is the write format, not the render. One fence per step, one probe
+per line, indented to that bullet's content column (4 spaces under `  - `, 2 spaces directly under
+the step), never at column 0 — a column-0 fence closes the list and flattens every step after it —
+and never inline after the step as well. ≤6 change rows. Never fence the whole plan.
 
 Before sending, assert: every step line matches `^- \[[ x]\] p[0-9]+ `, no line matches `^- p[0-9]`,
-and no check command starts at column 0. On failure, re-render instead of printing.
+no check command starts at column 0, and no check row presents the plan's `expected:` clause as the
+result — a check states what it observed, a plan gate states the outcome it will prove, and
+`--no-tests` states the code read. On failure, re-render instead of printing.
 
 ````markdown
 ## Plan: <title>
 _standalone · no card_        <!-- or _card #14842 "<name>"_ -->
 
 **Done when:** <outcome, one per surface>
+
+**Read:** <file, file> — no write.
 
 - [ ] p1 <one action> — [agent]
   - `<path>` — what the check proves · <result>
@@ -130,7 +144,20 @@ _standalone · no card_        <!-- or _card #14842 "<name>"_ -->
     ```
 - [ ] p2 <one action> — [you]
 
-_5 steps · 4 agent · 1 you · <N>/<N> requirements traced · <N> findings · <N> answers_
+_<N> steps · <N> agent · <N> you · <N>/<N> requirements traced · <N> findings · <N> answers_
+````
+
+Check render, same shape:
+
+````markdown
+- [x] p1 <done action> — [agent]
+  - `<path>` — what the check proves · already satisfied: <observed>
+- [ ] p2 <partial action> — [agent]
+  - `<path>` — what the check proves · partial: <holds> · <missing>
+- [ ] p3 <open action> — [agent]
+  - `<path>` — what the check proves · <observed>
+- [ ] p4 <manual action> — [you]
+  - `<path>` — what the check proves · manual — not run
 ````
 
 ## Never
