@@ -3,10 +3,13 @@
 Investigate → plan → validate → do → verify → archive. Two approvals: the plan and the close.
 Everything else is reported.
 
+`pair` asks once for the pace before p1 — step by step, straight through, or manual steps batched.
+`run` is the default; two gates is the norm and `step` adds one per step, only when you ask for it.
+
 ```
 /daridev-plan   →   /daridev-pair   →   /daridev-review   →   /daridev-archive
-brief + steps       one step at a       probes the            closes the card
-+ one gate          time, no stops      Done-when             + 4-line log
+brief + steps       steps at your        probes the            closes the card
++ one gate          pace                 Done-when             + 4-line log
 ```
 
 `review` is skipped when there is no card, or when you say **skip review** at the archive gate.
@@ -116,4 +119,4 @@ tail is preserved unless you approve collapsing it to one attachment pointer.
 | `Steps` block | 3–7 steps |
 | Review block | 6 lines |
 | Log entry | 4 lines |
-| Gates per work item | 2 |
+| Gates per work item | 2 · +1 per step in `step` pace |

@@ -134,7 +134,7 @@ step means.
 
 | Skill | Single card | Campaign |
 |---|---|---|
-| pair | one gate per phase, waits for me, asks the capture surface | the gate is §2 and pre-flight fixed the surface; the plan is re-checked against the code; never asks |
+| pair | one gate per phase, waits for me, asks the capture surface | the gate is §2 and pre-flight fixed the surface; the plan is re-checked against the code; never asks — answers `run` without asking, and a `[you]` step returns partial and parks |
 | pair close | green only when I say yes, column untouched | green at close, column untouched; the §2 gate is the yes |
 | review | moves only with my approval | its write is the §2 authorization |
 | archive | waits for my yes | automatic when green and proven; drift parks |

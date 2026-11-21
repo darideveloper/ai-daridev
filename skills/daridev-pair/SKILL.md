@@ -1,12 +1,13 @@
 ---
 name: daridev-pair
-description: Executes an approved plan one step at a time — check red, minimum code, check green, screenshot on the card — and stops on anything unplanned. Never reviews, never archives, never commits.
+description: Executes an approved plan at the pace you choose — straight through, one step at a time, or manual steps batched — check red, minimum code, check green, screenshot on the card. Never implements a [you] step without your do it, never reviews, never archives, never commits.
 disable-model-invocation: true
 ---
 
 # Pair
 
-You drive, I navigate. One step at a time; stop only when the plan runs out.
+You drive, I navigate. The pace is yours; a step stops only when the plan, the pace or a handoff
+says so.
 
 **Mode first.** The literal first line, nothing before it:
 `Odoo: on · <project> · card #<id> "<name>"` or `Odoo: off · chat-only`.
@@ -29,7 +30,50 @@ mode, stages, moves, assignees and the evidence upload. Never restate it.
   descriptions, and say so once.
 - Off: the checklist is the approved steps in the conversation.
 
-## Per step — no stop
+## Pace
+
+One question per session, after the worktree answer and before p1:
+
+`Pace: step by step [step] · straight through [run] · manual steps batched [batch]`
+
+- `run` (default) — every step in order; a `[you]` step is the handoff below, and nothing after it
+  starts until I answer.
+- `step` — the same run, stopped after every step for my yes: the report line first, then wait.
+- `batch` — every `[agent]` step first, then the `[you]` ones as one block, but only those nothing
+  later depends on; a manual step a later step needs is handed off in place and the line says why.
+  When unsure, in place. Verify them in order and flip as each passes; the first red leaves it and
+  everything after it open.
+
+My words already answer it — do not ask again, and never twice in one session. No answer (a
+subagent) → `run`. My words set or change the pace for the session; the card is never rewritten.
+Switching pace mid-run never drops a deferred step — it still arrives as the one block.
+
+## Handoff
+
+A `[you]` step, in any pace:
+
+```
+p5 "<step>" — [you]
+  what:  <the command, click path or value, exactly>
+  files: <the step's files: line>
+  check: <the step's check: line, or what to look at>
+  then:  say done with its output — or "do it" and I take p5.
+```
+
+A check that is a command: run it on "done" and flip on green. Nothing runnable (a decision, an
+approval, a key): observe what the step names — a URL, a value, a file — and capture it; otherwise my
+word is the proof and the step's `<code>` line reads `manual — confirmed by you`, never a passing
+command. Capture the result read-only on the chosen surface, asking the screenshots question first when
+this is the first visual step; a proof that needs a click that writes, or a login I do not hold, is my
+screenshot, labelled `[you]`. Never touch the files a `[you]`
+step names while it is open. A legacy step with no `files:` or `check:` line prints what the subtask
+carries, asks once for the missing check, and omits an empty line. A step the plan gave you and I run
+reports `p5 done by agent (planned [you])`; the card text is never rewritten.
+
+## Per step — no stop unless the pace or the owner says so
+
+A `[you]` step prints the handoff above and waits: on "done" verify and flip, never implement it. In
+`step` pace, stop after the report line and wait for my yes.
 
 1. Write the check named in the plan.
 2. Show it fail.
@@ -79,6 +123,6 @@ missing or wrong check is a plan change — stop and ask.
 
 ## Never
 
-Review yourself, archive, move the card forward, set `1_done` or `date_end`, green a card with an
-open step, commit, write `log.md`, rewrite the description, write a subtask description, add what
-the plan does not name. Never print a bare id.
+Implement a `[you]` step without my `do it`, review yourself, archive, move the card forward, set
+`1_done` or `date_end`, green a card with an open step, commit, write `log.md`, rewrite the
+description, write a subtask description, add what the plan does not name. Never print a bare id.
