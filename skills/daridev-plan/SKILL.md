@@ -13,6 +13,9 @@ You propose, I decide. No code.
 or `--odoo` means on; a pasted one-liner means off; nothing and no prior answer → ask once
 `Odoo this session? [y/N]`, default no.
 
+**Render contract.** Every step renders as `- [ ] pN`; `- [x]` only in chat, for a step already
+`1_done`; a bare `- pN` or a command at column 0 is a render bug — `## Render` owns the shape.
+
 Before the first write, read `../daridev-odoo/SKILL.md`: it owns the root memory and, on Odoo,
 mode, stages, moves, assignees and the description zones. Never restate it.
 
@@ -54,11 +57,7 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
    - <outcome, one per surface>
    Out of scope: <one line>
    Touched: <files / systems>
-   Steps:
-   - [ ] p1 <one action> — [agent]
-     check: <command or test>
-     files: <path, path>
-   - [ ] p2 <one action> — [you]
+   Steps: <write shape in ../daridev-odoo/SKILL.md · chat shape in `## Render`>
    ```
 
    No persona, no "so that", no separate criteria. `Done when` names every surface for a gate,
@@ -114,6 +113,9 @@ render. One command per step, in a fence indented to that bullet's content colum
 `  - `, 2 spaces directly under the step), never at column 0 — a column-0 fence closes the list and
 flattens every step after it — and never inline after the step as well. ≤6 change rows. Never fence
 the whole plan.
+
+Before sending, assert: every step line matches `^- \[[ x]\] p[0-9]+ `, no line matches `^- p[0-9]`,
+and no check command starts at column 0. On failure, re-render instead of printing.
 
 ````markdown
 ## Plan: <title>

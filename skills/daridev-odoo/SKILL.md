@@ -105,6 +105,8 @@ subtask `state` is the status — and `<`, `>`, `&` are escaped:
 </pre>
 ```
 
+The `<pre>` block is the write shape, not a render: renders use `- [ ]`.
+
 `plan` writes the first zone, rewrites the slug line to `card/<slug>`, and preserves everything
 after it (or after an existing `Review` heading) byte-for-byte, including the evidence gallery. A
 legacy tail may be collapsed to one attachment pointer only with approval. `review` replaces only

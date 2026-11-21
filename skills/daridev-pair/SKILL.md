@@ -119,7 +119,8 @@ missing or wrong check is a plan change — stop and ask.
      docs/records/evidence/<date>-<slug>/p5-<step>.png
   ```
 
-  A non-visual step prints the same label and the `<code>` line to paste.
+  A non-visual step prints the same label and the `<code>` line to paste. The label line is evidence
+  only, not a render: renders use `- [ ]`.
 
 ## Never
 

@@ -30,7 +30,8 @@ is the point, so the gate is printed once and then it runs.
 - A card whose next open step is `[you]` is a handoff: list it and skip. A card with subtasks but no
   `Steps` is legacy: backfill it from them (§2). A card with a brief and neither is planned in
   pre-flight. A card with nothing to plan from — no `Steps`, no subtasks, no Problem/Done-when —
-  parks (§6) as `p1 Decide needs brief — [you]`: never a silent skip, never an invented step.
+  parks (§6) as `p1 Decide needs brief — [you]`: a label, not a render: renders use `- [ ]`; never a
+  silent skip, never an invented step.
 - Ready = every `depend_on_ids` blocker is `1_done` outside Cancelled. Otherwise print
   `Blocked by #<id> "<name>" — <stage> · <state>`.
 - `--parallel N` (default 4), `--max N` (default 10). `--dry-run` prints the pre-flight questions
