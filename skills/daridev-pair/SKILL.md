@@ -23,9 +23,10 @@ mode, stages, moves, assignees and the evidence upload. Never restate it.
 - Worktree: in the canonical checkout, ask `Worktree or current branch? [worktree]` before p1 and
   follow the `AGENTS.md` worktree block — it owns when to ask and what follows.
 - On: read `depend_on_ids` first. A blocker not `1_done` outside Cancelled stops the run with one
-  line and what unblocks it. Re-read `stage_id`, `state` and `user_ids` before the first write; a
-  change since you loaded the card → stop in one line and reload it. Then move the card to the
-  in-progress column (one write, reported, not asked; skip when already there, in the validated
+  line and what unblocks it. Re-read `stage_id`, `state` and `user_ids` before the first write and
+  before each step's flip; a change since you loaded the card → stop in one line and reload it. Then
+  move the card to the in-progress column (one write, reported, not asked; skip when already there,
+  in the validated
   column, Cancelled or `1_done`). Checklist = the
   `Steps` block of the description; the subtasks supply only `state`, by `sequence`, and the block's
   `check:` line is what step 1 runs. No `Steps` block → legacy card: read the subtask names and

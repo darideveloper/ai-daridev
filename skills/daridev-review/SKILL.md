@@ -22,7 +22,8 @@ mode, stages, moves, assignees and the description zones. Never restate it.
 2. Read the brief, its `Steps`, and the subtask states, `write_date`. No `Steps` → legacy card:
    read the subtask names and descriptions. No `Done when` → say so and ask what correct means;
    never invent a verdict.
-3. **Surface.** Ask once: `Probe against prod or local? [prod]`. Prod → the probes are the prod
+3. **Surface.** Ask once with the question tool (`../daridev-odoo/SKILL.md` §Ask):
+   `Probe against prod or local? [prod]`. Prod → the probes are the prod
    proof. Local or not deployed → record `surface: local — prod unproven`; the verdict may still
    pass and green the card, and the block names the surface. Never FAIL for a missing deploy.
    Invoked by a campaign → the surface the campaign fixed, never ask.

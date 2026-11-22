@@ -100,6 +100,10 @@ already sits in, never the validated move.
 with my approval. Never move a subtask or an archived card. Never enter validated without review
 unless it is archive's skip-review close.
 
+One card, one session: the in-progress column is the claim, and a session that finds the card
+changed under it stops and reloads instead of continuing. Two sessions never work the same card; the
+second one says so in one line.
+
 ## Assignees
 
 The card carries exactly two identities: the agent (the MCP uid) and the manual user, the second only

@@ -32,7 +32,8 @@ mode, stages, moves, assignees and the close variants. Never restate it.
    Refuse an open step, a cancelled card, an archived card, another project. List what frees and
    what stays blocked.
 3. Drift: a behaviour change with no spec sentence is listed; continue only on "archive anyway".
-4. **Decision.** Ask once `Lasting decision on this card? [y/N]`. Yes → propose the ADR at the
+4. **Decision.** Ask once with the question tool (`../daridev-odoo/SKILL.md` §Ask)
+   `Lasting decision on this card? [y/N]`. Yes → propose the ADR at the
    close, before the log: `docs/decisions/NNNN-<slug>.md` (next = highest existing + 1, `0001` when
    none), ≤15 lines: `# <title>`, `Decided: <date>`, `Because:`, `Alternatives:`, `Consequence:`.
    On approval write it; on refusal the log gets no `Decided:` line. Never append to a legacy
