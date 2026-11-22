@@ -45,7 +45,10 @@ mode, stages, moves, assignees and the description zones. Never restate it.
      Sprint Backlog, In Progress or Sprint Complete); stop from a later stage. Then the `Review`
      block, the failing steps to `02_changes_requested`, and missing work appended to `Steps` **and**
      created as new subtasks with `state=02_changes_requested` (yellow).
-8. Apply, then print the verdict and the checklist states. Stop: archiving is my next move.
+8. Apply, then print the verdict and the checklist states: `- [x] pN "<step>" — [agent|you]` for a
+   passed/`1_done` step and `- [ ] pN "<step>" — [agent|you]` for a failed or not-reached one, each
+   with the probe that proves it (its `check:` line or the Done-when probe) as `  - [x]`/`  - [ ]`
+   and the observed result. The verdict table stays a table. Stop: archiving is my next move.
 
 Self mode is allowed; the block says `self-reviewed`.
 

@@ -52,13 +52,16 @@ Switching pace mid-run never drops a deferred step — it still arrives as the o
 
 A `[you]` step, in any pace:
 
-```
-p5 "<step>" — [you]
+- [ ] p5 "<step>" — [you]
+
+  ```
   what:  <the command, click path or value, exactly>
   files: <the step's files: line>
   check: <the step's check: line, or what to look at>
   then:  say done with its output — or "do it" and I take p5.
-```
+  ```
+
+The step line is the only checklist item; `what/files/check/then` are its fields, not checks.
 
 A check that is a command: run it on "done" and flip on green. Nothing runnable (a decision, an
 approval, a key): observe what the step names — a URL, a value, a file — and capture it; otherwise my
@@ -98,7 +101,8 @@ missing or wrong check is a plan change — stop and ask.
 
 ## Close (only when every step is green and I say yes)
 
-- List open steps: flip, leave the card open, or drop (`1_canceled` + ` (dropped)`, never deleted).
+- List open steps as `- [ ] pN "<step>" — [agent|you]`; a flipped one prints `- [x]`, a dropped one
+  stays `- [ ]` with `(dropped)`, never deleted (`1_canceled`).
 - **Green dot.** On, once no step is open and I said yes: one write `state=03_approved`, stage
   untouched, no `date_end` — green in the column it already sits in, never the validated column.
   Skip an archived, cancelled, validated or already-green card. It is not a review pass: only the
@@ -115,12 +119,12 @@ missing or wrong check is a plan change — stop and ask.
   add each label under Evidence (daridev), and paste its image under it. If you cannot
   edit the card, send the files to the reviewer.
 
-  p5 "<step>" — [agent] · local — not deployed
+  p5 "<step>" — [agent|you] · local — not deployed
      docs/records/evidence/<date>-<slug>/p5-<step>.png
   ```
 
   A non-visual step prints the same label and the `<code>` line to paste. The label line is evidence
-  only, not a render: renders use `- [ ]`.
+  only, not a step: a step list uses `- [ ]`.
 
 ## Never
 

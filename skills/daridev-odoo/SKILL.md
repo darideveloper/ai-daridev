@@ -92,8 +92,9 @@ asked. No manual uid → no handoff; ask once and offer the key. A named person 
 The description is the whole plan: a teammate without Odoo MCP copies it and has every step, owner,
 check and file. The subtasks are a checklist, never a document.
 
-`Steps` is one `<pre>` block of markdown so a copy keeps its shape. Every box stays `[ ]` — the
-subtask `state` is the status — and `<`, `>`, `&` are escaped:
+`Steps` is one `<pre>` block of markdown so a copy keeps its shape. Every step line stays `- [ ]`
+— the subtask `state` is the status — the `check:`/`files:` lines are two-space fields, and `<`,
+`>`, `&` are escaped:
 
 ```html
 <p><b>Steps</b></p>
@@ -105,7 +106,14 @@ subtask `state` is the status — and `<`, `>`, `&` are escaped:
 </pre>
 ```
 
-The `<pre>` block is the write shape, not a render: renders use `- [ ]`.
+The `<pre>` block is the write shape, not a render: renders use `- [ ]` for a step and `  - [ ]`
+for each check. `[x]` is chat-only and never written to the card.
+
+**Step rendering, every phase.** A phase that prints a step list writes `- [ ] pN` / `- [x] pN`,
+with each check under it as `  - [ ]` / `  - [x]`. A step named inline (a progress line, a table
+cell, an evidence label) keeps its inline form; an evidence label is never a step; a handoff's
+`what/files/check/then` are fields, not checks; a summary line may omit its checks. A dropped step
+stays `- [ ]` and carries `(dropped)`.
 
 `plan` writes the first zone, rewrites the slug line to `card/<slug>`, and preserves everything
 after it (or after an existing `Review` heading) byte-for-byte, including the evidence gallery. A

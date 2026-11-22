@@ -30,8 +30,7 @@ is the point, so the gate is printed once and then it runs.
 - A card whose next open step is `[you]` is a handoff: list it and skip. A card with subtasks but no
   `Steps` is legacy: backfill it from them (§2). A card with a brief and neither is planned in
   pre-flight. A card with nothing to plan from — no `Steps`, no subtasks, no Problem/Done-when —
-  parks (§6) as `p1 Decide needs brief — [you]`: a label, not a render: renders use `- [ ]`; never a
-  silent skip, never an invented step.
+  parks (§6) as `- [ ] p1 Decide needs brief — [you]`; never a silent skip, never an invented step.
 - Ready = every `depend_on_ids` blocker is `1_done` outside Cancelled. Otherwise print
   `Blocked by #<id> "<name>" — <stage> · <state>`.
 - `--parallel N` (default 4), `--max N` (default 10). `--dry-run` prints the pre-flight questions
@@ -165,7 +164,7 @@ Everything else — evidence shape, assignees, step states, one write per move, 
 - **One campaign per repo.** A journal without its `closed` line → refuse in one line.
 - **Pre-flight main, before the questions.** Default branch, clean, `pull --ff-only`-able, or stop
   before any work.
-- **Park** = one `[you]` step `pN Decide <blocker> — [you]`, its line in `Steps` carrying what
+- **Park** = one `[you]` step `- [ ] pN Decide <blocker> — [you]`, its line in `Steps` carrying what
   blocked it and how to unblock, `sequence = index × 10`, `display_in_project=False`, plus the
   assignee handoff when a manual uid exists — one write; with none, the report is the handoff. A
   card review failed keeps its `02_changes_requested`, and one

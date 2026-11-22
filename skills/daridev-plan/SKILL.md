@@ -13,10 +13,11 @@ You propose, I decide. No code.
 or `--odoo` means on; a pasted one-liner means off; nothing and no prior answer → ask once
 `Odoo this session? [y/N]`, default no.
 
-**Render contract.** Every step renders as `- [ ] pN`; `- [x]` only in chat, for a step already
-`1_done`, or — in a standalone check — already satisfied. In a card the subtask is the status: a
-code-satisfied step with an open subtask stays `- [ ]` and says `already satisfied in code`. A bare
-`- pN` or a command at column 0 is a render bug — `## Render` owns the shape.
+**Render contract.** Every step renders as `- [ ] pN` and every check under it as `  - [ ]`; `- [x]`
+only in chat, for a step already `1_done`, or — in a standalone check — already satisfied, and for a
+check that passed. In a card the subtask is the status: a code-satisfied step with an open subtask
+stays `- [ ]` and says `already satisfied in code`. A bare `- pN`, a plain `- ` under a step, or a
+command at column 0 is a render bug — `## Render` owns the shape.
 
 Before the first write, read `../daridev-odoo/SKILL.md`: it owns the root memory and, on Odoo,
 mode, stages, moves, assignees and the description zones. Never restate it.
@@ -39,9 +40,10 @@ Ambiguous 4/5 → ask once. A bare number is not a card: `14842` → say so and 
 
 One question at a time, recommended answer first. New project → stack only, not architecture. Ask
 about the expensive decisions (tenancy, roles, offline/sync, i18n/currency) without designing them.
-Output: `Context` + ≤10 one-line briefs, first one a walking skeleton; `Requires: #N` only when a
-story cannot stand alone. On approval (Odoo on) create the cards: backlog stage, `sequence` max+10,
-primary tag + `card_tag_extra`, agent assignee, `Requires` as `depend_on_ids`, description
+Output: `Context` + ≤10 one-line briefs as plain bullets (not checkboxes: they are scope, not
+steps), first one a walking skeleton; `Requires: #N` only when a story cannot stand alone. On
+approval (Odoo on) create the cards: backlog stage, `sequence` max+10, primary tag +
+`card_tag_extra`, agent assignee, `Requires` as `depend_on_ids`, description
 `<h1>{title}</h1><p>{problem}</p><p><em>daridev: card/{slug}</em></p>`, no subtasks. Off → print
 the block. Guards: no self-link, no duplicate, same project, no cycle, never remove a link.
 
@@ -63,10 +65,11 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
    ```
 
    No persona, no "so that", no separate criteria. `Done when` names every surface for a gate,
-   permission, limit or export (list, detail, each export, bulk action, autocomplete, API). 3–7
-   steps, one action each, ≤80 chars in the action, verb first, each with a `check` and an owner.
-   The `Steps:` list is what the card carries inside one `<pre>`, so keep the two-space
-   `check:`/`files:` continuations and never fence a command here. Never invent; ask.
+   permission, limit or export (list, detail, each export, bulk action, autocomplete, API) and stays
+   plain bullets — it is outcomes, not a checklist. 3–7 steps, one action each, ≤80 chars in the
+   action, verb first, each with a `check` and an owner. The `Steps:` list is what the card carries
+   inside one `<pre>`, so keep the two-space `check:`/`files:` fields and never fence a command
+   here; the chat render (`## Render`) shows each check as `  - [ ]`. Never invent; ask.
 4. Audit before the gate: coverage, scope creep, order, risk, a simpler alternative. Auto-fix the
    unambiguous; ask only what changes an action.
 5. **Gate.** Show the brief and the steps, rendered as `## Render`, plus the exact writes
@@ -101,8 +104,9 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
   commands → ask once: run the suite or read-only. Timeout per command. Report
   `step · command · result · implication`.
 - **Report the state, not the plan.** In a standalone check, a step whose outcome already holds is
-  `already satisfied` — `- [x]`, a finding, never a to-do; a partial outcome is `- [ ]` with
-  `partial: <what holds> · <what does not>`. For an imperative step (`mv`, `daemon-reload`,
+  `already satisfied` — `- [x]` with its checks `  - [x]`, a finding, never a to-do; a partial
+  outcome is `- [ ]` with `partial: <what holds> · <what does not>`, its passing checks `  - [x]`
+  and its failing ones `  - [ ]`. For an imperative step (`mv`, `daemon-reload`,
   `git push`) run only a read-only probe derived from the step's outcome, never the action; a
   `check:` that is the action, or that only proves the action ran, is a finding. An executed row
   carries what you observed (command output or code read); never present the plan's `expected:`
@@ -118,16 +122,18 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
 
 Return the full plan every time, even when nothing is asked. Every step is `- [ ]` in the card,
 always; the chat render shows `- [x]` for a step already `1_done`, or — in a standalone check —
-already satisfied, and never writes that back — in a card the subtask is the status. Never a bare
-`- pN`: the card's `Steps` block is the write format, not the render. One fence per step, one probe
-per line, indented to that bullet's content column (4 spaces under `  - `, 2 spaces directly under
-the step), never at column 0 — a column-0 fence closes the list and flattens every step after it —
-and never inline after the step as well. ≤6 change rows. Never fence the whole plan.
+already satisfied, and for a check that passed; it never writes `[x]` back — in a card the subtask
+is the status. Never a bare `- pN`: the card's `Steps` block is the write format, not the render.
+One check per line as `  - [ ]`, one fence per check indented to that row's content column (4 spaces
+under `  - `), never at column 0 — a column-0 fence closes the list and flattens every step after
+it — and never inline after the step as well. ≤6 change rows. Never fence the whole plan.
 
-Before sending, assert: every step line matches `^- \[[ x]\] p[0-9]+ `, no line matches `^- p[0-9]`,
-no check command starts at column 0, and no check row presents the plan's `expected:` clause as the
-result — a check states what it observed, a plan gate states the outcome it will prove, and
-`--no-tests` states the code read. On failure, re-render instead of printing.
+Before sending, assert: every step line matches `^- \[[ x]\] p[0-9]+ .*— \[(agent|you)\]`, every
+check line matches `^  - \[[ x]\] `, no line matches `^- p[0-9]+ .*— \[(agent|you)\]` without a
+checkbox, no line under a step matches `^  - (?!\[[ x]\] )`, no check command starts at column 0,
+and no check row presents the plan's `expected:` clause as the result — a check states what it
+observed, a plan gate states the outcome it will prove, and `--no-tests` states the code read. On
+failure, re-render instead of printing.
 
 ````markdown
 ## Plan: <title>
@@ -138,7 +144,7 @@ _standalone · no card_        <!-- or _card #14842 "<name>"_ -->
 **Read:** <file, file> — no write.
 
 - [ ] p1 <one action> — [agent]
-  - `<path>` — what the check proves · <result>
+  - [ ] `<path>` — what the check proves · <result>
     ```
     <the check command>
     ```
@@ -151,14 +157,19 @@ Check render, same shape:
 
 ````markdown
 - [x] p1 <done action> — [agent]
-  - `<path>` — what the check proves · already satisfied: <observed>
+  - [x] `<path>` — what the check proves · already satisfied: <observed>
 - [ ] p2 <partial action> — [agent]
-  - `<path>` — what the check proves · partial: <holds> · <missing>
+  - [x] `<path>` — what the check proves · partial: <holds>
+  - [ ] `<path>` — what the check proves · partial: <missing>
 - [ ] p3 <open action> — [agent]
-  - `<path>` — what the check proves · <observed>
-- [ ] p4 <manual action> — [you]
-  - `<path>` — what the check proves · manual — not run
+  - [ ] `<path>` — what the check proves · <observed>
+- [x] p4 <manual action> — [you]
+  - [x] `<path>` — what the check proves · manual — confirmed by you
 ````
+
+A dropped step stays `- [ ]` and carries `(dropped)`; its checks stay `  - [ ]`. A manual check not
+run is `- [ ]` with `  - [ ]`; confirmed by me flips both to `- [x]`. Under `--no-tests`, a check the
+code already satisfies is `  - [x]` reading `code read`, otherwise `  - [ ]`.
 
 ## Never
 
