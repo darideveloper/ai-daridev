@@ -41,7 +41,6 @@ the project and its parameters; whether a session writes cards is decided per se
 - odoo_project: acme-app
 - odoo_stage_done: Sprint Complete
 - card_tag: backend
-- odoo_assignee_manual_uid: 2
 - deploy_url: https://acme.example.com/health
 <!-- daridev:end -->
 ```
@@ -58,10 +57,22 @@ the project and its parameters; whether a session writes cards is decided per se
 - `odoo_project` must be the **exact** name in Odoo. Zero or two matches → the skill stops and
   lists the real ones.
 - `card_tag` is the primary tag; `card_tag_extra` adds a second one to every card.
-- **Two users, one card.** The agent user is the MCP connection user; declare `odoo_assignee_uid`
-  only to pin a different account. `odoo_assignee_manual_uid` is **you**: the card carries that
-  user only while the next open step is a `[you]` step. No manual uid → no handoff; the first skill
-  that needs one asks once.
+- **Two users, one card.** The agent user is the MCP connection user — one dedicated agent account
+  per developer, never shared, because the chatter is the audit trail. **You** are the manual user;
+  the card carries you only while the next open step is a `[you]` step. Both identities are
+  per-machine: never put them in this block.
+- **`.daridev.local`, per developer.** Beside this `AGENTS.md`, untracked:
+
+  ```md
+  - odoo_assignee_manual_uid: 2
+  - odoo_assignee_manual_name: Dari
+  ```
+
+  Same `key: value` lines, no markers; only these two plus `deploy_url` and `deploy_expect` are read
+  from it, and it wins over the block. Run `git check-ignore .daridev.local` first; no output → add
+  the name to `.gitignore` and commit that line. A missing file is not an error: the skill asks once.
+  The block is read where the session is (it commits with the branch); the local file is read from
+  the canonical checkout, so a worktree keeps it.
 - `odoo_stage_done` is the validated column. Review moves an approved card there and stamps
   `date_end`; `pair`'s close sets the green dot without moving the card; archive closes a green card
   there, or closes a self-verified card you explicitly release (which lands there **without** the
@@ -135,14 +146,36 @@ dependencies.
 ## Teammates
 
 1. Clone the installer repo and run `./scripts/install.sh`.
-2. Clone the project. Its `AGENTS.md` block is committed, so nothing to configure.
-3. No Engram, no uid file, no preflight. Open the agent in the repo and use a command.
+2. Clone the project. Its `AGENTS.md` block is committed, so the project config is already there.
+3. With Odoo: your own agent account in your own `~/.config/odoo-mcp.env` (§Odoo MCP) — one account
+   per developer, never a shared one — and a `.daridev.local` with your own uid and name (§Repo
+   block). Nothing else to configure.
+4. No Engram, no preflight. Open the agent in the repo and use a command.
 
 Without Odoo credentials the skills print the manual checklist and still write the files; captures
 land in `docs/records/evidence/` instead of an attachment. A teammate with MCP reads the card
 directly; without MCP, they paste the card text and the skill works on that. Without MCP they also
 paste the screenshots into the card’s `Evidence (daridev)` section — the label is printed by
 `pair` — or send the files to the reviewer if they cannot edit the card.
+
+## Upgrading a repo that already uses the skills
+
+`odoo_assignee_uid` is retired: the agent is always the MCP connection user. A block that still
+carries it is read with the key ignored; remove it, because it pins every other developer's agent to
+one account.
+
+1. `git pull` in the ai-daridev clone — skills and commands are symlinks, nothing is reinstalled.
+2. Delete `odoo_assignee_uid` from the block.
+3. `git check-ignore .daridev.local`; no output → add `.daridev.local` to `.gitignore` and commit
+   that line.
+4. Each developer creates `.daridev.local` with their own uid and name.
+5. **Only then** delete `odoo_assignee_manual_uid` from the block. Removing it first drops every
+   session to the ask-once path.
+6. The first write after the upgrade replaces the card's assignees and names whoever it dropped — a
+   person added by hand in Odoo is removed, deliberately. Existing subtask assignees stay where they
+   are and are never rewritten.
+
+A solo repo can stop after step 2: with no local file the block is read exactly as it was.
 
 ## Existing repos
 
@@ -169,6 +202,8 @@ paste the screenshots into the card’s `Evidence (daridev)` section — the lab
 | Two command sets after upgrading | re-run `./scripts/install.sh`; it removes `ai-daridev-*` links |
 | The agent says the Odoo project has 0 or 2 matches | make `odoo_project` match exactly one project |
 | No cards are created | the session is off — say `--odoo`; or the block has no `odoo_project`, or MCP is not registered |
+| A card assigns the wrong person | the block still carries `odoo_assignee_manual_uid`, or `.daridev.local` is stale — the `Identity:` line names the source that won |
+| No `Identity:` line | Odoo is off, or the server exposes no uid — the skill asks once |
 | Evidence is not on the step | the session was chat-only, or the upload failed; the file is under `docs/records/evidence/`, and a no-MCP teammate pastes it into the card gallery |
 | `docs/records/evidence/` shows in `git status` | commit its `.gitignore` (`*` and `!.gitignore`); the images stay untracked |
 | `spec.md` or `log.md` missing | the write that needs it creates it: `pair` for the spec and the evidence folder, `archive` for the log |

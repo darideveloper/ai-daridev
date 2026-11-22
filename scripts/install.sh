@@ -23,8 +23,9 @@ INSTRUCTIONS=(
 )
 BLOCK='<!-- daridev -->
 Work is tracked with the `daridev` skills, invoked manually: plan → pair → review → archive.
-The repo root is the nearest `AGENTS.md` holding a `daridev:start` block. Move or assign an
-Odoo card only when I ask or approve it, in the same write as its state. Only
+The repo root is the nearest `AGENTS.md` holding a `daridev:start` block. Move a card only where a
+phase says it may, in the same write as its state; assignees are derived and reported, not asked.
+Only
 `/daridev-archive` sets a card `1_done` or writes `docs/records/log.md`; it never sets the green
 dot. Never set `1_canceled` unless I ask.
 Repo memory lives in `docs/records/` and is committed by a human.

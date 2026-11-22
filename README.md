@@ -43,7 +43,8 @@ a teammate without MCP can copy it whole; one hidden subtask per step for tracki
 description empty; a screenshot in the card's `Evidence` gallery, attached to the card; one
 `Review` block written by review; the green dot at pair's close, in place; validated column +
 `date_end` on a review pass; `1_done` at archive. `stage_id` and `state` travel in the same write,
-except pair's close, which writes `state` alone. Assignees follow the next open step.
+except pair's close, which writes `state` alone. Assignees are replaced each write — the agent, plus
+you while the next open step is `[you]` — and whoever it dropped is named.
 Archived cards are hidden by the default board filter.
 
 **In the repo:** `docs/records/spec.md` (one sentence per behaviour), `docs/records/log.md`
@@ -82,13 +83,16 @@ Declare the project in the repo’s `AGENTS.md`:
 - odoo_project: acme-app
 - odoo_stage_done: Sprint Complete
 - card_tag: backend
-- odoo_assignee_manual_uid: 2
 <!-- daridev:end -->
 ```
 
 The block supplies the parameters, never the switch. `--odoo` / `--no-odoo`, your words, or a card
 reference decide the session; `plan` with a one-liner is off without asking. Every phase prints the
 mode first, so it is never a guess. With Odoo off, no cards are written and only the files are.
+
+Identity is per developer, never in the block: your agent is your MCP account, and `.daridev.local`
+beside `AGENTS.md` (untracked) carries your own uid and name. Every on session prints
+`Identity: agent 17 · you Dari (2, local)` as its second line.
 
 ## Principles
 

@@ -17,8 +17,8 @@ mode, stages, moves, assignees and the close variants. Never restate it.
 
 ## Steps
 
-1. Load the card (`name`, `stage_id`, `state`, children, `depend_on_ids`, `dependent_ids`,
-   `date_end`, `write_date`) or the pasted brief. Read `docs/records/spec.md` (or
+1. Load the card (`name`, `stage_id`, `state`, `user_ids`, children, `depend_on_ids`,
+   `dependent_ids`, `date_end`, `write_date`) or the pasted brief. Read `docs/records/spec.md` (or
    `docs/ai-daridev/`) and the related ADRs (`rg docs/decisions/ 2>/dev/null`, or the legacy
    `docs/ai-daridev/decisions.md`, read-only).
 2. **Gate.** Every step must be `1_done`/`1_canceled`. Then:

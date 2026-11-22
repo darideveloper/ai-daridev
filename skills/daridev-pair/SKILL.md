@@ -23,8 +23,10 @@ mode, stages, moves, assignees and the evidence upload. Never restate it.
 - Worktree: in the canonical checkout, ask `Worktree or current branch? [worktree]` before p1 and
   follow the `AGENTS.md` worktree block — it owns when to ask and what follows.
 - On: read `depend_on_ids` first. A blocker not `1_done` outside Cancelled stops the run with one
-  line and what unblocks it. Then move the card to the in-progress column (one write, reported, not
-  asked; skip when already there, in the validated column, Cancelled or `1_done`). Checklist = the
+  line and what unblocks it. Re-read `stage_id`, `state` and `user_ids` before the first write; a
+  change since you loaded the card → stop in one line and reload it. Then move the card to the
+  in-progress column (one write, reported, not asked; skip when already there, in the validated
+  column, Cancelled or `1_done`). Checklist = the
   `Steps` block of the description; the subtasks supply only `state`, by `sequence`, and the block's
   `check:` line is what step 1 runs. No `Steps` block → legacy card: read the subtask names and
   descriptions, and say so once.
@@ -32,7 +34,8 @@ mode, stages, moves, assignees and the evidence upload. Never restate it.
 
 ## Pace
 
-One question per session, after the worktree answer and before p1:
+One question per session, after the worktree answer and before p1 — asked with the question tool
+(`../daridev-odoo/SKILL.md` §Ask), never printed and waited behind:
 
 `Pace: step by step [step] · straight through [run] · manual steps batched [batch]`
 
@@ -52,7 +55,7 @@ Switching pace mid-run never drops a deferred step — it still arrives as the o
 
 A `[you]` step, in any pace:
 
-- [ ] p5 "<step>" — [you]
+- ☐ p5 "<step>" — [you]
 
   ```
   what:  <the command, click path or value, exactly>
@@ -84,10 +87,11 @@ A `[you]` step prints the handoff above and waits: on "done" verify and flip, ne
 4. Show it pass.
 5. Visual step → before the first one, ask once
    `Screenshots from prod, staging or local? [prod]` (default prod when deployed, local when not)
-   and keep it. Capture on that surface at 1600×1000, mask client data, save under
-   `docs/records/evidence/<date>-<slug>/pN-<step>.png` (the memory root: `docs/ai-daridev/evidence/`
-   in a legacy repo). Create that evidence folder and its `.gitignore` (`*` and `!.gitignore`) when
-   missing. With MCP: attach it to the card, append the
+   and keep it. Capture on that surface at 1600×1000, mask client data, save under the canonical
+   checkout's `docs/records/evidence/<date>-<slug>/pN-<step>.png` (a legacy repo:
+   `docs/ai-daridev/evidence/`), so removing the worktree cannot delete it. Create the folder's
+   `.gitignore` (`*` and `!.gitignore`) in the canonical root, where the PNGs land, when missing.
+   With MCP: attach it to the card, append the
    gallery entry to `Evidence (daridev)` (create the heading only when missing, after `Review` and
    before the slug), and verify the attachment row on the card and the gallery entry before
    flipping. Without MCP: print the handoff label and the upload instruction (see Close).
@@ -101,8 +105,8 @@ missing or wrong check is a plan change — stop and ask.
 
 ## Close (only when every step is green and I say yes)
 
-- List open steps as `- [ ] pN "<step>" — [agent|you]`; a flipped one prints `- [x]`, a dropped one
-  stays `- [ ]` with `(dropped)`, never deleted (`1_canceled`).
+- List open steps as `- ☐ pN "<step>" — [agent|you]`; a flipped one prints `- ☑`, a dropped one
+  stays `- ☐` with `(dropped)`, never deleted (`1_canceled`).
 - **Green dot.** On, once no step is open and I said yes: one write `state=03_approved`, stage
   untouched, no `date_end` — green in the column it already sits in, never the validated column.
   Skip an archived, cancelled, validated or already-green card. It is not a review pass: only the
@@ -120,11 +124,11 @@ missing or wrong check is a plan change — stop and ask.
   edit the card, send the files to the reviewer.
 
   p5 "<step>" — [agent|you] · local — not deployed
-     docs/records/evidence/<date>-<slug>/p5-<step>.png
+     docs/records/evidence/<date>-<slug>/p5-<step>.png   (canonical checkout, never the worktree)
   ```
 
   A non-visual step prints the same label and the `<code>` line to paste. The label line is evidence
-  only, not a step: a step list uses `- [ ]`.
+  only, not a step: a step list uses `- ☐`.
 
 ## Never
 

@@ -3,6 +3,9 @@
 Investigate → plan → validate → do → verify → archive. Two approvals: the plan and the close.
 Everything else is reported.
 
+Every ask is a question-tool call — the phase's prompt as the question, one call per question or one
+call for a batch — never a prompt printed and waited behind.
+
 `pair` asks once for the pace before p1 — step by step, straight through, or manual steps batched.
 `run` is the default; two gates is the norm and `step` adds one per step, only when you ask for it.
 

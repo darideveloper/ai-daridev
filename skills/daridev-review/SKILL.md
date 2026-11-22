@@ -39,15 +39,15 @@ mode, stages, moves, assignees and the description zones. Never restate it.
    line each. Screenshots are not graded; the probe is.
 7. **Gate.** Show the verdict and the exact writes.
    - Pass → flip every step that passed to `1_done` (one update), then one card update
-     (`03_approved`, `date_end`, validated column, assignee diff) plus the `Review` block. A step
+     (`03_approved`, `date_end`, validated column, assignee set) plus the `Review` block. A step
      that is not `1_done`/`1_canceled` blocks the green dot: list it instead of approving.
    - Fail → one card update (`state=02_changes_requested` + move to **In Progress** from Backlog,
      Sprint Backlog, In Progress or Sprint Complete); stop from a later stage. Then the `Review`
      block, the failing steps to `02_changes_requested`, and missing work appended to `Steps` **and**
      created as new subtasks with `state=02_changes_requested` (yellow).
-8. Apply, then print the verdict and the checklist states: `- [x] pN "<step>" — [agent|you]` for a
-   passed/`1_done` step and `- [ ] pN "<step>" — [agent|you]` for a failed or not-reached one, each
-   with the probe that proves it (its `check:` line or the Done-when probe) as `  - [x]`/`  - [ ]`
+8. Apply, then print the verdict and the checklist states: `- ☑ pN "<step>" — [agent|you]` for a
+   passed/`1_done` step and `- ☐ pN "<step>" — [agent|you]` for a failed or not-reached one, each
+   with the probe that proves it (its `check:` line or the Done-when probe) as `  - ☑`/`  - ☐`
    and the observed result. The verdict table stays a table. Stop: archiving is my next move.
 
 Self mode is allowed; the block says `self-reviewed`.

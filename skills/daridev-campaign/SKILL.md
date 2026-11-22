@@ -27,10 +27,17 @@ is the point, so the gate is printed once and then it runs.
   `limit`/`offset`. Exclude archived (`1_done`), canceled (`1_canceled`), hidden subtasks
   (`display_in_project=False`), the backlog stage and the validated column — except a parked card
   whose `[you]` step is now `1_done`, which re-enters from any column.
-- A card whose next open step is `[you]` is a handoff: list it and skip. A card with subtasks but no
+- Skip a card whose `user_ids` holds a uid that is neither this session's agent uid nor its manual
+  uid, and report it as `#<id> "<name>" · owned by uid <n>`: read `user_ids` with the selection; the
+  agent uid is `odoo_connection_info`'s `uid` (`../daridev-odoo/SKILL.md` §Mode). The contract
+  cannot tell an agent uid from a manual one, so the comparison is against both of this session's.
+- A card whose next open step is `[you]` is a handoff: list it and skip,
+  `#<id> "<name>" · handoff pN "<step>" ([you])`. A card with subtasks but no
   `Steps` is legacy: backfill it from them (§2). A card with a brief and neither is planned in
-  pre-flight. A card with nothing to plan from — no `Steps`, no subtasks, no Problem/Done-when —
+  pre-flight. A card with nothing to plan from — no `Steps`, no subtasks, and no brief (a problem
+  statement plus acceptance criteria, in any language, literal headings not required) —
   parks (§6) as `- [ ] p1 Decide needs brief — [you]`; never a silent skip, never an invented step.
+  The batch is provisional until those pre-flight plans exist: a card whose plan parks leaves it.
 - Ready = every `depend_on_ids` blocker is `1_done` outside Cancelled. Otherwise print
   `Blocked by #<id> "<name>" — <stage> · <state>`.
 - `--parallel N` (default 4), `--max N` (default 10). `--dry-run` prints the pre-flight questions
@@ -40,8 +47,8 @@ is the point, so the gate is printed once and then it runs.
 
 ### Pre-flight — one round, then silence
 
-Ask everything once, in one message, before the gate; after the answer the run asks nothing until
-the report. Every question carries its default and an unanswered question takes it. Ask only what
+Ask everything once, in one question call (`../daridev-odoo/SKILL.md` §Ask) — one entry per row —
+before the gate; after the answer the run asks nothing until the report. Every question carries its default and an unanswered question takes it. Ask only what
 the root block and the selection do not already answer:
 
 | Question | Default when unanswered |
@@ -49,7 +56,7 @@ the root block and the selection do not already answer:
 | the resolved batch: ids and names | the selection as chosen |
 | surface: `prod`, `staging` or `local` | `prod` when the `deploy_url` answer is not `skip`, else `local` |
 | `deploy_url` and `deploy_expect` for `<repo>` | `skip` |
-| manual uid for the handoff, when `odoo_assignee_manual_uid` is empty | none — parks carry no assignee and the report is the handoff |
+| manual uid for the handoff, when a selected card can reach a `[you]` step | `odoo_assignee_manual_uid` when set, else none — parks carry no assignee and the report is the handoff |
 
 `surface` is one surface for the whole card — the captures and review's probes both run on it;
 review's verdict records it (`pass · <surface>`, `pass · local — prod unproven` when nothing was
@@ -162,8 +169,8 @@ Everything else — evidence shape, assignees, step states, one write per move, 
 ## 6. Rules
 
 - **One campaign per repo.** A journal without its `closed` line → refuse in one line.
-- **Pre-flight main, before the questions.** Default branch, clean, `pull --ff-only`-able, or stop
-  before any work.
+- **Pre-flight main, before the questions.** The canonical checkout, default branch, clean,
+  `pull --ff-only`-able, or stop before any work. Never pre-flight from a card worktree.
 - **Park** = one `[you]` step `- [ ] pN Decide <blocker> — [you]`, its line in `Steps` carrying what
   blocked it and how to unblock, `sequence = index × 10`, `display_in_project=False`, plus the
   assignee handoff when a manual uid exists — one write; with none, the report is the handoff. A
