@@ -169,8 +169,9 @@ one account.
 3. `git check-ignore .daridev.local`; no output → add `.daridev.local` to `.gitignore` and commit
    that line.
 4. Each developer creates `.daridev.local` with their own uid and name.
-5. **Only then** delete `odoo_assignee_manual_uid` from the block. Removing it first drops every
-   session to the ask-once path.
+5. Delete `odoo_assignee_manual_uid` from the block once **your own** file exists there. The other
+   developer's file can come later: without it their session asks once instead of being assigned
+   someone else, which is the failure you want.
 6. The first write after the upgrade replaces the card's assignees and names whoever it dropped — a
    person added by hand in Odoo is removed, deliberately. Existing subtask assignees stay where they
    are and are never rewritten.
