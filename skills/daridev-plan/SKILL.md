@@ -21,7 +21,7 @@ card (the chat shows `- ☐`) and says `already satisfied in code`. A bare `- pN
 a step, or a command at column 0 is a render bug — `## Render` owns the shape.
 
 Before the first write, read `../daridev-odoo/SKILL.md`: it owns the root memory and, on Odoo,
-mode, stages, moves, assignees and the description zones. Never restate it.
+mode, stages, moves, assignees, the subtasks and the description zones. Never restate it.
 
 ## Modes
 
@@ -74,16 +74,18 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
 4. Audit before the gate: coverage, scope creep, order, risk, a simpler alternative. Auto-fix the
    unambiguous; ask only what changes an action.
 5. **Gate.** Show the brief and the steps, rendered as `## Render`, plus the exact writes
-   (description with `Steps`, N subtasks with an empty description, stage/state, assignees). Stop.
+   (description with `Steps`, N subtasks in the §Subtasks shape, stage/state, assignees). Stop.
 6. Apply. On: one description write carrying the whole brief and `Steps` (preserving the review
-   block, the evidence gallery, the slug line and any legacy tail) + the subtasks, each with an
-   empty description, + the move to the sprint column (or in progress when there is no sprint
-   stage) — only from the backlog or sprint column; a card already in progress, validated or
-   complete keeps its stage and the gate says so — re-reading `write_date`, `stage_id`, `state`
-   and `user_ids` first. A card that already
-   has a `Steps` block gets no second subtask set unless I say **refine**: then `Steps` is rewritten
-   and the subtasks are reconciled by `sequence`, never appended. Off: print the brief and steps.
-   Never green, never done, never cancel, never remove a blocker.
+   block, the evidence gallery, the slug line and any legacy tail) + the subtasks in the
+   `../daridev-odoo/SKILL.md` §Subtasks shape, each with an empty description, + the move to the
+   sprint column (or in progress when there is no sprint stage) — only from the backlog or sprint
+   column; a card already in progress, validated or complete keeps its stage and the gate says so —
+   re-reading `write_date`, `stage_id`, `state` and `user_ids` first. After the subtask batch,
+   re-read the children once — count, `parent_id`, `sequence`, `display_in_project` false and the
+   `— [owner]` name — and fix a mismatch before the report. A card that already has a `Steps` block
+   gets no second subtask set unless I say **refine**: then `Steps` is rewritten and the subtasks
+   are reconciled by `sequence`, never appended. Off: print the brief and steps. Never green, never
+   done, never cancel, never remove a blocker.
 
 ## Check
 

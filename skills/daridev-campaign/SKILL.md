@@ -168,6 +168,11 @@ Everything else — evidence shape, assignees, step states, one write per move, 
 
 ## 6. Rules
 
+- **Subagents read, never invoke.** `disable-model-invocation` keeps every phase out of a subagent's
+  skill tool, so `/daridev-<phase>` in a subagent prompt is a file to read, not a command to run:
+  the prompt carries the absolute paths of the phase's `SKILL.md` and of `daridev-odoo/SKILL.md`,
+  says the skill cannot be invoked, and says to follow them exactly. A prompt without those paths
+  hands the subagent a stub it cannot resolve, and it invents the writes the phase owns.
 - **One campaign per repo.** A journal without its `closed` line → refuse in one line.
 - **Pre-flight main, before the questions.** The canonical checkout, default branch, clean,
   `pull --ff-only`-able, or stop before any work. Never pre-flight from a card worktree.

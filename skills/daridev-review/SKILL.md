@@ -13,7 +13,7 @@ off needs a pasted card. Report it as the literal first line, nothing before it:
 `Odoo: on · <project> · card #<id> "<name>"` or `Odoo: off · chat-only`.
 
 Before the first write, read `../daridev-odoo/SKILL.md`: it owns the root memory and, on Odoo,
-mode, stages, moves, assignees and the description zones. Never restate it.
+mode, stages, moves, assignees, the subtasks and the description zones. Never restate it.
 
 ## Steps
 

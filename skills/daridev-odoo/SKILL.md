@@ -162,7 +162,8 @@ Nobody else writes the description. Cap: the brief above `Steps` is 10 lines; `S
 ## Subtasks = tracking
 
 `name` = `pN <step> — [agent|you]`, `description` empty, `parent_id`,
-`sequence = index × 10`, `state=01_in_progress`, `display_in_project=False`. Never write the
+`sequence = index × 10`, `state=01_in_progress`, `display_in_project=False` — Odoo defaults it
+true, so a subtask created without it becomes its own card in the project. Never write the
 subtask's `project_id`, `stage_id`, `user_ids` or description — Odoo may default an assignee from
 the create user and nothing reads it; the name mirrors its line in `Steps` and the detail stays
 there. A subtask never carries information the description does not: every step,
