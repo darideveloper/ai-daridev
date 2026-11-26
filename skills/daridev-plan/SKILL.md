@@ -13,12 +13,10 @@ You propose, I decide. No code.
 or `--odoo` means on; a pasted one-liner means off; nothing and no prior answer → ask once with the
 question tool (`../daridev-odoo/SKILL.md` §Ask), `Odoo this session? [y/N]`, default no.
 
-**Render contract.** Every step renders in chat as `- ☐ pN` and every check under it as `  - ☐`;
-`☑` for a step already `1_done`, or — in a standalone check — already satisfied, and for a check
-that passed. The card `Steps` always keeps `- [ ]` and `check:`/`files:`; the glyph is chat-only. In
-a card the subtask is the status: a code-satisfied step with an open subtask stays `- [ ]` in the
-card (the chat shows `- ☐`) and says `already satisfied in code`. A bare `- pN`, a plain `- ` under
-a step, or a command at column 0 is a render bug — `## Render` owns the shape.
+**Render contract.** The chat render and the card's `Steps` are two shapes of one plan: the card
+keeps `- [ ]` and `check:`/`files:` and never a glyph, the chat shows `- ☐` and `- ☑` and never
+writes one back. A bare `- pN`, a plain `- ` under a step, or a command at column 0 is a render bug.
+`## Render` owns the shape; this paragraph only names the two shapes.
 
 Before the first write, read `../daridev-odoo/SKILL.md`: it owns the root memory and, on Odoo,
 mode, stages, moves, assignees, the subtasks and the description zones. Never restate it.
@@ -73,8 +71,9 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
    here; the chat render (`## Render`) shows each check as `  - ☐`. Never invent; ask.
 4. Audit before the gate: coverage, scope creep, order, risk, a simpler alternative. Auto-fix the
    unambiguous; ask only what changes an action.
-5. **Gate.** Show the brief and the steps, rendered as `## Render`, plus the exact writes
-   (description with `Steps`, N subtasks in the §Subtasks shape, stage/state, assignees). Stop.
+5. **Gate.** Show the brief and the steps, rendered as `## Render`, then one line naming what apply
+   touches — the description top, N subtasks, the stage. The mechanics (the `<pre>`, `sequence`, the
+   assignee list) print only on `show writes`. Stop.
 6. Apply. On: one description write carrying the whole brief and `Steps` (preserving the review
    block, the evidence gallery, the slug line and any legacy tail) + the subtasks in the
    `../daridev-odoo/SKILL.md` §Subtasks shape, each with an empty description, + the move to the
@@ -122,43 +121,57 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
 - Select the plan: pasted → last ~20 messages → ask. Extract the intent verbatim. Audit coverage,
   accuracy, scope creep, clarity, consistency, feasibility/order, risk, simpler alternative.
   Auto-fix the unambiguous; ask only what changes an action; never invent; >10 gaps → stop.
-- Map every requirement to a step; print the count. Render it as `## Render` says — never the write
-  shape. `show audit` / `full report` expands the detail.
+- Map every requirement to a step; the count belongs in `show audit`, never in the render. Render it
+  as `## Render` says — never the write shape. A finding that changes no action still prints, one
+  sentence under the steps; `show audit` / `full report` expands the detail.
 
 ## Render
 
-Return the full plan every time, even when nothing is asked. Every step is `- [ ]` in the card,
-always; the chat render shows `- ☐` for open, `- ☑` for a step already `1_done` or — in a standalone
-check — already satisfied, and for a check that passed; it never writes the glyph back — in a card
-the subtask is the status. Never a bare `- pN`: the card's `Steps` block is the write format, not
-the render. One check per line as `  - ☐`, one fence per check indented to that row's content
-column (4 spaces under `  - `), never at column 0 — a column-0 fence closes the list and flattens
-every step after it — and never inline after the step as well. ≤6 change rows. Never fence the
-whole plan.
+Return the full plan every time, even when nothing is asked. The render is the decision, not the
+payload: why, what will be true, what is out, what changes, then the steps. The card's `Steps` block
+is the write format; the mechanics stay behind `show writes`.
 
-Before sending, assert: every step line matches `^- [☐☑] p[0-9]+ .*— \[(agent|you)\]`, every
-check line matches `^  - [☐☑] `, no line matches `^- p[0-9]+ .*— \[(agent|you)\]` without a box,
-no line under a step matches `^  - (?![☐☑] )`, no check command starts at column 0, and no check
-row presents the plan's `expected:` clause as the result — a check states what it observed, a plan
-gate states the outcome it will prove, and `--no-tests` states the code read. On failure, re-render
-instead of printing.
+- `Problem`, `Out of scope` and `Touched` print as the plan carries them; a plan without one says
+  nothing there rather than inventing it. `Done when` is one bullet per surface, never one
+  `;`-joined sentence.
+- A step names what it touches in plain words and keeps the id only where it is shorter:
+  `p3 Write the US-hosting decision record (0039)`. Never open a step with a bare number. The
+  80-char action cap wins; when the name does not fit, the id moves to the `check` line.
+- A check states what will be observed in the words the reader cares about — `0039 exists and quotes
+  her sentence` — never a negation of the artifact (`no Status field`, `byte-identical to today`).
+- Every step is `- [ ]` in the card, always; the chat render shows `- ☐` for open, `- ☑` for a step
+  already `1_done` or — in a standalone check — already satisfied, and for a check that passed. It
+  never writes the glyph back: in a card the subtask is the status, so a step the code already
+  satisfies with an open subtask stays `- [ ]` there and reads `already satisfied in code` in chat.
+- One check per line as `  - ☐`, one fence per check indented to that row's content column (4 spaces
+  under `  - `), never at column 0 — a column-0 fence closes the list and flattens every step after
+  it — and never inline after the step as well. ≤6 change rows. Never fence the whole plan.
+
+Before sending, assert: every step line starts `- [☐☑] pN ` and ends `— [agent|you]`; every line
+that starts `  - ` carries a box; no fence starts at column 0; and a card plan carries `Problem`,
+`Out of scope` and `Done when` as a list. On failure, re-render instead of printing. A check row
+never presents the plan's `expected:` clause as the result — `## Check` owns that rule and
+`--no-tests` states the code read.
 
 ````markdown
 ## Plan: <title>
-_standalone · no card_        <!-- or _card #14842 "<name>"_ -->
+_card #14842 "<name>" · <stage>_        <!-- or _standalone · no card_ -->
 
-**Done when:** <outcome, one per surface>
-
+**Problem:** <one sentence, observed, with the path or surface>
+**Done when:**
+- <outcome, one per surface>
+**Out of scope:** <one line>
+**Touched:** <files / systems>
 **Read:** <file, file> — no write.
 
-- ☐ p1 <one action> — [agent]
+- ☐ p1 <verb> the <object in plain words> (<id>) — [agent]
   - ☐ `<path>` — what the check proves · <result>
     ```
     <the check command>
     ```
-- ☐ p2 <one action> — [you]
+- ☐ p2 <verb> the <object> — [you]
 
-_<N> steps · <N> agent · <N> you · <N>/<N> requirements traced · <N> findings · <N> answers_
+_<N> steps · <N> yours_
 ````
 
 Check render, same shape:
