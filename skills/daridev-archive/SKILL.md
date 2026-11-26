@@ -50,9 +50,15 @@ mode, stages, moves, assignees and the close variants. Never restate it.
 
    A slug already in the log was reopened: append `— re-shipped <date>`, never a duplicate and
    never a silent skip. A block that moved with a repo migration moves with it.
-6. A follow-up that matters becomes a card now or is dropped; no prose backlog.
+6. **Commit offer.** When this run wrote files (the log, an ADR, the spec sentence), ask once with
+   the question tool (`../daridev-odoo/SKILL.md` §Ask): the branch, the explicit paths, then
+   `Commit these N files on <branch>?` with `Commit and push` (recommended), `Commit, no push`,
+   `Leave it`. Yes → stage only those paths, commit and push. Leave it or a dismissal → print the
+   message and stop. Paths already dirty before this run are named, never staged. A subagent, or a
+   session with no question tool, takes `Leave it`.
+7. A follow-up that matters becomes a card now or is dropped; no prose backlog.
 
-Off: no card, no stage, no evidence gate — the log, the spec sentence and step 4 only.
+Off: no card, no stage, no evidence gate — the log, the spec sentence and steps 4 and 6 only.
 
 ## Never
 

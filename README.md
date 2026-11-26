@@ -18,7 +18,7 @@ The agent proposes and writes code in small steps. You decide.
 | Command | Does | Never does |
 |---|---|---|
 | `/daridev-plan` | Splits an idea into ≤10 one-line briefs, or refines one card into `Problem` / `Done when` / 3–7 steps with checks. Audits any plan read-only. | Write code, move a card in check mode, invent a requirement. |
-| `/daridev-pair` | Executes the approved steps: check red → minimum code → green → screenshot in the card gallery, then the green dot in place when you accept the close. Asks once for the pace — step by step, straight through or manual steps batched — and never implements a `[you]` step without your `do it`. Stops on anything unplanned. | Review itself, archive, move the card, set `1_done`, commit. |
+| `/daridev-pair` | Executes the approved steps: check red → minimum code → green → screenshot in the card gallery, then the green dot in place when you accept the close. Asks once for the pace — step by step, straight through or manual steps batched — and never implements a `[you]` step without your `do it`. Stops on anything unplanned. | Review itself, archive, move the card, set `1_done`, commit without your yes. |
 | `/daridev-review` | Runs the `Done when` probes as the lowest-privilege actor and writes one `Review` block. | Capture evidence, archive, invent a verdict. |
 | `/daridev-archive` | Closes a green validated card, or a self-verified one you explicitly release, and appends a 4-line log. | Set the green dot, cancel a card, invent a retro. |
 | `/daridev-campaign` | Runs the flow over a batch: one worktree per card, plan → pair → integrate → deploy → review → archive. | Skip review, waive evidence, archive drift. |
@@ -50,7 +50,8 @@ Archived cards are hidden by the default board filter.
 **In the repo:** `docs/records/spec.md` (one sentence per behaviour), `docs/records/log.md`
 (4 lines per card), `docs/records/evidence/` (untracked), and `docs/decisions/NNNN-<slug>.md` for
 ADRs. The root is the nearest `AGENTS.md` holding `<!-- daridev:start -->`; nothing is written above
-it. Files are committed with your code, by you.
+it. Files are committed with your code: a phase that writes offers the commit once, and it lands
+only on your yes.
 
 ## Install
 
@@ -101,6 +102,7 @@ beside `AGENTS.md` (untracked) carries your own uid and name. Every on session p
 - **Slice vertically and small.** One brief = one session, ≤3 files; 3–7 steps.
 - **Two gates.** The plan and the close; everything else is a report.
 - **Proof, not paperwork.** A probe per Done-when; screenshots only for visual work.
-- **Suggest, don't decide.** Patterns, refactors and commits are your call.
+- **Suggest, don't decide.** Patterns and refactors are your call; a commit is offered once and lands
+  only on your yes.
 
 By Hola Mundo. Fork maintained by Dari Developer.

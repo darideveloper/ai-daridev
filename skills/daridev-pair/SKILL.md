@@ -1,6 +1,6 @@
 ---
 name: daridev-pair
-description: Executes an approved plan at the pace you choose — straight through, one step at a time, or manual steps batched — check red, minimum code, check green, screenshot on the card. Never implements a [you] step without your do it, never reviews, never archives, never commits.
+description: Executes an approved plan at the pace you choose — straight through, one step at a time, or manual steps batched — check red, minimum code, check green, screenshot on the card. Never implements a [you] step without your do it, never reviews, never archives, never commits without your yes.
 disable-model-invocation: true
 ---
 
@@ -114,8 +114,16 @@ missing or wrong check is a plan change — stop and ask.
   `Review` block proves that.
 - Propose one sentence for `docs/records/spec.md` under `## <domain>` when behaviour changed; on
   yes, create the file (`# Spec` header) when missing instead of only printing the line.
+- **Commit offer.** When this run left uncommitted changes, ask once with the question tool
+  (`../daridev-odoo/SKILL.md` §Ask) after the spec sentence and before the worktree line: the branch,
+  the explicit paths, then `Commit these N files on <branch>?` with `Commit and push` (recommended),
+  `Commit, no push`, `Leave it`. Yes → stage only those paths, commit and push. Leave it or a
+  dismissal → print the message and stop; never ask twice in the same turn. A subagent, or a session
+  with no question tool, takes `Leave it`. A clean tree, or changes from an earlier turn, prints the
+  message only.
 - Print the handoff: what shipped, the spec line, the card state, the step summary,
-  `worktree: removed|kept <path>`, and the commit message for me to run.
+  `worktree: removed|kept <path>`, and — when the offer was declined or never applied — the commit
+  message for me to run.
 - **No MCP:** print one block per step, in order, each with its local path and label, plus the
   upload instruction:
 
@@ -134,5 +142,6 @@ missing or wrong check is a plan change — stop and ask.
 ## Never
 
 Implement a `[you]` step without my `do it`, review yourself, archive, move the card forward, set
-`1_done` or `date_end`, green a card with an open step, commit, write `log.md`, rewrite the
-description, write a subtask description, add what the plan does not name. Never print a bare id.
+`1_done` or `date_end`, green a card with an open step, commit without the close offer's yes, write
+`log.md`, rewrite the description, write a subtask description, add what the plan does not name.
+Never print a bare id.
