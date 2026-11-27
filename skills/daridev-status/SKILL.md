@@ -23,6 +23,9 @@ assignees. Never restate it.
 3. No match → list the active cards (not backlog, not validated), limit 20, ask once.
 4. No card at all, or Odoo off → the light flow: `spec.md`, `log.md`, the commit.
 
+No `daridev:start` block → no memory root: the code rows and `done` still print, `archived` never
+applies, and `next` is `commit` or `push`, nothing later.
+
 Never invent a card from a branch name.
 
 ## Head
