@@ -22,10 +22,12 @@ The agent proposes and writes code in small steps. You decide.
 | `/daridev-review` | Runs the `Done when` probes as the lowest-privilege actor and writes one `Review` block. | Capture evidence, archive, invent a verdict. |
 | `/daridev-archive` | Closes a green validated card, or a self-verified one you explicitly release, and appends a 4-line log. | Set the green dot, cancel a card, invent a retro. |
 | `/daridev-campaign` | Runs the flow over a batch: one worktree per card, plan → pair → integrate → deploy → review → archive. | Skip review, waive evidence, archive drift. |
+| `/daridev-status` | Reads the card, the branch and the deploy and prints one five-row block — done, pushed, merged, deployed, next. Runs by itself at every phase close, or on demand. | Write anything, probe the Done-when, fetch, capture, move a card. |
 
 Each phase ends waiting for your approval — two gates per work item: the plan and the close.
 Everything else (a step passing, a card moving to in-progress, a subtask flipping) is reported, not
-asked. `step` pace adds one gate per step, only when you ask for it.
+asked. `step` pace adds one gate per step, only when you ask for it. `/daridev-status` is the one
+read-only report: no gate, and its block is the last output of every close.
 
 ## Size decides how much you run
 

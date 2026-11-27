@@ -113,6 +113,9 @@ tail is preserved unless you approve collapsing it to one attachment pointer.
   commands, no Odoo and no writes; on a card it also backfills `Steps` and updates the subtasks.
 - `/daridev-campaign` — runs the flow over a batch, unattended, one worktree per card.
 - `/daridev-plan split` — one idea into ≤10 one-line briefs and cards.
+- `/daridev-status` — read-only, no gate: one five-row block (done, pushed, merged, deployed,
+  next), printed as the last output of every phase close and on demand. It never writes, never runs
+  a Done-when probe and never fetches.
 
 ## Caps
 
@@ -122,4 +125,5 @@ tail is preserved unless you approve collapsing it to one attachment pointer.
 | `Steps` block | 3–7 steps |
 | Review block | 6 lines |
 | Log entry | 4 lines |
+| Status block | 5 rows |
 | Gates per work item | 2 · +1 per step in `step` pace |

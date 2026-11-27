@@ -121,9 +121,9 @@ missing or wrong check is a plan change — stop and ask.
   dismissal → print the message and stop; never ask twice in the same turn. A subagent, or a session
   with no question tool, takes `Leave it`. A clean tree, or changes from an earlier turn, prints the
   message only.
-- Print the handoff: what shipped, the spec line, the card state, the step summary,
-  `worktree: removed|kept <path>`, and — when the offer was declined or never applied — the commit
-  message for me to run.
+- Print the handoff: what shipped, the spec line, `worktree: removed|kept <path>`, and — when the
+  offer was declined or never applied — the commit message for me to run. Then end the turn with the
+  `../daridev-status/SKILL.md` §From a phase block; it carries the card state and the step count.
 - **No MCP:** print one block per step, in order, each with its local path and label, plus the
   upload instruction:
 

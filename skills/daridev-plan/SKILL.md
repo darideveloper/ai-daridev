@@ -83,7 +83,8 @@ the block. Guards: no self-link, no duplicate, same project, no cycle, never rem
    re-read the children once — count, `parent_id`, `sequence`, `display_in_project` false and the
    `— [owner]` name — and fix a mismatch before the report. A card that already has a `Steps` block
    gets no second subtask set unless I say **refine**: then `Steps` is rewritten and the subtasks
-   are reconciled by `sequence`, never appended. Off: print the brief and steps. Never green, never
+   are reconciled by `sequence`, never appended. Off: print the brief and steps. Then end the turn
+   with the `../daridev-status/SKILL.md` §From a phase block. Never green, never
    done, never cancel, never remove a blocker.
 
 ## Check

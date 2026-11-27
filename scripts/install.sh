@@ -23,12 +23,18 @@ INSTRUCTIONS=(
 )
 BLOCK='<!-- daridev -->
 Work is tracked with the `daridev` skills, invoked manually: plan → pair → review → archive.
+Every phase close ends with the `daridev-status` block; when I ask for the status, what is left, or
+whether we can close, load `daridev-status` and follow it.
 The repo root is the nearest `AGENTS.md` holding a `daridev:start` block. Move a card only where a
 phase says it may, in the same write as its state; assignees are derived and reported, not asked.
 Only
 `/daridev-archive` sets a card `1_done` or writes `docs/records/log.md`; it never sets the green
 dot. Never set `1_canceled` unless I ask.
-Repo memory lives in `docs/records/` and is committed by a human.
+Repo memory lives in `docs/records/`. A turn that ends with changes it made offers one commit through
+the question tool — branch, explicit paths and the message above it: `Commit these N files on
+<branch>?` → `Commit and push` (recommended) · `Commit, no push` · `Leave it`. Esc is Leave it, a
+decline is not re-asked, and yes is the explicit request `git-workflow` needs. The campaign scheduler
+commits on its own; no offer there.
 Lasting decisions are ADRs in `docs/decisions/NNNN-<slug>.md`, written by archive when I approve.
 <!-- daridev -->'
 

@@ -56,7 +56,8 @@ mode, stages, moves, assignees and the close variants. Never restate it.
    `Leave it`. Yes → stage only those paths, commit and push. Leave it or a dismissal → print the
    message and stop. Paths already dirty before this run are named, never staged. A subagent, or a
    session with no question tool, takes `Leave it`.
-7. A follow-up that matters becomes a card now or is dropped; no prose backlog.
+7. A follow-up that matters becomes a card now or is dropped; no prose backlog. Then end the turn
+   with the `../daridev-status/SKILL.md` §From a phase block, as the last output.
 
 Off: no card, no stage, no evidence gate — the log, the spec sentence and steps 4 and 6 only.
 

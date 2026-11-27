@@ -49,7 +49,8 @@ mode, stages, moves, assignees, the subtasks and the description zones. Never re
 8. Apply, then print the verdict and the checklist states: `- ☑ pN "<step>" — [agent|you]` for a
    passed/`1_done` step and `- ☐ pN "<step>" — [agent|you]` for a failed or not-reached one, each
    with the probe that proves it (its `check:` line or the Done-when probe) as `  - ☑`/`  - ☐`
-   and the observed result. The verdict table stays a table. Stop: archiving is my next move.
+   and the observed result. The verdict table stays a table. Then the
+   `../daridev-status/SKILL.md` §From a phase block, after the checklist.
 
 Self mode is allowed; the block says `self-reviewed`.
 
